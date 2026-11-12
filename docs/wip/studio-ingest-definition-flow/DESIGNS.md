@@ -6,7 +6,8 @@ definition's other data sets, and the picked one on the right: a view drawn read
 columns. The pull request that adds this page builds design 1b with the data sets group. A view's own columns are
 [future work](#future-work).
 
-This page keeps the designs we considered, and why we chose this one.
+This page keeps the designs we considered, and why we chose this one. After review, the tab became an Overview of the
+definition's settings, then its views and data sets: see [after review](#after-review-the-overview).
 
 > **This page is text only.** The designs were mocked in Studio, with Cube's real canvas, on a made-up ingest
 > definition with three views, and a version of it with ten views and twenty-three plain data sets. Screenshots of
@@ -19,6 +20,7 @@ This page keeps the designs we considered, and why we chose this one.
 - [Why design 1b](#why-design-1b)
 - [The data sets that aren't views](#the-data-sets-that-arent-views)
 - [How a view is drawn](#how-a-view-is-drawn)
+- [After review: the Overview](#after-review-the-overview)
 - [Future work](#future-work)
 
 ## Today
@@ -145,6 +147,22 @@ How they are built:
   name, and a line above the flow says the steps after it aren't checked.
 - Cube's flow doesn't draw a view that reads a data product yet: drawing one needs a binder for data product sources,
   the same work access points need for theirs. Such a view shows why, and its Pure.
+
+## After review: the Overview
+
+In review, an item at the top of the list named after the definition didn't say it was the definition. So the tab
+became an Overview of two labelled sections, built in the pull request after the one that adds this page:
+
+- **Definition, on top.** Its name and doc, then the settings every data set follows unless it sets its own: owner,
+  read mode, write mode, data set group and compute. All settings opens the rest below them (the CSV options, deletes,
+  batches, generators and annotations) and scrolls inside a third of the window, so the views and data sets stay in
+  view.
+- **Materialized views and data sets, below.** Design 1b's list and panel.
+- **A data set has two tabs, Schema and Metadata, and a view has Flow and Metadata.** Metadata is everything else it
+  says: its key and governance, what reads it or what it reads, and how it's written, stored and read. A setting it
+  takes from the definition says so. The tab stays as another is picked, to compare them.
+- **The switch at the top reads Overview | Pure,** as it shows more than flows. A definition with no views opens on
+  the Overview too.
 
 ## Future work
 

@@ -24,7 +24,7 @@ import {
 } from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '@finos/legend-cube-builder/definition-flow';
 import { LineageModel, type IngestDefinition } from '@finos/legend-graph';
-import type { PlainObject } from '@finos/legend-shared';
+import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
 import { runInAction } from 'mobx';
@@ -149,7 +149,7 @@ const getEditorState = (
     IngestDefinitionEditorState,
   );
 
-/** Flow | Pure */
+/** Overview | Pure */
 const getViewSwitch = (editorGroup: HTMLElement): HTMLElement =>
   within(editorGroup).getByLabelText('Show the definition as');
 
@@ -200,14 +200,83 @@ const getHeaderActions = (editorGroup: HTMLElement): string[] =>
     return text.length ? text : (button.getAttribute('title') ?? '');
   });
 
-/** What the picked view reads, or which views read the picked data set */
-const getReads = (panel: HTMLElement): string | null | undefined =>
-  panel.querySelector('.ingest-definition-flow__view__reads')?.textContent;
+/** The definition's own section, above its views and data sets */
+const getDefinitionSection = (editorGroup: HTMLElement): HTMLElement =>
+  within(editorGroup).getByRole('region', { name: 'Definition' });
 
-/** A name in a "Reads" or "Read by" line that picks it in the list */
-const followLink = async (panel: HTMLElement, name: string): Promise<void> => {
+/** The settings the definition's section always shows, by label */
+const getMainSettings = (section: HTMLElement): Record<string, string> =>
+  Object.fromEntries(
+    Array.from(
+      section.querySelectorAll('.ingest-definition-section__setting'),
+    ).map((setting) => [
+      setting.querySelector('dt')?.textContent ?? '',
+      setting.querySelector('dd')?.textContent ?? '',
+    ]),
+  );
+
+/** A property's value as text: its chips, or its list's items, apart */
+const getValueText = (value: Element): string => {
+  const chips = value.querySelectorAll('.ingest-definition-properties__chip');
+  const items = value.querySelectorAll('li');
+  return chips.length
+    ? Array.from(chips, (chip) => chip.textContent).join(', ')
+    : items.length
+      ? Array.from(items, (item) => item.textContent).join('; ')
+      : (value.textContent ?? '');
+};
+
+/** The rows of property sheets, by label */
+const getProperties = (element: HTMLElement): Record<string, string> =>
+  Object.fromEntries(
+    Array.from(
+      element.querySelectorAll('.ingest-definition-properties__row'),
+    ).map((row) => [
+      row.querySelector('dt')?.textContent ?? '',
+      getValueText(guaranteeNonNullable(row.querySelector('dd'))),
+    ]),
+  );
+
+/** The classification and residency beside the picked view's or data set's name */
+const getHeadChips = (panel: HTMLElement): (string | null)[] =>
+  Array.from(
+    panel.querySelectorAll(
+      '.ingest-definition-flow__view__head .ingest-definition-properties__chip',
+    ),
+    (chip) => chip.textContent,
+  );
+
+/** Shows a panel's tab: a view's Flow or Metadata, a data set's Schema or Metadata */
+const showTab = async (panel: HTMLElement, tab: string): Promise<void> => {
+  await act(async () => {
+    fireEvent.click(within(panel).getByRole('tab', { name: tab }));
+  });
+};
+
+const isTabShown = (panel: HTMLElement, tab: string): boolean =>
+  within(panel)
+    .getByRole('tab', { name: tab })
+    .getAttribute('aria-selected') === 'true';
+
+/** The picked view's or data set's Metadata, by label, its tab shown */
+const getMetadata = async (
+  panel: HTMLElement,
+): Promise<Record<string, string>> => {
+  await showTab(panel, 'Metadata');
+  return getProperties(
+    within(panel).getByLabelText(
+      `Metadata of ${panel.getAttribute('aria-label') ?? ''}`,
+    ),
+  );
+};
+
+/** A name that picks it in the list, e.g. in a view's Reads or a data set's Read by */
+const followLink = async (
+  element: HTMLElement,
+  name: string,
+): Promise<void> => {
   const link = Array.from(
-    panel.querySelectorAll<HTMLElement>('.ingest-definition-flow__link'),
+    element.querySelectorAll<HTMLElement>('.ingest-definition-flow__link'),
   ).find((each) => each.textContent === name);
   expect(link).toBeDefined();
   await act(async () => {
@@ -242,20 +311,34 @@ afterEach(() => {
 describe('The Definition tab of an ingest definition with materialized views', () => {
   test(
     integrationTest(
-      'Opens on the flow of the first view, Legend Cube drawing it typed by the definition, and lists every view with its number of steps',
+      "Opens on the Overview: the definition's section, then the flow of the first view, Legend Cube drawing it typed by the definition, beside every view with its number of steps",
     ),
     async () => {
       const { editorGroup } = await setUp();
 
       const viewSwitch = getViewSwitch(editorGroup);
       expect(
-        within(viewSwitch).getByText('Flow').getAttribute('aria-pressed'),
+        within(viewSwitch).getByText('Overview').getAttribute('aria-pressed'),
       ).toBe('true');
       expect(
         within(viewSwitch).getByText('Pure').getAttribute('aria-pressed'),
       ).toBe('false');
       // the whole definition's Pure waits behind Pure
       expect(within(editorGroup).queryByText(DEFINITION_PURE)).toBeNull();
+
+      // the definition's own section: its name and doc, then the settings
+      // every data set follows unless it sets its own
+      const section = getDefinitionSection(editorGroup);
+      within(section).getByText('TradePositionsIngest');
+      within(section).getByText('End-of-day positions for the Markets desks');
+      expect(getMainSettings(section)).toEqual({
+        Owner: 'Kerberos svc_positions',
+        'Read mode': 'Delta · CSV',
+        'Write mode': 'append only',
+        'Data set group': 'POSITIONS',
+        // a compute the project doesn't have, by its name
+        Compute: 'MarketsSnowflake',
+      });
 
       // two data sets, a filter, a join and a group
       const panel = getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY');
@@ -286,16 +369,100 @@ describe('The Definition tab of an ingest definition with materialized views', (
           .getAttribute('aria-selected'),
       ).toBe('true');
 
-      // its head: its key, the classification of its data, what it reads
-      within(panel).getByTitle('Primary key');
-      expect(
-        Array.from(
-          panel.querySelectorAll('.ingest-definition-flow__view__chip'),
-        ).map((chip) => chip.textContent),
-      ).toEqual(['BUSINESS_DATE', 'LEGAL_ENTITY_ID', 'INSTRUMENT_ID', 'DP10']);
-      expect(getReads(panel)).toBe('Reads EOD_POSITIONS, LEGAL_ENTITIES');
+      // its head: the classification of its data, then its Flow, shown, and
+      // its Metadata
+      expect(getHeadChips(panel)).toEqual(['DP10']);
+      expect(isTabShown(panel, 'Flow')).toBe(true);
+      expect(isTabShown(panel, 'Metadata')).toBe(false);
       // every data set's columns are known: nothing to warn of
       expect(within(panel).queryByText(/aren't known/u)).toBeNull();
+    },
+  );
+
+  test(
+    integrationTest(
+      "All settings opens the definition's other settings below its main ones, its doc not again, and Fewer settings closes them",
+    ),
+    async () => {
+      const { editorGroup } = await setUp();
+      await findFlowNodes(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        5,
+      );
+      const section = getDefinitionSection(editorGroup);
+      const otherSettings = "The definition's other settings";
+      expect(within(section).queryByLabelText(otherSettings)).toBeNull();
+
+      await act(async () => {
+        fireEvent.click(within(section).getByText('All settings'));
+      });
+      const others = within(section).getByLabelText(otherSettings);
+      // how it reads its files, and the data sets with their own write mode;
+      // nothing of a part it doesn't set, e.g. its batches
+      expect(getProperties(others)).toEqual({
+        'Field delimiter': '|',
+        'Record delimiter': '\\n',
+        'Header rows skipped': '1',
+        'Parse header': 'Yes',
+        'Data sets with their own write mode': 'INSTRUMENTS',
+      });
+      expect(within(others).queryByLabelText('Batches')).toBeNull();
+      // its doc shows above, not again as one of its annotations
+      expect(
+        within(section).getAllByText(
+          'End-of-day positions for the Markets desks',
+        ),
+      ).toHaveLength(1);
+      // a data set it names is a link to it
+      await followLink(others, 'INSTRUMENTS');
+      getViewPanel(editorGroup, 'INSTRUMENTS');
+
+      await act(async () => {
+        fireEvent.click(within(section).getByText('Fewer settings'));
+      });
+      expect(within(section).queryByLabelText(otherSettings)).toBeNull();
+      // the settings that matter most stay
+      expect(getMainSettings(section).Owner).toBe('Kerberos svc_positions');
+    },
+  );
+
+  test(
+    integrationTest(
+      "A view's Metadata: its key, classification, what it reads, how it's written; the tab stays as another view is picked",
+    ),
+    async () => {
+      const { editorGroup } = await setUp();
+      const panel = getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY');
+      await findFlowNodes(panel, 5);
+
+      expect(await getMetadata(panel)).toEqual({
+        'Primary key': 'BUSINESS_DATE, LEGAL_ENTITY_ID, INSTRUMENT_ID',
+        Classification: 'DP10',
+        Residency: 'None',
+        Reads: 'EOD_POSITIONS, LEGAL_ENTITIES',
+        'Write mode': "append only the definition's",
+      });
+      expect(isTabShown(panel, 'Metadata')).toBe(true);
+      // the flow waits behind Flow
+      expect(
+        within(panel).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
+      ).toBeNull();
+
+      await pick(editorGroup, 'OPEN_CLIENT_POSITIONS');
+      const other = getViewPanel(editorGroup, 'OPEN_CLIENT_POSITIONS');
+      expect(isTabShown(other, 'Metadata')).toBe(true);
+      expect(
+        getProperties(
+          within(other).getByLabelText('Metadata of OPEN_CLIENT_POSITIONS'),
+        ),
+      ).toMatchObject({
+        'Primary key': 'BUSINESS_DATE, CLIENT_ACCOUNT_ID, INSTRUMENT_ID',
+        Classification: 'DP20',
+        Reads: 'CLIENT_POSITIONS',
+      });
+
+      await showTab(other, 'Flow');
+      await findFlowNodes(other, 3);
     },
   );
 
@@ -324,8 +491,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
           .getByTitle('POSITIONS_BY_LEGAL_ENTITY')
           .getAttribute('aria-selected'),
       ).toBe('false');
-      expect(getReads(panel)).toBe('Reads CLIENT_POSITIONS');
-      within(panel).getByText('DP20');
+      expect(getHeadChips(panel)).toEqual(['DP20']);
       expect(
         within(editorGroup).queryByLabelText('POSITIONS_BY_LEGAL_ENTITY'),
       ).toBeNull();
@@ -378,7 +544,8 @@ describe('The Definition tab of an ingest definition with materialized views', (
         within(panel).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
       ).toBeNull();
       // what it reads comes from its function, flow or none
-      expect(getReads(panel)).toBe('Reads EOD_POSITIONS');
+      expect((await getMetadata(panel)).Reads).toBe('EOD_POSITIONS');
+      await showTab(panel, 'Flow');
       // the engine writes the view's own function, with the definition's
       // other lambdas, as the editor opens
       expect(lambdasToPureCode).toHaveBeenCalledTimes(1);
@@ -403,7 +570,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
 
   test(
     integrationTest(
-      "Pure shows the whole definition's Pure under today's header, and Flow comes back to the view picked",
+      "Pure shows the whole definition's Pure under today's header, and Overview comes back to the view picked",
     ),
     async () => {
       const { editorGroup } = await setUp();
@@ -437,7 +604,9 @@ describe('The Definition tab of an ingest definition with materialized views', (
       ]);
 
       await act(async () => {
-        fireEvent.click(within(getViewSwitch(editorGroup)).getByText('Flow'));
+        fireEvent.click(
+          within(getViewSwitch(editorGroup)).getByText('Overview'),
+        );
       });
       await findFlowNodes(
         getViewPanel(editorGroup, 'OPEN_CLIENT_POSITIONS'),
@@ -448,7 +617,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
 
   test(
     integrationTest(
-      "While the flow shows, the header keeps View SQL and Create MatView, and the view's head has its own Edit in Cube and Lineage",
+      "While the Overview shows, the header keeps View SQL and Create MatView, and the view's head has its own Edit in Cube and Lineage",
     ),
     async () => {
       const { editorStore, editorGroup, renderResult } = await setUp();
@@ -578,7 +747,7 @@ describe('The Definition tab of an ingest definition with materialized views', (
 describe("The Definition tab's data sets, beside the materialized views", () => {
   test(
     integrationTest(
-      'Picking a data set shows its key, the views that read it, and its columns, read-only, while no view is picked',
+      'Picking a data set shows its columns, read-only, on Schema, and everything else it says on Metadata, while no view is picked',
     ),
     async () => {
       const { editorGroup } = await setUp();
@@ -602,15 +771,10 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
         within(editorGroup).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
       ).toBeNull();
 
-      expect(
-        Array.from(
-          panel.querySelectorAll('.ingest-definition-flow__view__chip'),
-        ).map((chip) => chip.textContent),
-      ).toEqual(['BUSINESS_DATE', 'POSITION_ID']);
+      // its classification and residency beside its name, then its Schema
+      expect(getHeadChips(panel)).toEqual(['DP20', 'US only']);
       within(panel).getByText('Read-only here: edit data sets in text mode.');
-      expect(getReads(panel)).toBe(
-        'Read by 2 views: POSITIONS_BY_LEGAL_ENTITY, RANKED_POSITIONS',
-      );
+      expect(isTabShown(panel, 'Schema')).toBe(true);
 
       // View SQL's headers, and Key
       const grid = within(panel).getByLabelText('Columns of EOD_POSITIONS');
@@ -620,8 +784,14 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
           (header) => header.textContent,
         ),
       ).toEqual(['Column Name', 'Column Type', 'Multiplicity', 'Key']);
+      // a column's description, under its name
       expect(getColumnRows(grid).slice(0, 2)).toEqual([
-        ['BUSINESS_DATE', 'StrictDate', '[1] - Required', 'Yes'],
+        [
+          'BUSINESS_DATEThe business day the position is as of',
+          'StrictDate',
+          '[1] - Required',
+          'Yes',
+        ],
         ['POSITION_ID', 'Varchar(32)', '[1] - Required', 'Yes'],
       ]);
       expect(getColumnRows(grid).at(-1)).toEqual([
@@ -633,6 +803,32 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
       // its type's path, in a tooltip: a precise primitive's is its name
       expect(within(grid).getAllByTitle('Varchar').length).toBeGreaterThan(0);
       within(panel).getByText('9 columns, as the definition declares them.');
+
+      // everything else it says, a setting it takes from the definition
+      // saying so
+      expect(await getMetadata(panel)).toEqual({
+        'Primary key': 'BUSINESS_DATE, POSITION_ID',
+        Classification: 'DP20',
+        Residency: 'US',
+        'Read by': 'POSITIONS_BY_LEGAL_ENTITY, RANKED_POSITIONS',
+        'Write mode': "append only the definition's",
+        Deletes: 'A row whose STATUS is DELETED',
+        'Lookup indexes': 'Equality on POSITION_ID',
+        Format: "CSV the definition's",
+      });
+      expect(
+        within(panel).queryByLabelText('Columns of EOD_POSITIONS'),
+      ).toBeNull();
+
+      // the tab stays as another data set is picked, to compare them
+      await pick(editorGroup, 'INSTRUMENTS');
+      const instruments = getViewPanel(editorGroup, 'INSTRUMENTS');
+      expect(isTabShown(instruments, 'Metadata')).toBe(true);
+      expect(
+        getProperties(
+          within(instruments).getByLabelText('Metadata of INSTRUMENTS'),
+        )['Write mode'],
+      ).toBe('batch milestoned its own');
     },
   );
 
@@ -647,13 +843,14 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
         5,
       );
 
-      await followLink(
-        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
-        'LEGAL_ENTITIES',
+      const view = getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY');
+      expect((await getMetadata(view)).Reads).toBe(
+        'EOD_POSITIONS, LEGAL_ENTITIES',
       );
+      await followLink(view, 'LEGAL_ENTITIES');
       const dataSet = getViewPanel(editorGroup, 'LEGAL_ENTITIES');
-      expect(getReads(dataSet)).toBe(
-        'Read by 1 view: POSITIONS_BY_LEGAL_ENTITY',
+      expect((await getMetadata(dataSet))['Read by']).toBe(
+        'POSITIONS_BY_LEGAL_ENTITY',
       );
       expect(
         within(getViewList(editorGroup))
@@ -662,10 +859,11 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
       ).toBe('true');
 
       await followLink(dataSet, 'POSITIONS_BY_LEGAL_ENTITY');
-      await findFlowNodes(
-        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
-        5,
-      );
+      // back on the view, on the tab it was on
+      const back = getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY');
+      expect(isTabShown(back, 'Metadata')).toBe(true);
+      await showTab(back, 'Flow');
+      await findFlowNodes(back, 5);
       expect(
         within(getViewList(editorGroup))
           .getByTitle('POSITIONS_BY_LEGAL_ENTITY')
@@ -679,10 +877,9 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
 
       // a view Cube can't draw reads its data sets too
       await pick(editorGroup, 'RANKED_POSITIONS');
-      await followLink(
-        getViewPanel(editorGroup, 'RANKED_POSITIONS'),
-        'EOD_POSITIONS',
-      );
+      const ranked = getViewPanel(editorGroup, 'RANKED_POSITIONS');
+      await showTab(ranked, 'Metadata');
+      await followLink(ranked, 'EOD_POSITIONS');
       getViewPanel(editorGroup, 'EOD_POSITIONS');
     },
   );
@@ -700,7 +897,6 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
 
       await pick(editorGroup, 'INSTRUMENTS');
       const panel = getViewPanel(editorGroup, 'INSTRUMENTS');
-      expect(getReads(panel)).toBe('Read by no view');
       const grid = within(panel).getByLabelText('Columns of INSTRUMENTS');
       await waitFor(() => expect(getColumnRows(grid)).toHaveLength(5));
       expect(getColumnRows(grid)).toEqual([
@@ -733,6 +929,10 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
       within(panel).getByText(
         '2 columns as the definition declares them, then 3 its write mode, batch milestoned, adds.',
       );
+      expect(await getMetadata(panel)).toMatchObject({
+        'Read by': 'No view',
+        'Write mode': 'batch milestoned its own',
+      });
     },
   );
 
@@ -750,11 +950,13 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
       await pick(editorGroup, 'PENDING_FEED');
       const panel = getViewPanel(editorGroup, 'PENDING_FEED');
       within(panel).getByText('No columns declared.');
-      within(panel).getByText('No key');
-      expect(getReads(panel)).toBe('Read by no view');
       expect(
         within(panel).queryByLabelText('Columns of PENDING_FEED'),
       ).toBeNull();
+      expect(await getMetadata(panel)).toMatchObject({
+        'Primary key': 'None',
+        'Read by': 'No view',
+      });
     },
   );
 });
@@ -762,7 +964,7 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
 describe('The Definition tab of an ingest definition without materialized views', () => {
   test(
     integrationTest(
-      "Is the definition's Pure under today's header, with no Flow | Pure and nothing of Cube loaded",
+      "Opens on the Overview too: the definition's section, then its data sets, the first one picked, with nothing of Cube loaded",
     ),
     async () => {
       const loadEntry = jest.spyOn(
@@ -770,24 +972,39 @@ describe('The Definition tab of an ingest definition without materialized views'
         'loadDefinitionFlowEntry',
       );
       const { editorGroup } = await setUp(PLAIN_INGEST_PATH);
-      await within(editorGroup).findByText(DEFINITION_PURE);
       expect(
-        within(editorGroup).queryByLabelText('Show the definition as'),
-      ).toBeNull();
+        within(getViewSwitch(editorGroup))
+          .getByText('Overview')
+          .getAttribute('aria-pressed'),
+      ).toBe('true');
+      within(getDefinitionSection(editorGroup)).getByText(
+        'ReferenceDataIngest',
+      );
+
+      // its data sets alone, its first one picked, on its Schema
+      expect(getViewRows(editorGroup)).toEqual(['LEGAL_ENTITIES | 3 columns']);
       expect(
-        within(editorGroup).queryByLabelText(
-          'Materialized views and data sets',
+        Array.from(
+          getViewList(editorGroup).querySelectorAll(
+            '.ingest-definition-flow__list__title',
+          ),
+          (title) => title.textContent,
         ),
-      ).toBeNull();
-      // Lineage is there, disabled, as no view has any; Create MatView has no
-      // view to edit
-      expect(getHeaderActions(editorGroup)).toEqual([
-        'Lineage',
-        'Create MatView',
-      ]);
-      expect(
-        within(editorGroup).getByText('Lineage').closest('button')?.disabled,
-      ).toBe(true);
+      ).toEqual(['Data sets1']);
+      const panel = getViewPanel(editorGroup, 'LEGAL_ENTITIES');
+      expect(isTabShown(panel, 'Schema')).toBe(true);
+      const grid = within(panel).getByLabelText('Columns of LEGAL_ENTITIES');
+      await waitFor(() => expect(getColumnRows(grid)).toHaveLength(3));
+
+      // no view, so no Lineage: Create MatView makes its first one
+      expect(getHeaderActions(editorGroup)).toEqual(['Create MatView']);
+      expect(loadEntry).not.toHaveBeenCalled();
+
+      // its Pure, one click away
+      await act(async () => {
+        fireEvent.click(within(getViewSwitch(editorGroup)).getByText('Pure'));
+      });
+      await within(editorGroup).findByText(DEFINITION_PURE);
       expect(loadEntry).not.toHaveBeenCalled();
     },
   );
@@ -796,7 +1013,7 @@ describe('The Definition tab of an ingest definition without materialized views'
 describe('The Definition tab of an ingest definition whose content Studio cannot read', () => {
   test(
     integrationTest(
-      "Is the definition's Pure, saying why, with no Flow | Pure and nothing of Cube loaded",
+      "Is the definition's Pure, saying why, with no Overview | Pure and nothing of Cube loaded",
     ),
     async () => {
       const loadEntry = jest.spyOn(

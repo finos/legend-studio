@@ -21,13 +21,9 @@ import {
   getIngestWriteModeColumns,
   getMultiplicityPrettyDescription,
   getRelationColumnTypeLabel,
-  IngestAppendOnlyWriteMode,
-  IngestBatchMilestonedBusinessTemporalWriteMode,
-  IngestBatchMilestonedWriteMode,
   IngestDefinition,
   IngestFunctionSource,
   IngestSerializedSource,
-  INTERNAL__UnknownIngestWriteMode,
   Multiplicity,
   type IngestDataset,
   type IngestDatasetReference,
@@ -40,7 +36,6 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeType,
-  isString,
   LogEvent,
   type GeneratorFn,
   type PlainObject,
@@ -48,27 +43,44 @@ import {
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import type { IngestDefinitionEditorState } from './IngestDefinitionEditorState.js';
+import { getIngestWriteModeLabel } from './IngestDefinitionSpecificationHelper.js';
 
-// An ingest definition's materialized views, one at a time, as Legend Cube
-// draws them, read-only: each view's function read into steps in the
-// browser, with no engine call, its data sets typed by the ingest
-// definitions of the graph. Cube's code loads the first time the flow shows,
-// so neither Studio's own load nor an ingest definition without views pays
-// for it. Beside the views, the list has the definition's other data sets,
-// with their columns. Everything shown is read from the definition's
-// specification (`IngestDefinitionEditorState.specification`), built from
-// its content by legend-graph: a definition whose content can't be read has
-// no flow, only its Pure.
+// An ingest definition's Overview, read-only: the definition's own settings,
+// then its materialized views and its other data sets. Each view shows as
+// Legend Cube draws it, its function read into steps in the browser, with no
+// engine call, its data sets typed by the ingest definitions of the graph;
+// each data set shows its columns. Cube's code loads the first time a view
+// shows, so neither Studio's own load nor an ingest definition without views
+// pays for it. Everything shown is read from the definition's specification
+// (`IngestDefinitionEditorState.specification`), built from its content by
+// legend-graph: a definition whose content can't be read has no Overview,
+// only its Pure.
 
 /** Legend Cube's definition flow: `@finos/legend-cube-builder/definition-flow` */
 export type IngestDefinitionFlowEntry = typeof CubeDefinitionFlowEntry;
 
-/** How the Definition tab shows an ingest definition with materialized views */
+/** How the Definition tab shows an ingest definition */
 export enum INGEST_DEFINITION_VIEW {
-  /** Its materialized views, one at a time, each as Legend Cube draws it */
-  FLOW = 'Flow',
+  /** Its own settings, then its materialized views and data sets, one at a time */
+  OVERVIEW = 'Overview',
   /** The whole definition as Pure */
   PURE = 'Pure',
+}
+
+/** What a data set of the Overview shows */
+export enum INGEST_DATA_SET_TAB {
+  /** Its columns */
+  SCHEMA = 'Schema',
+  /** Everything else it says, e.g. its key, write mode and storage */
+  METADATA = 'Metadata',
+}
+
+/** What a materialized view of the Overview shows */
+export enum INGEST_MATERIALIZED_VIEW_TAB {
+  /** Its function, as Legend Cube draws it */
+  FLOW = 'Flow',
+  /** Everything else it says, e.g. its key, what it reads and its storage */
+  METADATA = 'Metadata',
 }
 
 /** Why a view's flow can't be shown, when Cube didn't refuse its function */
@@ -93,24 +105,6 @@ export type IngestMaterializedViewReading =
 export const getMaterializedViewFunction = (view: IngestDataset): RawLambda =>
   guaranteeType(view.source, IngestFunctionSource).function;
 
-/** A write mode, in words: `batch milestoned`; one this doesn't know, by its name */
-export const getIngestWriteModeLabel = (writeMode: IngestWriteMode): string => {
-  if (writeMode instanceof IngestAppendOnlyWriteMode) {
-    return 'append only';
-  } else if (writeMode instanceof IngestBatchMilestonedWriteMode) {
-    return 'batch milestoned';
-  } else if (
-    writeMode instanceof IngestBatchMilestonedBusinessTemporalWriteMode
-  ) {
-    return 'batch milestoned business temporal';
-  }
-  const type =
-    writeMode instanceof INTERNAL__UnknownIngestWriteMode
-      ? writeMode.content._type
-      : undefined;
-  return isString(type) ? type.replaceAll('_', ' ') : 'unknown';
-};
-
 /** A column of a data set's table: one it declares, or one its write mode adds */
 export interface IngestDataSetColumnRow {
   readonly name: string;
@@ -121,6 +115,8 @@ export interface IngestDataSetColumnRow {
   /** How many values it holds, as View SQL's schema says it: `[1] - Required` */
   readonly multiplicity: string;
   readonly isPrimaryKey: boolean;
+  /** What the definition says it holds, if it says */
+  readonly description: string | undefined;
   /** The write mode that adds it, for a column the definition doesn't declare */
   readonly addedBy: IngestWriteMode | undefined;
 }
@@ -172,6 +168,7 @@ export const getIngestDataSetColumns = (
         typePath: unresolvedType ?? column.genericType.value.rawType.path,
         multiplicity: getMultiplicityPrettyDescription(column.multiplicity),
         isPrimaryKey: dataset.primaryKey.includes(column.name),
+        description: column.description,
         addedBy: undefined,
       };
     },
@@ -203,6 +200,7 @@ export const getIngestDataSetColumns = (
         typePath: type,
         multiplicity: getMultiplicityPrettyDescription(Multiplicity.ONE),
         isPrimaryKey: false,
+        description: undefined,
         addedBy: writeMode,
       });
     });
@@ -219,12 +217,18 @@ export const getIngestDataSetColumns = (
 
 export class IngestDefinitionFlowState {
   readonly editorState: IngestDefinitionEditorState;
-  /** Flow until the user picks Pure */
-  view = INGEST_DEFINITION_VIEW.FLOW;
+  /** The Overview until the user picks Pure */
+  view = INGEST_DEFINITION_VIEW.OVERVIEW;
   /** The view picked in the list; the first view until one is picked */
   selectedViewName: string | undefined;
   /** The data set picked in the list, which shows instead of a view; none until one is picked */
   selectedDataSetName: string | undefined;
+  /** Whether the definition's section shows all its settings, not only its main ones */
+  isDefinitionOpen = false;
+  /** What each data set shows, kept as another is picked, to compare them */
+  dataSetTab = INGEST_DATA_SET_TAB.SCHEMA;
+  /** What each view shows, kept as another is picked */
+  viewTab = INGEST_MATERIALIZED_VIEW_TAB.FLOW;
   /** Cube's definition flow, once loaded */
   entry: IngestDefinitionFlowEntry | undefined;
   /** Why Cube's definition flow didn't load, if it didn't */
@@ -236,6 +240,9 @@ export class IngestDefinitionFlowState {
       view: observable,
       selectedViewName: observable,
       selectedDataSetName: observable,
+      isDefinitionOpen: observable,
+      dataSetTab: observable,
+      viewTab: observable,
       entry: observable.ref,
       entryError: observable.ref,
       specification: computed,
@@ -243,12 +250,16 @@ export class IngestDefinitionFlowState {
       selectedView: computed,
       dataSets: computed,
       selectedDataSet: computed,
+      shownDataSet: computed,
       dataSetColumns: computed,
       viewReads: computed,
       readings: computed,
       setView: action,
       selectView: action,
       selectDataSet: action,
+      setDefinitionOpen: action,
+      setDataSetTab: action,
+      setViewTab: action,
       resetEntry: action,
       loadEntry: flow,
     });
@@ -292,6 +303,17 @@ export class IngestDefinitionFlowState {
     return name === undefined
       ? undefined
       : this.dataSets.find((dataSet) => dataSet.name === name);
+  }
+
+  /**
+   * The data set the Overview shows: the one picked, else, for a definition
+   * with no views, its first one
+   */
+  get shownDataSet(): IngestDataset | undefined {
+    return (
+      this.selectedDataSet ??
+      (this.materializedViews.length ? undefined : this.dataSets[0])
+    );
   }
 
   /** Each data set's columns, as its table shows them, by the data set's name */
@@ -401,6 +423,18 @@ export class IngestDefinitionFlowState {
 
   selectDataSet(name: string): void {
     this.selectedDataSetName = name;
+  }
+
+  setDefinitionOpen(isOpen: boolean): void {
+    this.isDefinitionOpen = isOpen;
+  }
+
+  setDataSetTab(tab: INGEST_DATA_SET_TAB): void {
+    this.dataSetTab = tab;
+  }
+
+  setViewTab(tab: INGEST_MATERIALIZED_VIEW_TAB): void {
+    this.viewTab = tab;
   }
 
   /** Legend Cube's definition flow, in a chunk of its own, shared with the data product viewer's */

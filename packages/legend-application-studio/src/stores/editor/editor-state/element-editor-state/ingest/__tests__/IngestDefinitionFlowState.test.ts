@@ -27,10 +27,8 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import type { Entity } from '@finos/legend-storage';
-import {
-  getIngestDataSetColumns,
-  getIngestWriteModeLabel,
-} from '../IngestDefinitionFlowState.js';
+import { getIngestDataSetColumns } from '../IngestDefinitionFlowState.js';
+import { getIngestWriteModeLabel } from '../IngestDefinitionSpecificationHelper.js';
 
 // The data sets' columns, as their table shows them, read from the
 // definition's specification, which legend-graph builds from its content
@@ -42,6 +40,7 @@ interface TestColumn {
   path: string;
   params?: number[];
   multiplicity?: { lowerBound: number; upperBound?: number };
+  description?: string;
 }
 
 const column = (
@@ -78,6 +77,7 @@ const dataSet = (
           })),
         },
         multiplicity: each.multiplicity,
+        ...(each.description ? { description: each.description } : {}),
       })),
     },
   },
@@ -122,7 +122,9 @@ const describeDataSets = async (
             (row) =>
               `${row.name}: ${row.type} ${row.multiplicity}${
                 row.isPrimaryKey ? ' (key)' : ''
-              }${row.addedBy ? ` (added by ${getIngestWriteModeLabel(row.addedBy)})` : ''}`,
+              }${row.addedBy ? ` (added by ${getIngestWriteModeLabel(row.addedBy)})` : ''}${
+                row.description ? `: ${row.description}` : ''
+              }`,
           ),
           declaredCount: columns.declaredCount,
           notes: columns.notes,
@@ -148,7 +150,10 @@ test(
         writeMode: { _type: 'batch_milestoned' },
         datasets: [
           dataSet('TRADES', [
-            column('TRADE_ID', 'BigInt'),
+            {
+              ...column('TRADE_ID', 'BigInt'),
+              description: 'The trade, as the booking system names it',
+            },
             column('DESK', 'Varchar', [20]),
             column('PRICE', 'Decimal', [], { lowerBound: 0, upperBound: 1 }),
             column('TRADED_ON', 'StrictDate'),
@@ -168,7 +173,8 @@ test(
       TRADES: {
         writeMode: 'batch milestoned',
         rows: [
-          'TRADE_ID: BigInt [1] - Required (key)',
+          // its description, where the definition gives one
+          'TRADE_ID: BigInt [1] - Required (key): The trade, as the booking system names it',
           'DESK: Varchar(20) [1] - Required',
           'PRICE: Decimal [0..1] - Optional',
           'TRADED_ON: StrictDate [1] - Required',

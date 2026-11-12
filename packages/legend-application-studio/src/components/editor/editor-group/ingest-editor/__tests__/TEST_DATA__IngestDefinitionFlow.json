@@ -8,6 +8,34 @@
         "_type": "ingestDefinition",
         "name": "TradePositionsIngest",
         "package": "markets::ingest",
+        "owner": {
+          "_type": "kerberos",
+          "id": "svc_positions"
+        },
+        "readMode": {
+          "_type": "Delta",
+          "format": {
+            "_type": "CSV",
+            "fieldDelimiter": "|",
+            "headerRowsToSkipCount": 1,
+            "recordDelimiter": "\n",
+            "parseHeader": true
+          }
+        },
+        "writeMode": {
+          "_type": "append_only"
+        },
+        "datasetGroup": "POSITIONS",
+        "compute": "markets::compute::MarketsSnowflake",
+        "taggedValues": [
+          {
+            "tag": {
+              "profile": "meta::pure::profiles::doc",
+              "value": "doc"
+            },
+            "value": "End-of-day positions for the Markets desks"
+          }
+        ],
         "datasets": [
           {
             "name": "EOD_POSITIONS",
@@ -31,7 +59,8 @@
                     "multiplicity": {
                       "lowerBound": 1,
                       "upperBound": 1
-                    }
+                    },
+                    "description": "The business day the position is as of"
                   },
                   {
                     "name": "POSITION_ID",
@@ -193,6 +222,24 @@
                   }
                 ]
               }
+            },
+            "privacyClassification": {
+              "sensitivity": "DP20"
+            },
+            "dataResidencyJurisdictions": [
+              {
+                "region": "US"
+              }
+            ],
+            "lookupIndexes": [
+              {
+                "_type": "equality",
+                "column": "POSITION_ID"
+              }
+            ],
+            "deleteIndicatorField": {
+              "deleteField": "STATUS",
+              "deleteValues": ["DELETED"]
             }
           },
           {

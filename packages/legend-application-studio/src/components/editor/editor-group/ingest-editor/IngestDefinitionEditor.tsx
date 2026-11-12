@@ -189,10 +189,11 @@ export const IngestDefinitionEditor = observer(() => {
   // the views Cube can open to edit (Edit MatView, PLAN §11.18), read as
   // Edit MatView reads them: also when the specification can't be built
   const editableViews = getIngestMaterializedViews(ingestDef);
-  // with materialized views, the tab opens on their flows, each view's head
-  // holding its Lineage and Edit in Cube; without, it is the definition's Pure
-  const hasFlow = flowState.materializedViews.length > 0;
-  const showsFlow = hasFlow && flowState.view === INGEST_DEFINITION_VIEW.FLOW;
+  // a definition Studio can read opens on its Overview, each view's head
+  // holding its Lineage and Edit in Cube; one it can't is its Pure
+  const hasOverview = Boolean(flowState.specification);
+  const showsOverview =
+    hasOverview && flowState.view === INGEST_DEFINITION_VIEW.OVERVIEW;
   const isValidForLineage = ingestDefinitionEditorState.validForLineageViewer;
   const selectedTab = ingestDefinitionEditorState.selectedTab;
 
@@ -292,7 +293,7 @@ export const IngestDefinitionEditor = observer(() => {
                 <PanelHeader title="deployment" darkMode={true}>
                   <PanelHeaderActions>
                     <div className="panel__header__actions">
-                      {!showsFlow && (
+                      {!showsOverview && (
                         <div className="btn__dropdown-combo btn__dropdown-combo--primary">
                           <button
                             className="btn__dropdown-combo__label"
@@ -344,7 +345,7 @@ export const IngestDefinitionEditor = observer(() => {
                             Create MatView
                           </div>
                         </button>
-                        {!showsFlow && editableViews.length > 0 && (
+                        {!showsOverview && editableViews.length > 0 && (
                           <ControlledDropdownMenu
                             className="btn__dropdown-combo__dropdown-btn"
                             title="Edit a materialized view with Cube"
@@ -393,7 +394,7 @@ export const IngestDefinitionEditor = observer(() => {
                       .isInProgress
                   }
                 />
-                {hasFlow && (
+                {hasOverview && (
                   <div className="ingest-definition-editor__view-bar">
                     <IngestDefinitionViewSwitch flowState={flowState} />
                   </div>
@@ -407,7 +408,7 @@ export const IngestDefinitionEditor = observer(() => {
                     shows only its Pure.
                   </div>
                 )}
-                {showsFlow ? (
+                {showsOverview ? (
                   <IngestDefinitionFlow
                     editorState={ingestDefinitionEditorState}
                   />
