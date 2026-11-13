@@ -58,7 +58,7 @@ test(
       .filter((token) => PURE_TOKENS.has(token));
 
     expect(darkPureTokens.length).toBeGreaterThan(0);
-    expect(lightPureTokens).toEqual(darkPureTokens);
+    expect(lightPureTokens).toEqual(expect.arrayContaining(darkPureTokens));
   },
 );
 

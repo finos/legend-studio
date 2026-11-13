@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { at, isNonNullable, isString } from '@finos/legend-shared';
+import { at, isString } from '@finos/legend-shared';
 import type { editor as monacoEditorAPI } from 'monaco-editor';
 
 type VSCodeThemeData = {
@@ -77,8 +77,10 @@ const parseVSCodeTheme = (
       baseRule.fontStyle = tokenColor.settings.fontStyle;
     }
 
+    // NOTE: an entry with no scope holds the theme's global settings, which
+    // `monaco-editor` takes as the rule of the empty token
     scopes.forEach((scope) => {
-      if (isNonNullable(scope) || !Object.keys(baseRule).length) {
+      if (!Object.keys(baseRule).length) {
         return;
       }
       const rule = {
