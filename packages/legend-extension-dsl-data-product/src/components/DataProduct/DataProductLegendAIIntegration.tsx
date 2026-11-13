@@ -24,6 +24,7 @@ import {
 import {
   LegendAIChat,
   LegendAIErrorBoundary,
+  collectLegendAIChatModes,
   findLegendAIPlugin,
   inferServiceRelationshipsFromAssociations,
   extractModelContext,
@@ -182,6 +183,13 @@ const DataProductLegendAIIntegrationInner = observer(
     const legendAIPlugin = useMemo(
       () =>
         findLegendAIPlugin(
+          dataProductViewerState.applicationStore.pluginManager.getApplicationPlugins(),
+        ),
+      [dataProductViewerState],
+    );
+    const chatModes = useMemo(
+      () =>
+        collectLegendAIChatModes(
           dataProductViewerState.applicationStore.pluginManager.getApplicationPlugins(),
         ),
       [dataProductViewerState],
@@ -415,6 +423,7 @@ const DataProductLegendAIIntegrationInner = observer(
     return (
       <>
         <LegendAIChat
+          modes={chatModes}
           services={services}
           coordinates={coordinates}
           config={resolvedConfig}

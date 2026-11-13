@@ -22,6 +22,34 @@ import { useEffect } from 'react';
 import mermaid from 'mermaid';
 import type { PluggableList } from 'unified';
 
+/**
+ * What the viewer renders with unless the caller passes its own `components`,
+ * which replace these: a caller that adds a component of its own and still
+ * wants a mermaid diagram spreads this in.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const MARKDOWN_DEFAULT_COMPONENTS: Record<string, any> = {
+  // customize the rendering of the <code> block, if the language is mermaid
+  // the class name must include `mermaid` and it will get picked up by the mermaid renderer
+  code: (_props: {
+    children: React.ReactNode;
+    className?: string | undefined;
+    node: unknown;
+  }) => {
+    const { children, className, node, ...rest } = _props;
+    const match = /language-(?<language>\w+)/.exec(className ?? '');
+    return match?.groups?.language ? (
+      <code {...rest} className={clsx(match.groups.language)}>
+        {children}
+      </code>
+    ) : (
+      <code {...rest} className={className}>
+        {children}
+      </code>
+    );
+  },
+};
+
 export const MarkdownTextViewer: React.FC<{
   value: MarkdownText;
   className?: string | undefined;
@@ -49,29 +77,7 @@ export const MarkdownTextViewer: React.FC<{
       <ReactMarkdown
         remarkPlugins={[remarkGFM]}
         rehypePlugins={props.rehypePlugins}
-        components={
-          props.components ?? {
-            // customize the rendering of the <code> block, if the language is mermaid
-            // the class name must include `mermaid` and it will get picked up by the mermaid renderer
-            code: (_props: {
-              children: React.ReactNode;
-              className?: string | undefined;
-              node: unknown;
-            }) => {
-              const { children, className, node, ...rest } = _props;
-              const match = /language-(?<language>\w+)/.exec(className ?? '');
-              return match?.groups?.language ? (
-                <code {...rest} className={clsx(match.groups.language)}>
-                  {children}
-                </code>
-              ) : (
-                <code {...rest} className={className}>
-                  {children}
-                </code>
-              );
-            },
-          }
-        }
+        components={props.components ?? MARKDOWN_DEFAULT_COMPONENTS}
       >
         {props.value.value}
       </ReactMarkdown>

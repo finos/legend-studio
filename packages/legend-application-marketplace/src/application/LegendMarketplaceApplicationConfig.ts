@@ -30,6 +30,7 @@ import {
   SerializationFactory,
   usingModelSchema,
 } from '@finos/legend-shared';
+import { parseProjectIdentifier } from '@finos/legend-storage';
 import {
   type LegendApplicationConfigurationData,
   type LegendApplicationConfigurationInput,
@@ -546,6 +547,14 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         ? {}
         : { enthubRequestAccessUrl: legendAIData.enthubRequestAccessUrl }),
     };
+  }
+
+  /** The Studio instance serving *projectId*'s SDLC, matched on the project id's prefix; undefined when none is configured. */
+  getStudioInstanceUrl(projectId: string): string | undefined {
+    const prefix = parseProjectIdentifier(projectId).prefix;
+    return this.studioInstances.find(
+      (instance) => instance.sdlcProjectIDPrefix === prefix,
+    )?.url;
   }
 
   override getDefaultApplicationStorageKey(): string {

@@ -21,15 +21,12 @@ import {
   type EditorStore,
 } from '@finos/legend-application-studio';
 import {
-  DataSpaceViewerState,
+  type DataSpaceViewerState,
   EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
+  previewDataSpace,
 } from '@finos/legend-extension-dsl-data-space/application';
-import {
-  DSL_DataSpace_getGraphManagerExtension,
-  type DataSpaceAnalysisResult,
-  type DataSpace,
-} from '@finos/legend-extension-dsl-data-space/graph';
-import { InMemoryGraphData, type Class } from '@finos/legend-graph';
+import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import type { Class } from '@finos/legend-graph';
 import {
   type GeneratorFn,
   guaranteeNonNullable,
@@ -115,10 +112,10 @@ export class DataSpacePreviewState extends EditorExtensionState {
           .currentProjectConfiguration.artifactId;
       const versionId = 'LOCAL';
 
-      // analyze data product
-      const analysisResult = (yield DSL_DataSpace_getGraphManagerExtension(
-        this.editorStore.graphManagerState.graphManager,
-      ).analyzeDataSpace(
+      // the editor's graph, already built: analysed and viewed as is
+      this.dataSpaceViewerState = (yield previewDataSpace(
+        this.editorStore.applicationStore,
+        this.editorStore.graphManagerState,
         dataSpace.path,
         async () =>
           this.editorStore.graphManagerState.graph.allOwnElements
@@ -135,21 +132,9 @@ export class DataSpacePreviewState extends EditorExtensionState {
                   ),
               ),
             ),
-        undefined,
-        this.loadDataSpaceState,
-      )) as DataSpaceAnalysisResult;
-
-      this.dataSpaceViewerState = new DataSpaceViewerState(
-        this.editorStore.applicationStore,
-        this.editorStore.graphManagerState,
-        groupId,
-        artifactId,
-        versionId,
-        analysisResult,
+        { groupId, artifactId, versionId },
         this.editorStore.depotServerClient,
         {
-          retrieveGraphData: () =>
-            new InMemoryGraphData(this.editorStore.graphManagerState.graph),
           queryDataSpace: () => {
             this.editorStore.applicationStore.notificationService.notifyWarning(
               'This feature is not supported in preview mode',
@@ -205,7 +190,8 @@ export class DataSpacePreviewState extends EditorExtensionState {
             }
           },
         },
-      );
+        this.loadDataSpaceState,
+      )) as DataSpaceViewerState;
       this.loadDataSpaceState.pass();
     } catch (error) {
       assertErrorThrown(error);

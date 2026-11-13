@@ -67,7 +67,6 @@ import {
   type ProjectGAVCoordinates,
   type StoredFileGeneration,
   parseGAVCoordinates,
-  parseProjectIdentifier,
 } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
 import {
@@ -912,18 +911,14 @@ export class LegendMarketplaceProductViewerStore {
               );
             },
             viewSDLCProject: async (entityPath: string | undefined) => {
-              // find the matching SDLC instance
-              const projectIDPrefix = parseProjectIdentifier(
-                project.projectId,
-              ).prefix;
-              const matchingSDLCEntry =
-                this.marketplaceBaseStore.applicationStore.config.studioInstances.find(
-                  (entry) => entry.sdlcProjectIDPrefix === projectIDPrefix,
+              const studioUrl =
+                this.marketplaceBaseStore.applicationStore.config.getStudioInstanceUrl(
+                  project.projectId,
                 );
-              if (matchingSDLCEntry) {
+              if (studioUrl) {
                 this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl(
-                    matchingSDLCEntry.url,
+                    studioUrl,
                     project.projectId,
                     entityPath,
                   ),

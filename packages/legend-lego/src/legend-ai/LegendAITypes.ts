@@ -26,6 +26,7 @@ import {
 } from '@finos/legend-graph';
 import { filterByType } from '@finos/legend-shared';
 import type { LegendApplicationPlugin } from '@finos/legend-application';
+import type { LegendAIChatModeConfig } from './LegendAIChatMode_LegendApplicationPlugin_Extension.js';
 import {
   LegendAI_LegendApplicationPlugin_Extension,
   type LegendAIOrchestratorDataProductCoordinates,
@@ -234,6 +235,9 @@ export class LegendAIThinkingStep {
   id!: string;
   label!: string;
   status!: LegendAIThinkingStepStatus;
+  /** When the step was first seen, and seen to end (ms since epoch); shown as its time */
+  startedAt?: number | undefined;
+  endedAt?: number | undefined;
 }
 
 export enum LegendAIPythonCodeStatus {
@@ -963,6 +967,8 @@ export enum LegendAISelfHealKind {
 
 export interface LegendAIChatProps {
   services: TDSServiceSchema[];
+  /** The chat's modes, as `collectLegendAIChatModes` gathers them; with none, the chat is unchanged. */
+  modes?: LegendAIChatModeConfig[];
   coordinates: string;
   config: LegendAIConfig;
   metadata: LegendAIProductMetadata;

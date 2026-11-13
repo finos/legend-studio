@@ -81,3 +81,18 @@ describe(unitTest('LegendMarketplaceApplicationConfig - sdlc'), () => {
     ).toBeUndefined();
   });
 });
+
+describe(
+  unitTest('LegendMarketplaceApplicationConfig - Studio instance'),
+  () => {
+    test("a project is served by the Studio instance of its id's prefix", () => {
+      const config = TEST__getTestLegendMarketplaceApplicationConfig();
+      const [instance] = config.studioInstances;
+
+      expect(
+        config.getStudioInstanceUrl(`${instance?.sdlcProjectIDPrefix}-1234`),
+      ).toBe(instance?.url);
+      expect(config.getStudioInstanceUrl('UNKNOWN-1234')).toBeUndefined();
+    });
+  },
+);

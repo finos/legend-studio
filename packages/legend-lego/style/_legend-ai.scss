@@ -288,6 +288,52 @@
   }
 }
 
+.legend-ai__modes {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.legend-ai__mode {
+  padding: 0.4rem 1rem;
+  border: 0.1rem solid var(--qai-border);
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--qai-text-muted);
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    color: var(--qai-accent);
+    background: var(--qai-accent-subtle);
+  }
+}
+
+.legend-ai__mode--active,
+.legend-ai__mode--active:hover {
+  color: var(--qai-text-on-accent);
+  background: var(--qai-accent);
+  border-color: var(--qai-accent);
+}
+
+.legend-ai__mode-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+// A view kept mounted but not shown: a mode's chat, or the data chat while
+// a mode is on. Scoped under .legend-ai so it outranks each view's own
+// display rule (e.g. .legend-ai__conversation, defined later).
+.legend-ai .legend-ai__view--hidden {
+  display: none;
+}
+
 .legend-ai__conversation {
   flex: 1;
   overflow-y: auto;
@@ -1915,5 +1961,286 @@ body:has(.notification__position)
   .legend-ai-chat-toggle__icon,
   .legend-ai-chat-toggle__icon svg {
     animation: none;
+  }
+}
+
+// Building blocks for chats that drive a long-running process (e.g. a chat
+// mode): its panel above the conversation, actions, and what waits on the user.
+
+// How long something took; tabular digits so a counting time does not jitter.
+.legend-ai__elapsed {
+  margin-left: 0.5rem;
+  color: var(--qai-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  .legend-ai__process-running &,
+  .legend-ai__thinking-step & {
+    margin-left: auto;
+  }
+}
+
+.legend-ai__process {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  margin: 1rem 2.4rem 0;
+  padding: 0.8rem 1.2rem;
+  font-size: 1.25rem;
+  border: 1px solid var(--qai-border);
+  border-left: 0.3rem solid var(--qai-accent);
+  border-radius: 0.8rem;
+  background: var(--qai-bg-secondary);
+  box-shadow: var(--qai-shadow);
+}
+
+.legend-ai__process-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.legend-ai__process-title {
+  font-weight: 600;
+  color: var(--qai-text-primary);
+}
+
+.legend-ai__process-subtitle {
+  font-family: monospace;
+  color: var(--qai-text-muted);
+}
+
+.legend-ai__process-pill {
+  padding: 0.1rem 0.8rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border-radius: 1rem;
+
+  &--working,
+  &--waiting {
+    color: var(--qai-accent);
+    background: var(--qai-accent-subtle);
+  }
+
+  &--waiting {
+    font-weight: 600;
+  }
+
+  &--ready {
+    color: var(--qai-text-muted);
+    background: var(--qai-bg-elevated);
+  }
+}
+
+.legend-ai__process-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  padding: 0;
+  font-size: 1.25rem;
+  color: var(--qai-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+}
+
+.legend-ai__process-running {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--qai-text-secondary);
+}
+
+.legend-ai__process-waiting {
+  font-weight: 500;
+  color: var(--qai-accent);
+}
+
+.legend-ai__process-error {
+  color: var(--qai-error);
+}
+
+.legend-ai__process-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.2rem 0 0;
+  padding: 0.6rem 0 0;
+  list-style: none;
+  border-top: 1px solid var(--qai-border-light);
+}
+
+.legend-ai__process-step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  padding: 0.3rem 0;
+  font: inherit;
+  text-align: left;
+  color: var(--qai-text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.legend-ai__process-step-dot {
+  flex-shrink: 0;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--qai-text-muted);
+
+  .legend-ai__process-step--done & {
+    background: var(--qai-success);
+  }
+
+  .legend-ai__process-step--active & {
+    background: var(--qai-accent);
+  }
+
+  .legend-ai__process-step--error & {
+    background: var(--qai-error);
+  }
+}
+
+.legend-ai__process-step-name {
+  font-weight: 500;
+}
+
+.legend-ai__process-step-status {
+  margin-left: auto;
+  color: var(--qai-text-muted);
+}
+
+// One line until opened.
+.legend-ai__process-step-detail {
+  margin: 0 0 0.4rem 1.6rem;
+  overflow: hidden;
+  color: var(--qai-text-secondary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  &--open {
+    white-space: pre-wrap;
+  }
+}
+
+.legend-ai__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  padding: 0.6rem 2.4rem 0;
+  flex-shrink: 0;
+}
+
+.legend-ai__action-btn {
+  padding: 0.6rem 1.2rem;
+  font-size: 1.25rem;
+  color: var(--qai-text-primary);
+  text-decoration: none;
+  background: none;
+  border: 1px solid var(--qai-border);
+  border-radius: 0.8rem;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  &--primary {
+    color: var(--qai-text-on-accent);
+    background: var(--qai-accent);
+    border-color: var(--qai-accent);
+  }
+}
+
+// Between the conversation and the input box, never inside the conversation.
+.legend-ai__waiting {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  flex-shrink: 0;
+  max-height: 45%;
+  overflow-y: auto;
+  padding: 0 2.4rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.legend-ai__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  align-self: flex-start;
+  width: min(60rem, 100%);
+  padding: 1.2rem;
+  font-size: 1.4rem;
+  border: 1px solid var(--qai-border);
+  border-radius: 1rem;
+  background: var(--qai-bg-secondary);
+}
+
+.legend-ai__card-title {
+  font-weight: 500;
+}
+
+.legend-ai__card-actions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.legend-ai__card-preview {
+  max-height: 32rem;
+  margin: 0;
+  padding: 0.8rem;
+  overflow: auto;
+  font-size: 1.2rem;
+  white-space: pre-wrap;
+  background: var(--qai-bg-elevated);
+  border-radius: 0.6rem;
+}
+
+// In the input box's bottom-left, beside the other controls there.
+.legend-ai__attach-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 1.25rem;
+  color: var(--qai-text-muted);
+  background: none;
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--qai-text-primary);
+    background: var(--qai-bg-elevated);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  svg {
+    width: 1.2rem;
+    height: 1.2rem;
   }
 }

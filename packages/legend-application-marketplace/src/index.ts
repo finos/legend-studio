@@ -28,6 +28,10 @@ export {
   type LegendMarketplaceBaseStore,
 } from './stores/LegendMarketplaceBaseStore.js';
 export * from './application/LegendMarketplaceApplicationPlugin.js';
+export {
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioReviewUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateStudioWorkspaceUrl,
+} from './__lib__/LegendMarketplaceNavigation.js';
 export { LegendMarketplaceProductViewerStore } from './stores/lakehouse/LegendMarketplaceProductViewerStore.js';
 export { LegendMarketplaceSearchResultsStore } from './stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 export { ProductCardState } from './stores/lakehouse/dataProducts/ProductCardState.js';

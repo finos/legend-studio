@@ -594,15 +594,12 @@ export class NetworkClient {
 }
 
 /**
- * Create and download a file using data URI
+ * Save `blob` as a file. Binary content (e.g. a zip) must come here as a
+ * Blob: passed through `downloadFileUsingDataURI` as a string it would be
+ * corrupted.
  * See http://stackoverflow.com/questions/283956
  */
-export const downloadFileUsingDataURI = (
-  fileName: string,
-  content: string,
-  contentType: ContentType,
-): void => {
-  const blob = new Blob([content], { type: contentType });
+export const downloadBlob = (fileName: string, blob: Blob): void => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   if (typeof link.download === 'string') {
@@ -615,6 +612,15 @@ export const downloadFileUsingDataURI = (
     location.replace(url);
   }
 };
+
+/**
+ * Create and download a file using data URI
+ */
+export const downloadFileUsingDataURI = (
+  fileName: string,
+  content: string,
+  contentType: ContentType,
+): void => downloadBlob(fileName, new Blob([content], { type: contentType }));
 
 export const createUrlStringFromData = (
   data: string,
