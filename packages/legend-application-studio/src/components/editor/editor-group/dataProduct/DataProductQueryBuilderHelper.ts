@@ -76,17 +76,18 @@ export const queryDataProduct = async (
     );
     let accessor: DataProductAccessor | undefined;
     if (defaultExecutionContext instanceof LakehouseAccessPoint) {
-      const relationMetadata =
-        await editorStore.graphManagerState.graphManager.getLambdaRelationType(
+      const engineRelationType = (
+        await editorStore.graphManagerState.graphManager.getLambdaResolvedRelationType(
           defaultExecutionContext.func,
           editorStore.graphManagerState.graph,
-        );
+        )
+      ).relationType;
       accessor = resolveDataProductAccessor(
         dataProduct,
         defaultExecutionContext,
         editorStore.graphManagerState.graph,
         undefined,
-        relationMetadata,
+        engineRelationType,
       );
     }
     await flowResult(
