@@ -21,16 +21,13 @@ import {
   LogEvent,
   type GeneratorFn,
 } from '@finos/legend-shared';
+import { QUALITY_LEVEL } from '@finos/legend-extension-dsl-data-product';
 import type { DataSpaceViewerState } from './DataSpaceViewerState.js';
 import { DSL_DATASPACE_EVENT } from '../__lib__/DSL_DataSpace_Event.js';
 
-export enum DATA_SPACE_QUALITY_LEVEL {
-  DIAMOND = 'DIAMOND',
-  PLATINUM = 'PLATINUM',
-  GOLD = 'GOLD',
-  SILVER = 'SILVER',
-  BRONZE = 'BRONZE',
-}
+// The tiers are the same for a data product and a data space: one enum, defined with the quality
+// response models. This keeps the name existing consumers know it by.
+export { QUALITY_LEVEL as DATA_SPACE_QUALITY_LEVEL };
 
 // A step-by-step breakdown of every criterion behind the quality rating, so the UI can show
 // users a roadmap of what's already done and what's needed for the next tier.
@@ -45,7 +42,7 @@ export type DataSpaceQualityBreakdown = {
 };
 
 export type DataSpaceQualityResult = {
-  qualityLevel: DATA_SPACE_QUALITY_LEVEL;
+  qualityLevel: QUALITY_LEVEL;
   qualityBreakdown: DataSpaceQualityBreakdown;
 };
 
@@ -59,7 +56,7 @@ export type DataSpaceQualityResult = {
 // and the badge simply doesn't render.
 export class DataSpaceQualityState {
   readonly dataSpaceViewerState: DataSpaceViewerState;
-  qualityLevel: DATA_SPACE_QUALITY_LEVEL | undefined;
+  qualityLevel: QUALITY_LEVEL | undefined;
   qualityBreakdown: DataSpaceQualityBreakdown | undefined;
   readonly computingQualityState = ActionState.create();
 
@@ -75,7 +72,7 @@ export class DataSpaceQualityState {
     this.dataSpaceViewerState = dataSpaceViewerState;
   }
 
-  setQualityLevel(val: DATA_SPACE_QUALITY_LEVEL | undefined): void {
+  setQualityLevel(val: QUALITY_LEVEL | undefined): void {
     this.qualityLevel = val;
   }
 

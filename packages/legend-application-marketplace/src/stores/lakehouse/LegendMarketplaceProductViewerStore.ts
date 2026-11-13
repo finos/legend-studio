@@ -83,11 +83,13 @@ import {
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import {
   DataSpaceViewerState,
-  DATA_SPACE_QUALITY_LEVEL,
   type DataSpaceQualityResult,
   EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
 } from '@finos/legend-extension-dsl-data-space/application';
-import { DataSpaceQualityResponse } from '@finos/legend-server-marketplace';
+import {
+  DataSpaceQualityResponse,
+  DataProductQualityResponse,
+} from '@finos/legend-server-marketplace';
 import {
   type DataSpaceAnalysisResult,
   DSL_DataSpace_getGraphManagerExtension,
@@ -461,6 +463,19 @@ export class LegendMarketplaceProductViewerStore {
                 projectGAV,
               )
             : undefined,
+          fetchDataProductQuality:
+            async (): Promise<DataProductQualityResponse> => {
+              const rawResult =
+                await this.marketplaceBaseStore.marketplaceServerClient.dataProductDocQuality(
+                  this.marketplaceBaseStore.envState.lakehouseEnvironment,
+                  entitlementsDataProductDetails.id,
+                  entitlementsDataProductDetails.deploymentId,
+                  v1DataProduct.title ?? v1DataProduct.name,
+                );
+              return DataProductQualityResponse.serialization.fromJson(
+                rawResult,
+              );
+            },
         },
         this.marketplaceBaseStore.registryServerClient,
       );
@@ -1080,21 +1095,9 @@ export class LegendMarketplaceProductViewerStore {
                     analysisResult.path,
                     analysisResult.title ?? analysisResult.name,
                   );
-                const result =
-                  DataSpaceQualityResponse.serialization.fromJson(rawResult);
-                if (
-                  !Object.values(DATA_SPACE_QUALITY_LEVEL).includes(
-                    result.qualityLevel as DATA_SPACE_QUALITY_LEVEL,
-                  )
-                ) {
-                  throw new Error(
-                    `Unrecognized data space quality level: ${result.qualityLevel}`,
-                  );
-                }
-                return {
-                  qualityLevel: result.qualityLevel as DATA_SPACE_QUALITY_LEVEL,
-                  qualityBreakdown: result.qualityBreakdown,
-                };
+                return DataSpaceQualityResponse.serialization.fromJson(
+                  rawResult,
+                );
               },
           },
         );

@@ -100,6 +100,10 @@ import {
 } from '../__test-utils__/StateTestUtils.js';
 import type { DataProductAPGState } from '../../stores/DataProduct/DataProductAPGState.js';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
+import {
+  QUALITY_LEVEL,
+  type DataProductQualityResponse,
+} from '@finos/legend-server-marketplace';
 import { ENGINE_TEST_SUPPORT__getClassifierPathMapping } from '@finos/legend-graph/test';
 import { flowResult } from 'mobx';
 import type {
@@ -817,6 +821,47 @@ describe('DataProductViewer', () => {
         expect(screen.getByText('owner2@example.com')).toBeDefined();
         expect(screen.getByText('owner3@example.com')).toBeDefined();
       });
+    });
+
+    test('renders the quality badge and AI-Ready stamp when fetchDataProductQuality is wired up', async () => {
+      const qualityResult: DataProductQualityResponse = {
+        qualityLevel: QUALITY_LEVEL.DIAMOND,
+        qualityBreakdown: {
+          isDescriptionDocumented: true,
+          isAccessPointsPresent: true,
+          isAccessPointGroupDescriptionsDocumented: true,
+          isEveryAccessPointDocumented: true,
+          attributeCoverage: 1,
+          documentedAttributeCount: 10,
+          totalAttributeCount: 10,
+        },
+      };
+
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        undefined,
+        undefined,
+        { fetchDataProductQuality: async () => qualityResult },
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/AI Readiness Badge:/)).toBeDefined();
+      });
+      expect(screen.getByText('AI-Ready')).toBeDefined();
+    });
+
+    test('renders no quality badge when fetchDataProductQuality is not wired up', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+      );
+
+      expect(screen.queryByText(/AI Readiness Badge:/)).toBeNull();
     });
   });
 
