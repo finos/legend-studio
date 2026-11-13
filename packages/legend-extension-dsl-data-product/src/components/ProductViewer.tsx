@@ -62,6 +62,7 @@ import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalPr
 import type { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
 import { getHumanReadableIngestEnvName } from '../utils/LakehouseUtils.js';
 import { UserAvatarGroupWithPopover } from './DataProduct/UserAvatarGroupWithPopover.js';
+import { DataProductQualityEmote } from './DataProductQualityEmote.js';
 
 export const isDataProductViewerState = (
   state: BaseViewerState<SupportedProducts, SupportedLayoutStates>,
@@ -392,8 +393,20 @@ const ProductHeader = observer(
             )}
           </div>
 
-          {dataAccessState instanceof DataProductDataAccessState && (
-            <DataProductEnvironmentLabel dataAccessState={dataAccessState} />
+          {(productViewerState instanceof DataProductViewerState ||
+            dataAccessState instanceof DataProductDataAccessState) && (
+            <div className="data-product__viewer__header__actions-group">
+              {productViewerState instanceof DataProductViewerState && (
+                <DataProductQualityEmote
+                  qualityState={productViewerState.qualityState}
+                />
+              )}
+              {dataAccessState instanceof DataProductDataAccessState && (
+                <DataProductEnvironmentLabel
+                  dataAccessState={dataAccessState}
+                />
+              )}
+            </div>
           )}
           {isTerminalProductViewerState(productViewerState) && (
             <div className="data-product__viewer__header__navigation">

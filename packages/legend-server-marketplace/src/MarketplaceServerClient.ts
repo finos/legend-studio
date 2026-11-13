@@ -68,6 +68,7 @@ import type {
 import type { EntitySearchResponse } from './models/EntitySearchResult.js';
 import { SearchType } from './models/SearchType.js';
 import type { DataSpaceQualityResponse } from './models/DataSpaceQuality.js';
+import type { DataProductQualityResponse } from './models/DataProductQuality.js';
 
 export interface TrendingDataProductEntry {
   dataProductId?: string;
@@ -394,6 +395,35 @@ export class MarketplaceServerClient extends AbstractServerClient {
         artifact_id: artifactId,
         version_id: versionId,
         path,
+        title,
+      },
+    );
+
+  /**
+   * Fetches the documentation-quality tier + breakdown for a lakehouse data product from
+   * Marketplace backend, used to render the "AI Readiness Badge" on the data product page.
+   *
+   * The metrics this is scored on (description/Access-Point-Group/Access-Point/attribute
+   * coverage, etc.) come from columns on the S2 product/dataset/field metadata tables that the
+   * search product pipeline populates — that pipeline refreshes on a 15-minute cadence, so a
+   * data product's badge can lag up to ~15 minutes behind a metadata change.
+   *
+   * Marketplace backend does no pre-computation: on each call it SELECTs the relevant columns for
+   * this data product out of S2 and computes the tier/breakdown on the fly.
+   */
+  dataProductDocQuality = async (
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+    dataProductId: string,
+    deploymentId: number,
+    title: string | undefined,
+  ): Promise<PlainObject<DataProductQualityResponse>> =>
+    this.get<PlainObject<DataProductQualityResponse>>(
+      `${this._docQuality()}/lakehouse/${lakehouseEnv}`,
+      undefined,
+      undefined,
+      {
+        data_product_id: dataProductId,
+        deployment_id: deploymentId,
         title,
       },
     );

@@ -115,13 +115,11 @@
       }
     }
 
-    // the title, with the data product ID and DID beside it, or under it
-    // when a long title leaves them no room
+    // the title, which keeps its place in the header's vertical center, with
+    // the data product ID and DID hung below it
     &__main {
+      position: relative;
       display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      column-gap: 1.6rem;
       min-width: 0;
     }
 
@@ -144,9 +142,34 @@
     &__ids {
       @include flexVCenter;
 
-      flex: none;
+      // NOTE: out of the flow on purpose, so the title isn't pushed up by the
+      // IDs: they use the room under it, which the header's height leaves free
+      position: absolute;
+      top: 100%;
+      left: 0;
       gap: 1rem;
       font-size: 1.5rem;
+      white-space: nowrap;
+
+      .copyable-id {
+        flex: none;
+        max-width: none;
+        margin: 0;
+        padding: 0.2rem 0.8rem;
+        border: 0.1rem solid var(--color-border-default);
+      }
+
+      .copyable-id__content {
+        overflow: visible;
+        text-overflow: clip;
+      }
+    }
+
+    &__actions-group {
+      @include flexVCenter;
+
+      gap: 0.8rem;
+      flex-shrink: 0;
     }
 
     &__actions {
@@ -157,6 +180,16 @@
       border: 0.1rem solid var(--color-border-default);
       border-radius: 0.2rem;
       padding-left: 0.5rem;
+    }
+
+    // smaller than the shared badge: it sits in a header row of buttons
+    &__quality-emote.quality-emote {
+      height: 3.3rem;
+      font-size: 1.2rem;
+
+      .quality-emote__icon {
+        font-size: 1.8rem;
+      }
     }
 
     &__execution-context-selector {

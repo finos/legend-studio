@@ -36,6 +36,7 @@ export enum DSL_DATAPRODUCT_EVENT {
   LEGEND_AI_OPEN_IN_DATACUBE_CLICKED = 'legend-ai.open-in-datacube.clicked',
   LEGEND_AI_OPEN_IN_DATACUBE_PREFILL_DROPPED = 'legend-ai.open-in-datacube.prefill-dropped',
   ERROR_LOG_OPEN_DATACUBE_FROM_AI_CHAT = 'dataProduct.error.log-open-datacube-from-ai-chat',
+  ERROR_FETCH_DATA_PRODUCT_QUALITY = 'dataProduct.error.fetch-data-product-quality',
 }
 
 export enum DSL_DATAPRODUCT_EVENT_STATUS {

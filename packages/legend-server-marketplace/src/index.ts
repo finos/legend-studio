@@ -30,6 +30,8 @@ export * from './models/FieldSearch.js';
 export * from './models/SearchType.js';
 export * from './models/McpServer.js';
 export * from './models/DataSpaceQuality.js';
+export * from './models/QualityLevel.js';
+export * from './models/DataProductQuality.js';
 export {
   MarketplaceServerClient,
   type TrendingDataProductEntry,
