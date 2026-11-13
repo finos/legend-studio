@@ -44,6 +44,29 @@
   --color-compute: var(--color-blue-40);
 }
 
+// The category colors above are tuned for dark surfaces. In the light theme,
+// these ones drop below 3:1 as type letters and icons (explorer, tabs, query
+// builder) on white, panel headers and the selected row, so they take a
+// darker shade of the same hue. A `.background--*` fill that still uses them
+// (where an editor has no fill of its own) gets darker as well, which only
+// helps its light text.
+.theme__default-light {
+  --color-enumeration: var(--color-medium-green-450);
+  --color-measure: var(--color-medium-green-450);
+  --color-unit: var(--color-medium-green-450);
+  --color-association: var(--color-dark-grey-400);
+  --color-profile: var(--color-lime-600);
+  --color-dependency: var(--color-lime-500);
+  --color-mapping: var(--color-teal-300);
+  --color-function: var(--color-blue-50);
+  --color-service: var(--color-blue-100);
+  --color-snowflake-app: var(--color-blue-100);
+  --color-compute: var(--color-blue-100);
+  --color-flat-data: var(--color-orange-250);
+  --color-database: var(--color-orange-250);
+  --color-connection: var(--color-yellow-700);
+}
+
 .color {
   &--class {
     color: var(--color-class);
@@ -143,6 +166,21 @@
 
   &--compute {
     color: var(--color-compute);
+  }
+}
+
+// In the dark theme, these categories are too dark to read as type letters and
+// icons on dark panels and the selected row (class: 2.67:1 on the panel, 1.65:1
+// selected). Only the foreground gets a lighter shade: `.background--class`
+// keeps its fill, which carries light text.
+.theme__default-dark {
+  .color--class,
+  .color--mem-sql-function {
+    color: var(--color-purple-25);
+  }
+
+  .color--schema {
+    color: var(--color-medium-green-180);
   }
 }
 
