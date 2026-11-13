@@ -53,7 +53,6 @@ import {
 } from '@finos/legend-graph';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { guaranteeNonNullable, isNonNullable } from '@finos/legend-shared';
-import { useAuth } from 'react-oidc-context';
 import {
   CloseIcon,
   CopyIcon,
@@ -69,6 +68,10 @@ import {
 import { flowResult } from 'mobx';
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
 import { MultiUserRenderer } from '../../UserRenderer/MultiUserRenderer.js';
+import {
+  NO_AUTH_PROVIDER_REASON,
+  useOptionalAuth,
+} from '../../useOptionalAuth.js';
 import {
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
@@ -214,11 +217,11 @@ const LakehouseSubscriptionsCreateDialog = observer(
   }) => {
     const { open, onClose, apgState, dataAccessState, onSubmit } = props;
 
-    const auth = useAuth();
+    const auth = useOptionalAuth();
     useEffect(() => {
       // eslint-disable-next-line no-void
       void dataAccessState.fetchSubscriptionTargets(
-        () => auth.user?.access_token,
+        () => auth?.user?.access_token,
       );
     }, [auth, dataAccessState]);
 
@@ -537,12 +540,18 @@ export const DataProductSubscriptionViewer = observer(
     onClose: () => void;
   }) => {
     const { open, apgState, dataAccessState, onClose } = props;
-    const auth = useAuth();
+    const auth = useOptionalAuth();
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [mineOnly, setMineOnly] = useState(true);
 
     const subscriptions = apgState.subscriptions;
     const isLoading = apgState.fetchingSubscriptionsState.isInProgress;
+    // creating a subscription needs the signed-in user's token
+    const createSubscriptionDisabledReason = !apgState.canCreateSubscription
+      ? 'Cannot create subscription. No approved contracts or data requests found for this Access Point Group.'
+      : auth === undefined
+        ? `Cannot create subscription: ${NO_AUTH_PROVIDER_REASON}`
+        : undefined;
 
     const subscriptionsToShow = useMemo(
       () =>
@@ -570,13 +579,13 @@ export const DataProductSubscriptionViewer = observer(
               source.guid,
               target,
               dataAccessState.lakehouseContractServerClient,
-              auth.user?.access_token,
+              auth?.user?.access_token,
             )
           : apgState.createSubscription(
               source.guid,
               target,
               dataAccessState.lakehouseContractServerClient,
-              auth.user?.access_token,
+              auth?.user?.access_token,
             ),
       );
     };
@@ -685,7 +694,7 @@ export const DataProductSubscriptionViewer = observer(
           apgState.fetchSubscriptions(
             apgState.apgContracts,
             dataAccessState.lakehouseContractServerClient,
-            auth.user?.access_token,
+            auth?.user?.access_token,
           );
         });
         return () => cancelAnimationFrame(rafId);
@@ -696,7 +705,7 @@ export const DataProductSubscriptionViewer = observer(
       apgState.fetchingSubscriptionsState,
       apgState.apgContracts,
       apgState.handlingContractsState.hasCompleted,
-      auth.user?.access_token,
+      auth?.user?.access_token,
       dataAccessState.lakehouseContractServerClient,
       open,
     ]);
@@ -740,11 +749,7 @@ export const DataProductSubscriptionViewer = observer(
                   />
                   <span
                     className="marketplace-lakehouse-subscriptions__subscriptions-viewer__create-btn"
-                    title={
-                      !apgState.canCreateSubscription
-                        ? 'Cannot create subscription. No approved contracts or data requests found for this Access Point Group.'
-                        : undefined
-                    }
+                    title={createSubscriptionDisabledReason}
                   >
                     <Button
                       onClick={() => {
@@ -756,7 +761,7 @@ export const DataProductSubscriptionViewer = observer(
                         setShowCreateDialog(true);
                       }}
                       variant="contained"
-                      disabled={!apgState.canCreateSubscription}
+                      disabled={createSubscriptionDisabledReason !== undefined}
                       loading={
                         apgState.fetchingAccessState.isInProgress ||
                         apgState.fetchingApprovedContractsState.isInProgress

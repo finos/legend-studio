@@ -56,7 +56,7 @@ import {
 } from '../../stores/DataProduct/DataProductLegendAISchema.js';
 import { DSL_DATAPRODUCT_EVENT } from '../../__lib__/DSL_DataProduct_Event.js';
 import { EntitlementsDataContractCreator } from './DataContract/EntitlementsDataContractCreator.js';
-import { useAuth } from 'react-oidc-context';
+import { useOptionalAuth } from '../useOptionalAuth.js';
 import { getIngestDeploymentServerConfigName } from '@finos/legend-server-lakehouse';
 
 const DATA_PRODUCT_TELEMETRY_EVENT_KEYS: Record<
@@ -293,7 +293,10 @@ const DataProductLegendAIIntegrationInner = observer(
       };
     }, [config, resolvedUserEnv]);
 
-    const auth = useAuth();
+    const auth = useOptionalAuth();
+    // requesting access needs the signed-in user's token
+    const canRequestAccess =
+      dataProductDataAccessState !== undefined && auth !== undefined;
 
     const findApgStateByTitle = useCallback(
       (title: string): DataProductAPGState | undefined =>
@@ -429,7 +432,7 @@ const DataProductLegendAIIntegrationInner = observer(
           {...(modelContext ? { modelContext } : {})}
           {...(onClose ? { onClose } : {})}
           {...(onMinimize ? { onMinimize } : {})}
-          {...(dataProductDataAccessState
+          {...(canRequestAccess
             ? { onRequestAccess: handleRequestAccess }
             : {})}
           {...(dataProductDataAccessState && dataProductViewerState.openDataCube
@@ -444,7 +447,7 @@ const DataProductLegendAIIntegrationInner = observer(
             }
             apgState={contractCreatorApgState}
             dataAccessState={dataProductDataAccessState}
-            tokenProvider={() => auth.user?.access_token}
+            tokenProvider={() => auth?.user?.access_token}
             headerContent={
               <>
                 Submit access request for{' '}
