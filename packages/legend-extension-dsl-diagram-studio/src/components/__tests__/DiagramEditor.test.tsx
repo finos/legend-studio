@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@jest/globals';
+import { test, expect, jest } from '@jest/globals';
 import { fireEvent, getByTitle, waitFor } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
 import { LegendStudioPluginManager } from '@finos/legend-application-studio';
@@ -146,5 +146,83 @@ test(
       'disabled',
       true,
     );
+  },
+);
+
+test(
+  integrationTest('Diagram editor can export the diagram as PNG and SVG'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      {
+        entities: TEST_DATA__diagramModel,
+      },
+      true,
+    );
+    await TEST__openElementFromExplorerTree(
+      'model::PersonDiagram',
+      renderResult,
+    );
+    const diagramEditorState =
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        DiagramEditorState,
+      );
+    await waitFor(() =>
+      expect(diagramEditorState.isDiagramRendererInitialized).toBe(true),
+    );
+
+    // capture downloads instead of letting jsdom navigate
+    const downloads: { name: string; blob: Blob }[] = [];
+    let lastBlob: Blob | undefined;
+    const originalCreateObjectURL = URL.createObjectURL;
+    URL.createObjectURL = (blob: Blob): string => {
+      lastBlob = blob;
+      return 'blob:diagram';
+    };
+    const clickSpy = jest
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        if (lastBlob) {
+          downloads.push({ name: this.download, blob: lastBlob });
+        }
+      });
+
+    try {
+      const header = renderResult.container.querySelector(
+        '.diagram-editor__header',
+      ) as HTMLElement;
+
+      fireEvent.click(getByTitle(header, 'Export diagram as image...'));
+      fireEvent.click(renderResult.getByText('Export as SVG'));
+      await waitFor(() => expect(downloads).toHaveLength(1));
+      // wait for the menu to close
+      await waitFor(() =>
+        expect(renderResult.queryByText('Export as SVG')).toBeNull(),
+      );
+      expect(downloads[0]?.name).toBe('PersonDiagram.svg');
+      expect(downloads[0]?.blob.type).toBe('image/svg+xml');
+      // NOTE: jsdom's Blob does not implement `text()`
+      const svg = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (): void => resolve(reader.result as string);
+        reader.readAsText(downloads[0]?.blob as Blob);
+      });
+      expect(svg).toContain('>Person</text>');
+      expect(svg).toContain('>name : </text>');
+
+      fireEvent.click(getByTitle(header, 'Export diagram as image...'));
+      fireEvent.click(renderResult.getByText('Export as PNG'));
+      await waitFor(() => expect(downloads).toHaveLength(2));
+      // wait for the menu to close
+      await waitFor(() =>
+        expect(renderResult.queryByText('Export as PNG')).toBeNull(),
+      );
+      expect(downloads[1]?.name).toBe('PersonDiagram.png');
+      expect(downloads[1]?.blob.type).toBe('image/png');
+    } finally {
+      clickSpy.mockRestore();
+      URL.createObjectURL = originalCreateObjectURL;
+    }
   },
 );
