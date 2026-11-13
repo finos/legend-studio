@@ -329,6 +329,14 @@ Each iteration is one PR into cube-dev, demoed with a video.
 ## 7. Engine issues to file
 
 - JSON to grammar writes `equal(plus(a, 1), 3)` as `a + 1 == 3`, which parses differently (§2.4).
+  - Measured 2026-11-09: it writes a comparison's operands without parentheses, so any operator before `==` (`+`,
+    `*`, `>`, `==`, `&&`, `||`, `!`, `-`), `&&` or `||` after it, and a comparison after another read otherwise.
+    Studio's text mode too: a function `($x + 1) == 3` comes back `$x + 1 == 3`, which no longer compiles, and
+    `($a == 1) == true` comes back `$a == 1 == true`, which compiles and means something else.
+  - Until the engine fixes it, Cube checks the engine's text (`CubeEngine.checkPure`): it parses the text back,
+    compares it with the lambda, and puts back the parentheses the writer dropped, in Show Pure and in the code
+    Import Pure writes for an expression; where the text still reads otherwise, Show Pure warns and Import Pure
+    notes it.
 - `indexOf` is 1-based on H2 and DuckDB, and DuckDB's `substring(0, n)` is off by one (§2.3).
 - Asks:
   - `substring`, `indexOf` and `lastIndexOf` are not in the function catalogue;

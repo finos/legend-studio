@@ -46,6 +46,7 @@ import {
   within,
 } from '@testing-library/react';
 import { flowResult } from 'mobx';
+import { CUBE_SHOW_PURE_READS_DIFFERENTLY } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import { TEST__renderInCubeApplication } from '../../__test-utils__/CubePageTestUtils.js';
 import {
@@ -124,6 +125,42 @@ afterEach(() => {
 });
 
 describe('Show Pure', () => {
+  test("Shows the engine's text with the parentheses it drops put back, and says where it still reads otherwise (EXPRESSION-EDITOR.md, §2.4)", async () => {
+    const REPAIRED = `${PURE}\n`;
+    const { fake } = await renderPage(sliceDocument(), (engine) => {
+      engine.checkPure
+        .mockResolvedValueOnce({
+          text: REPAIRED,
+          readsAsLambda: true,
+          isRepaired: true,
+        })
+        .mockResolvedValueOnce({
+          text: PURE,
+          readsAsLambda: false,
+          isRepaired: false,
+        });
+    });
+    fireEvent.click(showPureButton());
+    let dialog = await screen.findByRole('dialog');
+    const pure = await within(dialog).findByLabelText('Pure query');
+    expect(pure.textContent).toBe(REPAIRED);
+    // checked against the lambda the engine rendered
+    expect(fake.checkPure.mock.calls[0]?.[0]).toBe(
+      fake.renderPure.mock.calls[0]?.[0],
+    );
+    expect(fake.checkPure.mock.calls[0]?.[1]).toBe(PURE);
+    expect(
+      within(dialog).queryByText(CUBE_SHOW_PURE_READS_DIFFERENTLY),
+    ).toBeNull();
+    fireEvent.click(within(dialog).getByText('Close'));
+    await waitForElementToBeRemoved(dialog);
+    fireEvent.click(showPureButton());
+    dialog = await screen.findByRole('dialog');
+    expect(
+      await within(dialog).findByText(CUBE_SHOW_PURE_READS_DIFFERENTLY),
+    ).toBeTruthy();
+  });
+
   test('Shows exactly the text the engine renders for what Run Query runs, and copies it', async () => {
     const { host, fake } = await renderPage(sliceDocument());
     const copy = jest

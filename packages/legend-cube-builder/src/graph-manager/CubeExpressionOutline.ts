@@ -379,9 +379,8 @@ export const findCubePrecedenceTraps = (
     }
     part.parts.forEach(visit);
   };
-  if (outline.isLocated) {
-    visit(outline.root);
-  }
+  // a part not placed in the code has no trap found: no position to fix
+  visit(outline.root);
   return traps;
 };
 

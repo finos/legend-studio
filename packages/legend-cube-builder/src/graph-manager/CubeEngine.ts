@@ -187,6 +187,20 @@ export interface CubeParsedExpression {
   readonly located: JsonObject;
 }
 
+/** The engine's Pure text of a lambda, checked by parsing it back */
+export interface CubeCheckedPure {
+  /** The text, the parentheses the engine's text dropped put back */
+  readonly text: string;
+  /**
+   * Parsed back, the text reads as the lambda; `false` where it reads
+   * otherwise and the parentheses, put back, don't put it right;
+   * `undefined` when it couldn't be read back
+   */
+  readonly readsAsLambda: boolean | undefined;
+  /** Parentheses the engine's text dropped were put back */
+  readonly isRepaired: boolean;
+}
+
 /**
  * An engine failure, placed on the node it concerns: the node a stamp in the
  * error points to, else the source being typed or the node being run.
@@ -272,6 +286,14 @@ export interface CubeEngine {
   ): Promise<string>;
   /** The Pure text of a lambda, for display only: never parsed back */
   renderPure(lambda: IR): Promise<string>;
+  /**
+   * The engine's Pure text of a lambda, checked by parsing it back
+   * (EXPRESSION-EDITOR.md, §2.4): the engine's text writer writes a
+   * comparison's operands without parentheses, `equal(plus(a, 1), 3)` as
+   * `a + 1 == 3`, which reads as `a + (1 == 3)`; where it does, they are put
+   * back. Never rejects: a text that can't be checked is given back as it is.
+   */
+  checkPure(lambda: IR, text: string): Promise<CubeCheckedPure>;
   /**
    * A lambda as the engine receives it, pretty-printed, its numbers kept
    * exact (PLAN §11.16): for a viewer to copy while debugging a run
