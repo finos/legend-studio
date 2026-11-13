@@ -1,0 +1,67 @@
+###ExternalFormat
+SchemaSet demo::graphql::EmployeeSchema
+{
+  format: JSON;
+  schemas: [
+    {
+      id: Employee;
+      location: 'Employee.json';
+      content: '{"$schema":"http://json-schema.org/draft-07/schema#","title":"demo::graphql::Employee","$ref":"#/definitions/demo::graphql::Employee","definitions":{"demo::graphql::Employee":{"type":"object","properties":{"firstName":{"type":"string"},"lastName":{"type":"string"}}}}}';
+    }
+  ];
+}
+
+Binding demo::graphql::EmployeeBinding
+{
+  schemaSet: demo::graphql::EmployeeSchema;
+  schemaId: Employee;
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::graphql::Employee
+  ];
+}
+
+
+###GraphQL
+GraphQLStore demo::graphql::EmployeeStore
+{
+  schema: {
+type Query {
+  employees: [Employee]
+}
+
+type Employee {
+  firstName: String
+  lastName: String
+}
+};
+}
+
+
+###Pure
+Class demo::graphql::Employee
+{
+  firstName: String[0..1];
+  lastName: String[0..1];
+}
+
+
+###Mapping
+Mapping demo::graphql::EmployeeMapping
+(
+  *demo::graphql::Employee: GraphQL
+  {
+    ~typeName [demo::graphql::EmployeeStore] 'Employee'
+    ~binding demo::graphql::EmployeeBinding
+  }
+)
+
+
+###Connection
+GraphQLConnection demo::graphql::EmployeeConnection
+{
+  store: demo::graphql::EmployeeStore;
+  url: 'https://api.example.com/graphql';
+  authentication: # Kerberos {
+  }#;
+}

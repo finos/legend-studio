@@ -26,12 +26,14 @@ import { DSL_DataSpace_GraphManagerPreset } from '@finos/legend-extension-dsl-da
 import { DSL_DataSpace_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-data-space-studio';
 import { DSL_Persistence_GraphManagerPreset } from '@finos/legend-extension-dsl-persistence/graph';
 import { STO_ServiceStore_GraphManagerPreset } from '@finos/legend-extension-store-service-store/graph';
+import { STO_GraphQL_GraphManagerPreset } from '@finos/legend-extension-store-graphql/graph';
 import { DSL_Service_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-service/application-studio';
 import { Assortment_GraphManagerPreset } from '@finos/legend-extension-assortment/graph';
 import { DSL_Text_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-text/application-studio';
 import { DSL_Diagram_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-diagram-studio';
 import { DSL_Persistence_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-persistence/application-studio';
 import { STO_ServiceStore_LegendStudioApplicationPlugin } from '@finos/legend-extension-store-service-store/application-studio';
+import { STO_GraphQL_LegendStudioApplicationPlugin } from '@finos/legend-extension-store-graphql/application-studio';
 import { Assortment_LegendStudioApplicationPreset } from '@finos/legend-extension-assortment/application-studio';
 import { DSL_DataQuality_LegendStudioApplicationPlugin } from '@finos/legend-extension-dsl-data-quality/application-studio';
 import { DSL_DataQuality_GraphManagerPreset } from '@finos/legend-extension-dsl-data-quality/graph';
@@ -47,6 +49,7 @@ export class LegendStudioWebApplication {
       new DSL_DataSpace_GraphManagerPreset(),
       new DSL_Persistence_GraphManagerPreset(),
       new STO_ServiceStore_GraphManagerPreset(),
+      new STO_GraphQL_GraphManagerPreset(),
 
       new Assortment_LegendStudioApplicationPreset(),
       new DSL_DataQuality_GraphManagerPreset(),
@@ -62,6 +65,7 @@ export class LegendStudioWebApplication {
       new DSL_Service_LegendStudioApplicationPlugin(),
       new DSL_Persistence_LegendStudioApplicationPlugin(),
       new STO_ServiceStore_LegendStudioApplicationPlugin(),
+      new STO_GraphQL_LegendStudioApplicationPlugin(),
       new DSL_DataQuality_LegendStudioApplicationPlugin(),
       new DepotDashboard_LegendStudioApplicationPlugin(),
       // loggers

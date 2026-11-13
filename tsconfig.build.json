@@ -139,6 +139,9 @@
       "path": "packages/legend-extension-store-service-store/tsconfig.build.json"
     },
     {
+      "path": "packages/legend-extension-store-graphql/tsconfig.build.json"
+    },
+    {
       "path": "packages/legend-extension-store-flat-data/tsconfig.build.json"
     },
     {

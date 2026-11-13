@@ -78,6 +78,7 @@
     { "path": "packages/legend-extension-dsl-service" },
     { "path": "packages/legend-extension-dsl-persistence" },
     { "path": "packages/legend-extension-store-service-store" },
+    { "path": "packages/legend-extension-store-graphql" },
     { "path": "packages/legend-extension-store-flat-data" },
     { "path": "packages/legend-extension-store-relational" },
     { "path": "packages/legend-vscode-extension-dependencies" },
