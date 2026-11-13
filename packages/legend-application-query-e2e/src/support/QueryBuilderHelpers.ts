@@ -85,6 +85,60 @@ export const openDataSpaceQuery = async (page: Page): Promise<void> => {
   await waitForQueryBuilder(page);
 };
 
+/**
+ * Open the query builder's `Help...` menu, and return its item labelled
+ * `label`, e.g. `About Query Info` — to click, or to check it is disabled.
+ */
+export const getHelpMenuItem = async (
+  page: Page,
+  label: string,
+): Promise<Locator> => {
+  await page.getByTitle('See more options').click();
+  return page.getByRole('button', { name: label, exact: true });
+};
+
+/**
+ * The value of the field labelled `label` in one of the editor's `About ...`
+ * dialogs (data space, data product or ingest), e.g. `Execution Context`.
+ */
+export const getAboutDialogField = (dialog: Locator, label: string): Locator =>
+  dialog
+    .locator('.dataspace-info-modal__field')
+    .filter({
+      has: dialog.page().locator('.dataspace-info-modal__field__label', {
+        hasText: exactly(label),
+      }),
+    })
+    .locator('.dataspace-info-modal__field__value');
+
+/**
+ * Stub `window.open`, which the app calls to open a page in a new tab — one of
+ * its own routes, or another Legend application (Studio, Marketplace) —
+ * recording each address instead of opening it, so tests can assert where a
+ * link leads without depending on what (if anything) is served there.
+ *
+ * Call before the page loads. Returns a function reading the addresses
+ * opened since the page last loaded, oldest first.
+ */
+export const recordOpenedWindows = async (
+  page: Page,
+): Promise<() => Promise<string[]>> => {
+  await page.addInitScript(() => {
+    const opened: string[] = [];
+    (window as unknown as { e2eOpenedWindows: string[] }).e2eOpenedWindows =
+      opened;
+    window.open = (url?: string | URL): null => {
+      opened.push(String(url));
+      return null;
+    };
+  });
+  return () =>
+    page.evaluate(
+      () =>
+        (window as unknown as { e2eOpenedWindows: string[] }).e2eOpenedWindows,
+    );
+};
+
 /** Pick `item` in the query builder's `Advanced` menu, e.g. `Show Parameter(s)`. */
 export const chooseAdvancedMenuItem = async (
   page: Page,

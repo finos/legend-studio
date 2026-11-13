@@ -104,6 +104,43 @@ export const mockAdditionalDataSpaces = async (
 };
 
 /**
+ * Apply `patch` to the fixture's data space in the project entities the graph
+ * is built from — whichever of the two project responses the flow fetches.
+ */
+const patchDataSpace = async (
+  page: Page,
+  patch: (dataSpace: Record<string, unknown>) => void,
+): Promise<void> => {
+  const visit = (node: unknown): void => {
+    if (!node || typeof node !== 'object') {
+      return;
+    }
+    if (Array.isArray(node)) {
+      node.forEach(visit);
+      return;
+    }
+    const record = node as Record<string, unknown>;
+    if (record._type === 'dataSpace') {
+      patch(record);
+      return;
+    }
+    Object.values(record).forEach(visit);
+  };
+
+  for (const pattern of [
+    /\/depot\/api\/projects\/.*\/versions\/[^/]+$/,
+    /\/pureModelContextData$/,
+  ]) {
+    await page.route(pattern, async (route) => {
+      const response = await route.fetch();
+      const data = (await response.json()) as unknown;
+      visit(data);
+      await route.fulfill({ json: data });
+    });
+  }
+};
+
+/**
  * Give the fixture's data space a second execution context.
  *
  * The setup panel only renders its context selector when a data space has
@@ -114,23 +151,12 @@ export const mockAdditionalDataSpaces = async (
  * The added context reuses the first one's mapping and runtime, so it stays
  * valid without the fixture needing extra model elements.
  */
-export const mockSecondExecutionContext = async (page: Page): Promise<void> => {
-  const addExecutionContext = (node: unknown): void => {
-    if (!node || typeof node !== 'object') {
-      return;
-    }
-    if (Array.isArray(node)) {
-      node.forEach(addExecutionContext);
-      return;
-    }
-    const record = node as Record<string, unknown>;
-    if (
-      record._type === 'dataSpace' &&
-      Array.isArray(record.executionContexts) &&
-      record.executionContexts.length === 1
-    ) {
-      const [first] = record.executionContexts as Record<string, unknown>[];
-      record.executionContexts = [
+export const mockSecondExecutionContext = (page: Page): Promise<void> =>
+  patchDataSpace(page, (dataSpace) => {
+    const contexts = dataSpace.executionContexts;
+    if (Array.isArray(contexts) && contexts.length === 1) {
+      const [first] = contexts as Record<string, unknown>[];
+      dataSpace.executionContexts = [
         first,
         {
           ...first,
@@ -138,24 +164,137 @@ export const mockSecondExecutionContext = async (page: Page): Promise<void> => {
           title: SECOND_EXECUTION_CONTEXT_TITLE,
         },
       ];
-      return;
     }
-    Object.values(record).forEach(addExecutionContext);
-  };
+  });
 
-  // the graph is built from either of these, depending on the flow
-  for (const pattern of [
-    /\/depot\/api\/projects\/.*\/versions\/[^/]+$/,
-    /\/pureModelContextData$/,
-  ]) {
-    await page.route(pattern, async (route) => {
-      const response = await route.fetch();
-      const data = (await response.json()) as unknown;
-      addExecutionContext(data);
-      await route.fulfill({ json: data });
-    });
-  }
+/** A curated template query added by {@link mockTemplateQueries}. */
+export interface TemplateQuery {
+  id: string;
+  title: string;
+  description: string;
+}
+
+/** `Cases` of confirmed reports, by `Case Type`. */
+export const CONFIRMED_CASES_TEMPLATE: TemplateQuery = {
+  id: 'confirmedCases',
+  title: 'Confirmed cases',
+  description: 'Cases of every confirmed report',
 };
+
+/** `Fips` and `Cases` of every report. */
+export const ALL_CASES_TEMPLATE: TemplateQuery = {
+  id: 'allCases',
+  title: 'All cases',
+  description: 'Cases of every report, by FIPS code',
+};
+
+/** `x | $x.<property>`, as a column of `project()`. */
+const columnLambda = (property: string): Record<string, unknown> => ({
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'property',
+      parameters: [{ _type: 'var', name: 'x' }],
+      property,
+    },
+  ],
+  parameters: [{ _type: 'var', name: 'x' }],
+});
+
+/** `<source>->project([<properties>], [<columns>])` */
+const projection = (
+  source: Record<string, unknown>,
+  columns: [property: string, name: string][],
+): Record<string, unknown> => ({
+  _type: 'func',
+  function: 'project',
+  parameters: [
+    source,
+    {
+      _type: 'collection',
+      multiplicity: { lowerBound: columns.length, upperBound: columns.length },
+      values: columns.map(([property]) => columnLambda(property)),
+    },
+    {
+      _type: 'collection',
+      multiplicity: { lowerBound: columns.length, upperBound: columns.length },
+      values: columns.map(([, name]) => ({ _type: 'string', value: name })),
+    },
+  ],
+});
+
+const GET_ALL_COVID_DATA = {
+  _type: 'func',
+  function: 'getAll',
+  parameters: [{ _type: 'packageableElementPtr', fullPath: 'test::COVIDData' }],
+};
+
+/**
+ * The template queries' lambdas, as the query builder itself builds them —
+ * so they load into the form editor rather than falling back to text mode.
+ */
+const TEMPLATE_QUERY_LAMBDAS: Record<string, Record<string, unknown>> = {
+  [CONFIRMED_CASES_TEMPLATE.id]: projection(
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        GET_ALL_COVID_DATA,
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [{ _type: 'var', name: 'x' }],
+                  property: 'caseType',
+                },
+                { _type: 'string', value: 'Confirmed' },
+              ],
+            },
+          ],
+          parameters: [{ _type: 'var', name: 'x' }],
+        },
+      ],
+    },
+    [
+      ['caseType', 'Case Type'],
+      ['cases', 'Cases'],
+    ],
+  ),
+  [ALL_CASES_TEMPLATE.id]: projection(GET_ALL_COVID_DATA, [
+    ['fips', 'Fips'],
+    ['cases', 'Cases'],
+  ]),
+};
+
+/**
+ * Curate {@link CONFIRMED_CASES_TEMPLATE} and {@link ALL_CASES_TEMPLATE} on
+ * the fixture's data space, as inline template queries (`executables`) on its
+ * one execution context.
+ *
+ * NOTE: like {@link mockSecondExecutionContext}, this intercepts the project
+ * responses, so the two (and {@link mockEnrichedModel}) can't be combined.
+ */
+export const mockTemplateQueries = (page: Page): Promise<void> =>
+  patchDataSpace(page, (dataSpace) => {
+    const [context] = dataSpace.executionContexts as { name: string }[];
+    dataSpace.executables = [CONFIRMED_CASES_TEMPLATE, ALL_CASES_TEMPLATE].map(
+      (template) => ({
+        _type: 'dataSpaceTemplateExecutable',
+        ...template,
+        executionContextKey: context?.name,
+        query: {
+          _type: 'lambda',
+          body: [TEMPLATE_QUERY_LAMBDAS[template.id]],
+          parameters: [],
+        },
+      }),
+    );
+  });
 
 interface ModelElement extends Record<string, unknown> {
   _type: string;
@@ -342,6 +481,30 @@ export const mockProjectListing = async (page: Page): Promise<void> => {
   await page.route(
     /\/depot\/api\/projects\/[^/]+\/[^/]+\/versions(?:\?.*)?$/,
     (route) => route.fulfill({ json: [TEST_PROJECT_VERSION] }),
+  );
+};
+
+/**
+ * The SDLC project the fixture's project is built from, as depot reports it
+ * with {@link mockSDLCProject}. Its `PROD` prefix matches the Studio instance
+ * the app's dev config lists, so links into Studio resolve.
+ */
+export const TEST_SDLC_PROJECT_ID = 'PROD-1234';
+
+/**
+ * Report the fixture's project as built from the SDLC project `projectId`,
+ * which the mock depot server leaves out: the app needs it to link to the
+ * project in Studio.
+ */
+export const mockSDLCProject = async (
+  page: Page,
+  projectId = TEST_SDLC_PROJECT_ID,
+): Promise<void> => {
+  await page.route(
+    new RegExp(
+      `/depot/api/project-configurations/${TEST_PROJECT.groupId}/${TEST_PROJECT.artifactId}$`,
+    ),
+    (route) => route.fulfill({ json: { ...TEST_PROJECT, projectId } }),
   );
 };
 
