@@ -30,6 +30,8 @@ export const rawVariableExpression_setType = action(
   (target: RawVariableExpression, value: Type): void => {
     target.type.value = observe_Type(value);
     target.typeArguments = undefined;
+    // e.g. the `10` of `Varchar(10)` doesn't apply to the new type
+    target.typeVariableValues = undefined;
   },
 );
 export const rawVariableExpression_setMultiplicity = action(

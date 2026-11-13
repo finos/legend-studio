@@ -40,6 +40,15 @@ export class V1_Variable extends V1_ValueSpecification implements Hashable {
       this.name,
       this.multiplicity,
       this.genericType?.rawType.hashCode,
+      // NOTE: type arguments (e.g. the relation type in `Relation<(a:Integer)>`) and type
+      // variable values (e.g. the `10` in `Varchar(10)`) are only hashed when present so
+      // the hash of every other variable stays unchanged
+      this.genericType?.typeArguments.length
+        ? hashArray(this.genericType.typeArguments)
+        : undefined,
+      this.genericType?.typeVariableValues.length
+        ? hashArray(this.genericType.typeVariableValues)
+        : undefined,
     ]);
   }
 }

@@ -294,3 +294,120 @@ export const TEST_DATA__PrecisePrimitiveRoundtrip = [
       'meta::pure::metamodel::function::ConcreteFunctionDefinition',
   },
 ];
+
+/**
+ * A function whose parameters and return type take type variable values. The
+ * function path only depends on the raw types, not on the type variable values.
+ *
+ * ```pure
+ * function test::currencyCodeOf(code: Varchar(10)[1], amount: Numeric(10,2)[0..1]): Varchar(3)[1]
+ * {
+ *   'USD'->cast(@Varchar(3))
+ * }
+ * ```
+ */
+export const TEST_DATA__PrecisePrimitiveFunctionRoundtrip = [
+  {
+    path: 'test::currencyCodeOf_Varchar_1__Numeric_$0_1$__Varchar_1_',
+    content: {
+      _type: 'function',
+      body: [
+        {
+          _type: 'func',
+          function: 'cast',
+          parameters: [
+            {
+              _type: 'string',
+              value: 'USD',
+            },
+            {
+              _type: 'genericTypeInstance',
+              genericType: {
+                multiplicityArguments: [],
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'Varchar',
+                },
+                typeArguments: [],
+                typeVariableValues: [
+                  {
+                    _type: 'integer',
+                    value: 3,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+      name: 'currencyCodeOf_Varchar_1__Numeric_$0_1$__Varchar_1_',
+      package: 'test',
+      parameters: [
+        {
+          _type: 'var',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Varchar',
+            },
+            typeVariableValues: [
+              {
+                _type: 'integer',
+                value: 10,
+              },
+            ],
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'code',
+        },
+        {
+          _type: 'var',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'Numeric',
+            },
+            typeVariableValues: [
+              {
+                _type: 'integer',
+                value: 10,
+              },
+              {
+                _type: 'integer',
+                value: 2,
+              },
+            ],
+          },
+          multiplicity: {
+            lowerBound: 0,
+            upperBound: 1,
+          },
+          name: 'amount',
+        },
+      ],
+      postConstraints: [],
+      preConstraints: [],
+      returnGenericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Varchar',
+        },
+        typeVariableValues: [
+          {
+            _type: 'integer',
+            value: 3,
+          },
+        ],
+      },
+      returnMultiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+    },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  },
+];

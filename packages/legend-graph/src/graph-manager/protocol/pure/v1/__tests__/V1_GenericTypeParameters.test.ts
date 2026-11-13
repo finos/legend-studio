@@ -23,11 +23,18 @@ import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
 } from '../../../../__test-utils__/GraphManagerTestUtils.js';
-import { TEST_DATA__PrecisePrimitiveRoundtrip } from '../../../../__tests__/roundtripTestData/TEST_DATA__PrecisePrimitiveRoundtrip.js';
+import {
+  TEST_DATA__PrecisePrimitiveFunctionRoundtrip,
+  TEST_DATA__PrecisePrimitiveRoundtrip,
+} from '../../../../__tests__/roundtripTestData/TEST_DATA__PrecisePrimitiveRoundtrip.js';
+import { TEST_DATA__Function_genericType } from '../../../../__tests__/roundtripTestData/TEST_DATA__Function-generictype.js';
 import {
   V1_derivedPropertyModelSchema,
   V1_propertyModelSchema,
 } from '../transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
+import { V1_rawVariableModelSchema } from '../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
+import { V1_deserializeValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
+import { V1_Lambda } from '../model/valueSpecification/raw/V1_Lambda.js';
 import { getOwnProperty } from '../../../../../graph/helpers/DomainHelper.js';
 import { Property } from '../../../../../graph/metamodel/pure/packageableElements/domain/Property.js';
 import { DerivedProperty } from '../../../../../graph/metamodel/pure/packageableElements/domain/DerivedProperty.js';
@@ -385,5 +392,386 @@ describe(unitTest('Lambda parameter type parameters roundtrip'), () => {
       RelationType,
     );
     expect(relationType.columns.map((column) => column.name)).toEqual(['a']);
+  });
+});
+
+const CURRENCY_CODE_OF_PATH =
+  'test::currencyCodeOf_Varchar_1__Numeric_$0_1$__Varchar_1_';
+
+/**
+ * Replaces the `Varchar(10)` of the parameter `code` and the `Varchar(3)` of the
+ * return type of `test::currencyCodeOf` by `Varchar(<codeLength>)` and
+ * `Varchar(<returnLength>)`
+ */
+const withFunctionLengths = (
+  codeLength: number,
+  returnLength: number,
+  options?: { withoutSignature?: boolean },
+): Entity[] =>
+  (
+    JSON.parse(
+      JSON.stringify(TEST_DATA__PrecisePrimitiveFunctionRoundtrip),
+    ) as Entity[]
+  ).map((entity) => {
+    const content = entity.content as {
+      name: string;
+      parameters: { name: string; genericType: unknown }[];
+      returnGenericType: unknown;
+    };
+    content.parameters
+      .filter((parameter) => parameter.name === 'code')
+      .forEach((parameter) => {
+        parameter.genericType = varcharGenericType(codeLength);
+      });
+    content.returnGenericType = varcharGenericType(returnLength);
+    if (options?.withoutSignature) {
+      content.name = 'currencyCodeOf';
+    }
+    return entity;
+  });
+
+const buildFunctionHashes = async (
+  entities: Entity[],
+): Promise<{
+  protocol: string | undefined;
+  metamodel: string;
+  parameter: string | undefined;
+}> => {
+  const graphManagerState = TEST__getTestGraphManagerState();
+  await TEST__buildGraphWithEntities(graphManagerState, entities, {
+    TEMPORARY__preserveSectionIndex: true,
+  });
+  const func = graphManagerState.graph.getFunction(CURRENCY_CODE_OF_PATH);
+  return {
+    protocol: (
+      await graphManagerState.graphManager.buildHashesIndex(entities)
+    ).get(CURRENCY_CODE_OF_PATH),
+    metamodel: func.hashCode,
+    parameter: func.parameters[0]?.hashCode,
+  };
+};
+
+describe(unitTest('Function type variable values'), () => {
+  test('Function path does not depend on type variable values', async () => {
+    for (const [codeLength, returnLength] of [
+      [10, 3],
+      [20, 4],
+    ] as const) {
+      const graphManagerState = TEST__getTestGraphManagerState();
+      await TEST__buildGraphWithEntities(
+        graphManagerState,
+        withFunctionLengths(codeLength, returnLength, {
+          withoutSignature: true,
+        }),
+      );
+      const func = graphManagerState.graph.getFunction(CURRENCY_CODE_OF_PATH);
+      expect(func.path).toEqual(CURRENCY_CODE_OF_PATH);
+      expect(func.functionName).toEqual('currencyCodeOf');
+    }
+  });
+
+  test('Protocol and metamodel function hashes agree', async () => {
+    for (const [codeLength, returnLength] of [
+      [10, 3],
+      [20, 3],
+      [10, 4],
+    ] as const) {
+      const hashes = await buildFunctionHashes(
+        withFunctionLengths(codeLength, returnLength),
+      );
+      expect(hashes.protocol).toEqual(hashes.metamodel);
+    }
+  });
+
+  test('Function hash changes with the type variable values of a parameter', async () => {
+    // `code: Varchar(10)[1]` vs `code: Varchar(20)[1]`
+    const varchar10 = await buildFunctionHashes(withFunctionLengths(10, 3));
+    const varchar10Again = await buildFunctionHashes(
+      withFunctionLengths(10, 3),
+    );
+    const varchar20 = await buildFunctionHashes(withFunctionLengths(20, 3));
+
+    expect(varchar10).toEqual(varchar10Again);
+    expect(varchar10.parameter).not.toEqual(varchar20.parameter);
+    expect(varchar10.metamodel).not.toEqual(varchar20.metamodel);
+    expect(varchar10.protocol).not.toEqual(varchar20.protocol);
+  });
+
+  test('Function hash changes with the type variable values of the return type', async () => {
+    // `: Varchar(3)[1]` vs `: Varchar(4)[1]`
+    const varchar3 = await buildFunctionHashes(withFunctionLengths(10, 3));
+    const varchar4 = await buildFunctionHashes(withFunctionLengths(10, 4));
+
+    expect(varchar3.parameter).toEqual(varchar4.parameter);
+    expect(varchar3.metamodel).not.toEqual(varchar4.metamodel);
+    expect(varchar3.protocol).not.toEqual(varchar4.protocol);
+  });
+
+  test('Protocol function parameter hash includes type variable values', async () => {
+    const parameter = (
+      length: number,
+    ): PlainObject<Record<string, unknown>> => ({
+      _type: 'var',
+      genericType: varcharGenericType(length),
+      multiplicity: { lowerBound: 1, upperBound: 1 },
+      name: 'code',
+    });
+    const protocolHash = (length: number): string =>
+      deserialize(V1_rawVariableModelSchema, parameter(length)).hashCode;
+
+    expect(protocolHash(10)).toEqual(protocolHash(10));
+    expect(protocolHash(10)).not.toEqual(protocolHash(20));
+    expect(protocolHash(10)).toEqual(
+      (await buildFunctionHashes(withFunctionLengths(10, 3))).parameter,
+    );
+  });
+
+  test('Function parameter built from a raw value specification keeps type variable values', async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(graphManagerState, []);
+    const parameter = {
+      _type: 'var',
+      genericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'Numeric',
+        },
+        typeVariableValues: [
+          {
+            _type: 'integer',
+            value: 10,
+          },
+          {
+            _type: 'integer',
+            value: 2,
+          },
+        ],
+      },
+      multiplicity: { lowerBound: 0, upperBound: 1 },
+      name: 'amount',
+    };
+    expect(
+      graphManagerState.graphManager.serializeRawValueSpecification(
+        graphManagerState.graphManager.buildRawValueSpecification(
+          parameter,
+          graphManagerState.graph,
+        ),
+      ),
+    ).toEqual(parameter);
+  });
+
+  test('Hashes of functions without type variable values are unchanged', async () => {
+    // NOTE: these hashes were computed before type variable values of function
+    // parameters and return types were hashed. Functions without type variable
+    // values, including functions returning a relation (whose columns have some),
+    // must keep exactly the same hash, otherwise every existing function would
+    // show up as modified.
+    const entities = [
+      {
+        path: 'test::plainCodeOf_String_1__Decimal_$0_1$__String_1_',
+        content: {
+          _type: 'function',
+          body: [
+            {
+              _type: 'string',
+              value: 'USD',
+            },
+          ],
+          name: 'plainCodeOf_String_1__Decimal_$0_1$__String_1_',
+          package: 'test',
+          parameters: [
+            {
+              _type: 'var',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'String',
+                },
+              },
+              multiplicity: { lowerBound: 1, upperBound: 1 },
+              name: 'code',
+            },
+            {
+              _type: 'var',
+              genericType: {
+                rawType: {
+                  _type: 'packageableType',
+                  fullPath: 'Decimal',
+                },
+              },
+              multiplicity: { lowerBound: 0, upperBound: 1 },
+              name: 'amount',
+            },
+          ],
+          postConstraints: [],
+          preConstraints: [],
+          returnGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          returnMultiplicity: { lowerBound: 1, upperBound: 1 },
+        },
+        classifierPath:
+          'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+      },
+      ...TEST_DATA__Function_genericType,
+    ] as Entity[];
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(graphManagerState, entities);
+    const plainFunction = graphManagerState.graph.getFunction(
+      'test::plainCodeOf_String_1__Decimal_$0_1$__String_1_',
+    );
+    const relationFunction = graphManagerState.graph.getFunction(
+      'my::firmFunction__Relation_1_',
+    );
+
+    expect({
+      parameter: plainFunction.parameters[0]?.hashCode,
+      plainFunction: plainFunction.hashCode,
+      relationFunction: relationFunction.hashCode,
+    }).toEqual({
+      parameter: 'd848aa8ff2c0956ffa4975c33101ef73e7b546fc',
+      plainFunction: 'cad23d9de1a884f8ddb28473c3c474487f8cf76e',
+      relationFunction: '8d0ceb03fe01b6744ab4f3b302969f498126ebb3',
+    });
+    const protocolHashes =
+      await graphManagerState.graphManager.buildHashesIndex(entities);
+    expect(protocolHashes.get(plainFunction.path)).toEqual(
+      plainFunction.hashCode,
+    );
+    expect(protocolHashes.get(relationFunction.path)).toEqual(
+      relationFunction.hashCode,
+    );
+  });
+});
+
+describe(unitTest('Lambda parameter type parameters hash'), () => {
+  const buildVariableHashes = async (
+    lambda: PlainObject<Record<string, unknown>>,
+  ): Promise<{
+    metamodel: string | undefined;
+    protocol: string | undefined;
+  }> => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(graphManagerState, []);
+    return {
+      metamodel: guaranteeType(
+        graphManagerState.graphManager.buildValueSpecification(
+          lambda,
+          graphManagerState.graph,
+        ),
+        LambdaFunctionInstanceValue,
+      ).values[0]?.functionType.parameters[0]?.hashCode,
+      protocol: guaranteeType(
+        V1_deserializeValueSpecification(lambda, []),
+        V1_Lambda,
+      ).parameters[0]?.hashCode,
+    };
+  };
+
+  const LAMBDA__VARCHAR_20_PARAMETER = lambdaWithParameter({
+    _type: 'var',
+    genericType: varcharGenericType(20),
+    multiplicity: { lowerBound: 1, upperBound: 1 },
+    name: 'v',
+  });
+
+  const LAMBDA__RELATION_STRING_PARAMETER = lambdaWithParameter({
+    _type: 'var',
+    genericType: {
+      rawType: {
+        _type: 'packageableType',
+        fullPath: 'meta::pure::metamodel::relation::Relation',
+      },
+      typeArguments: [
+        {
+          rawType: {
+            _type: 'relationType',
+            columns: [
+              {
+                genericType: {
+                  rawType: {
+                    _type: 'packageableType',
+                    fullPath: 'String',
+                  },
+                },
+                multiplicity: { lowerBound: 0, upperBound: 1 },
+                name: 'a',
+              },
+            ],
+          },
+        },
+      ],
+    },
+    multiplicity: { lowerBound: 1, upperBound: 1 },
+    name: 'r',
+  });
+
+  test('Variable hashes include type variable values', async () => {
+    // `v: Varchar(10)[1]` vs `v: Varchar(20)[1]`
+    const varchar10 = await buildVariableHashes(LAMBDA__VARCHAR_PARAMETER);
+    const varchar10Again = await buildVariableHashes(LAMBDA__VARCHAR_PARAMETER);
+    const varchar20 = await buildVariableHashes(LAMBDA__VARCHAR_20_PARAMETER);
+
+    expect(varchar10).toEqual(varchar10Again);
+    expect(varchar10.metamodel).not.toEqual(varchar20.metamodel);
+    expect(varchar10.protocol).not.toEqual(varchar20.protocol);
+  });
+
+  test('Variable hashes include type arguments', async () => {
+    // `r: Relation<(a:Integer)>[1]` vs `r: Relation<(a:String)>[1]` vs `r: Relation<Any>[1]`
+    const relationInteger = await buildVariableHashes(
+      LAMBDA__RELATION_PARAMETER,
+    );
+    const relationString = await buildVariableHashes(
+      LAMBDA__RELATION_STRING_PARAMETER,
+    );
+    const relationAny = await buildVariableHashes(
+      LAMBDA__RELATION_ANY_PARAMETER,
+    );
+
+    expect(relationInteger.metamodel).not.toEqual(relationString.metamodel);
+    expect(relationInteger.protocol).not.toEqual(relationString.protocol);
+    expect(relationInteger.metamodel).not.toEqual(relationAny.metamodel);
+    expect(relationInteger.protocol).not.toEqual(relationAny.protocol);
+  });
+
+  test.each([
+    ['{v: Varchar(10)[1]|$v}', LAMBDA__VARCHAR_PARAMETER],
+    ['{n: Numeric(10,2)[0..1]|$n}', LAMBDA__NUMERIC_PARAMETER],
+    [
+      '{r: meta::pure::metamodel::relation::Relation<Any>[1]|$r}',
+      LAMBDA__RELATION_ANY_PARAMETER,
+    ],
+  ])(
+    'Protocol and metamodel variable hashes agree: %s',
+    async (testName, lambda) => {
+      const hashes = await buildVariableHashes(lambda);
+      expect(hashes.protocol).toEqual(hashes.metamodel);
+    },
+  );
+
+  test('Hashes of variables without type parameters are unchanged', async () => {
+    // NOTE: these hashes were computed before type parameters of variables were hashed
+    expect(
+      await buildVariableHashes(
+        lambdaWithParameter({
+          _type: 'var',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 's',
+        }),
+      ),
+    ).toEqual({
+      metamodel: 'd87cb7a56c4381da08cef2bf96c8a2194d6d4cae',
+      protocol: 'd87cb7a56c4381da08cef2bf96c8a2194d6d4cae',
+    });
   });
 });
