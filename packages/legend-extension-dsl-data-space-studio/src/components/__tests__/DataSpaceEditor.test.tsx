@@ -46,13 +46,16 @@ import {
 } from '@finos/legend-graph';
 import {
   DataSpace,
+  DataSpaceAnalysisResult,
   DataSpaceMappingProvider,
   DataSpaceSupportCombinedInfo,
   DSL_DataSpace_GraphManagerPreset,
+  DSL_DataSpace_getGraphManagerExtension,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import { runInAction } from 'mobx';
+import { flowResult, runInAction } from 'mobx';
 import { DSL_Diagram_GraphManagerPreset } from '@finos/legend-extension-dsl-diagram';
 import { DSL_DataSpace_LegendStudioApplicationPlugin } from '../DSL_DataSpace_LegendStudioApplicationPlugin.js';
+import { DataSpacePreviewState } from '../../stores/DataSpacePreviewState.js';
 import { TEST_DATA__DataSpaceEditor } from './TEST_DATA__DataSpaceEditor.js';
 
 const pluginManager = LegendStudioPluginManager.create();
@@ -388,5 +391,39 @@ test(
     );
     expect(context.mappingProvider).toBeUndefined();
     expect(context.mapping?.value.path).toBe('model::DummyMapping');
+  },
+);
+
+test(
+  integrationTest(
+    "Previewing a data space views the editor's own graph, reporting progress",
+  ),
+  async () => {
+    const { editorStore, dataSpace } = await setUpDataSpaceEditor();
+    const analysis = new DataSpaceAnalysisResult();
+    analysis.executionContextsIndex = new Map();
+    const analyze = createSpy(
+      DSL_DataSpace_getGraphManagerExtension(
+        editorStore.graphManagerState.graphManager,
+      ),
+      'analyzeDataSpace',
+    ).mockResolvedValue(analysis);
+    const preview = DataSpacePreviewState.retrieveState(editorStore);
+
+    await act(async () => {
+      await flowResult(preview.previewDataSpace(dataSpace));
+    });
+
+    const [path, entities, , progress] = guaranteeNonNullable(
+      analyze.mock.calls[0],
+    );
+    expect(path).toBe('model::dataSpace');
+    expect((await entities()).map((entity) => entity.path)).toContain(
+      'model::dataSpace',
+    );
+    expect(progress).toBe(preview.loadDataSpaceState);
+    expect(preview.loadDataSpaceState.hasSucceeded).toBe(true);
+    expect(preview.dataSpaceViewerState?.versionId).toBe('LOCAL');
+    expect(preview.dataSpaceViewerState?.retrieveGraphData()).toBeDefined();
   },
 );

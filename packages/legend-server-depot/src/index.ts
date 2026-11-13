@@ -28,6 +28,7 @@ export { DepotServerClient } from './DepotServerClient.js';
 export * from './DepotVersionAliases.js';
 
 export * from './DepotEntityHelper.js';
+export * from './ProjectDependencyEntitiesHelper.js';
 
 export * from './ProjectDependencyGraphReportHelper.js';
 

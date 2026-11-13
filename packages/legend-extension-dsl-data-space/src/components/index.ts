@@ -30,6 +30,13 @@ export {
 export * from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 export { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 export {
+  type DataSpacePreviewOrigin,
+  type DataSpaceViewerActions,
+  findDataSpaceEntity,
+  previewDataSpace,
+  previewDataSpaceFromEntities,
+} from '../stores/DataSpacePreviewFromEntities.js';
+export {
   DATA_SPACE_QUALITY_LEVEL,
   type DataSpaceQualityBreakdown,
   type DataSpaceQualityResult,

@@ -33,6 +33,12 @@ import {
 import { unitTest } from '@finos/legend-shared/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LegendAIChat, LEGEND_AI_ANCHOR_ID } from '../LegendAIChat.js';
+import type { LegendApplicationPlugin } from '@finos/legend-application';
+import {
+  collectLegendAIChatModes,
+  type LegendAIChatModeConfig,
+  type LegendAIChatModeContext,
+} from '../../LegendAIChatMode_LegendApplicationPlugin_Extension.js';
 import {
   type LegendAIChatProps,
   type LegendAIChatState,
@@ -1369,5 +1375,117 @@ describe(unitTest('LegendAIChat'), () => {
     await waitFor(() => expect(onOpenInDataCube).toHaveBeenCalledTimes(1));
     const [, pureQueryArg] = onOpenInDataCube.mock.calls[0] ?? [];
     expect(pureQueryArg).toBeUndefined();
+  });
+});
+
+describe(unitTest('LegendAIChat modes'), () => {
+  const DATA_CHAT_INPUT = 'Ask anything about your data...';
+  const seen: LegendAIChatModeContext[] = [];
+  beforeEach(() => {
+    seen.length = 0;
+  });
+  const testMode: LegendAIChatModeConfig = {
+    key: 'test-mode',
+    label: 'Test mode',
+    renderChat: (context) => {
+      seen.push(context);
+      return <div>Test mode chat</div>;
+    },
+  };
+  const coordinates = {
+    data_product: 'a::b::TradeDataSpace',
+    group_id: 'com.test',
+    artifact_id: 'trades',
+    version: '1.0.0',
+  };
+
+  test('without modes the header has no mode switches', () => {
+    render(<LegendAIChat {...defaultProps} />);
+
+    expect(screen.queryByRole('group', { name: 'Chat mode' })).toBeNull();
+  });
+
+  test('a mode replaces the chat body, with the data product as context', () => {
+    render(
+      <LegendAIChat
+        {...defaultProps}
+        title="Ask Trades"
+        modes={[testMode]}
+        dataProductCoordinates={coordinates}
+      />,
+    );
+    const toggle = screen.getByRole('button', { name: 'Test mode' });
+    expect(screen.queryByPlaceholderText(DATA_CHAT_INPUT)).not.toBeNull();
+
+    fireEvent.click(toggle);
+
+    expect(screen.getByText('Test mode chat')).toBeDefined();
+    expect(toggle.getAttribute('aria-pressed')).toBe('true');
+    // The mode owns the body, input included: the data chat's input goes.
+    expect(screen.queryByPlaceholderText(DATA_CHAT_INPUT)).toBeNull();
+    // The data chat stays mounted, hidden, so it keeps its conversation.
+    expect(
+      screen
+        .getByText('Ask a question about your data')
+        .closest('.legend-ai__conversation')
+        ?.classList.contains('legend-ai__view--hidden'),
+    ).toBe(true);
+    expect(seen.at(-1)).toEqual({
+      dataProductPath: 'a::b::TradeDataSpace',
+      title: 'Ask Trades',
+      groupId: 'com.test',
+      artifactId: 'trades',
+      versionId: '1.0.0',
+    });
+  });
+
+  test('switching back brings the data chat back and hides the mode', () => {
+    render(<LegendAIChat {...defaultProps} modes={[testMode]} />);
+    const toggle = screen.getByRole('button', { name: 'Test mode' });
+
+    fireEvent.click(toggle);
+    fireEvent.click(toggle);
+
+    const modeBody = screen.getByText('Test mode chat').parentElement;
+    expect(modeBody?.classList.contains('legend-ai__view--hidden')).toBe(true);
+    expect(toggle.getAttribute('aria-pressed')).toBe('false');
+    expect(screen.queryByPlaceholderText(DATA_CHAT_INPUT)).not.toBeNull();
+    expect(
+      screen
+        .getByText('Ask a question about your data')
+        .closest('.legend-ai__conversation')
+        ?.classList.contains('legend-ai__view--hidden'),
+    ).toBe(false);
+  });
+
+  test('"New chat" is not offered while a mode is on', () => {
+    // It clears the hidden data chat, with nothing visible changing.
+    render(<LegendAIChat {...defaultProps} modes={[testMode]} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Test mode' }));
+
+    expect(screen.queryByRole('button', { name: 'New chat' })).toBeNull();
+  });
+});
+
+describe(unitTest('collectLegendAIChatModes'), () => {
+  const mode = (key: string): LegendAIChatModeConfig => ({
+    key,
+    label: key,
+    renderChat: () => null,
+  });
+
+  test("every plugin's modes, in order; one without the method adds none", () => {
+    const plugins = [
+      { getExtraLegendAIChatModeConfigs: () => [mode('a'), mode('b')] },
+      {},
+      { getExtraLegendAIChatModeConfigs: () => [mode('c')] },
+    ] as unknown as LegendApplicationPlugin[];
+
+    expect(collectLegendAIChatModes(plugins).map((m) => m.key)).toEqual([
+      'a',
+      'b',
+      'c',
+    ]);
   });
 });

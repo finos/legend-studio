@@ -14,30 +14,21 @@
  * limitations under the License.
  */
 
-import { useRef, useLayoutEffect, useEffect, useState, useMemo } from 'react';
-import {
-  SendIcon,
-  LoadingIcon,
-  SquareIcon,
-  SparkleStarsIcon,
-  CheckIcon,
-  clsx,
-} from '@finos/legend-art';
+import { useRef, useEffect, useState, useMemo } from 'react';
+import { SparkleStarsIcon, CheckIcon, clsx } from '@finos/legend-art';
 import {
   type LegendAIChatState,
   type LegendAIScopeItem,
   LEGEND_AI_DEFAULT_MODEL_LABEL,
 } from '../LegendAITypes.js';
 import { LegendAIScopeSelector } from './LegendAIScopeSelector.js';
-
-const MAX_TEXTAREA_HEIGHT = 160;
+import { LegendAIChatComposer } from './LegendAIChatComposer.js';
 
 export const LegendAIChatInput = (props: {
   state: LegendAIChatState;
   scopes: LegendAIScopeItem[];
 }): React.ReactNode => {
   const { state, scopes } = props;
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
 
@@ -75,19 +66,16 @@ export const LegendAIChatInput = (props: {
     };
   }, [isModelDropdownOpen]);
 
-  useLayoutEffect(() => {
-    const el = textareaRef.current;
-    if (el) {
-      el.style.height = 'auto';
-      const nextHeight = Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT);
-      el.style.height = `${nextHeight}px`;
-    }
-  }, [state.questionText]);
-
   return (
-    <div className="legend-ai__input-area">
-      <div className="legend-ai__question-wrapper">
-        {state.selectedScopes.length > 0 && (
+    <LegendAIChatComposer
+      value={state.questionText}
+      onChange={state.setQuestionText}
+      onSend={(): void => state.askQuestion()}
+      onStop={(): void => state.stopGeneration()}
+      isSending={state.isSending}
+      placeholder="Ask anything about your data..."
+      header={
+        state.selectedScopes.length > 0 && (
           <LegendAIScopeSelector
             scopes={scopes}
             selectedScopes={state.selectedScopes}
@@ -95,120 +83,69 @@ export const LegendAIChatInput = (props: {
             onRemoveScope={state.removeScope}
             hideSelector={true}
           />
-        )}
-
-        <div className="legend-ai__input-top">
-          <textarea
-            ref={textareaRef}
-            className="legend-ai__question"
-            placeholder="Ask anything about your data..."
-            rows={1}
-            spellCheck={false}
-            value={state.questionText}
-            onChange={(e): void => state.setQuestionText(e.target.value)}
-            onKeyDown={(e): void => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (!state.isSending && state.questionText.trim()) {
-                  state.askQuestion();
-                }
-              }
-            }}
+        )
+      }
+      leftSlot={
+        <>
+          <LegendAIScopeSelector
+            scopes={scopes}
+            selectedScopes={state.selectedScopes}
+            onToggleScope={state.toggleScope}
+            onRemoveScope={state.removeScope}
+            hidePills={true}
           />
-        </div>
 
-        <div className="legend-ai__input-bottom">
-          <div className="legend-ai__input-bottom-left">
-            <LegendAIScopeSelector
-              scopes={scopes}
-              selectedScopes={state.selectedScopes}
-              onToggleScope={state.toggleScope}
-              onRemoveScope={state.removeScope}
-              hidePills={true}
-            />
-
-            {state.availableModelNames.length > 0 && (
-              <div className="legend-ai__model-selector" ref={modelDropdownRef}>
-                <button
-                  type="button"
-                  className="legend-ai__model-btn"
-                  title="Select model"
-                  aria-label="Select model"
-                  aria-haspopup="true"
-                  aria-expanded={isModelDropdownOpen}
-                  onClick={(): void =>
-                    setIsModelDropdownOpen((current) => !current)
-                  }
-                >
-                  <span className="legend-ai__model-btn-icon">
-                    <SparkleStarsIcon />
-                  </span>
-                  <span className="legend-ai__model-btn-label">
-                    {modelLabel}
-                  </span>
-                </button>
-                {isModelDropdownOpen && (
-                  <div className="legend-ai__model-dropdown">
-                    {state.availableModelNames.map((modelName) => {
-                      const isSelected = modelName === effectiveModelName;
-                      return (
-                        <button
-                          key={modelName}
-                          type="button"
-                          aria-pressed={isSelected}
-                          className={clsx('legend-ai__model-dropdown-item', {
-                            'legend-ai__model-dropdown-item--selected':
-                              isSelected,
-                          })}
-                          onClick={(): void => {
-                            state.setSelectedModelName(modelName);
-                            setIsModelDropdownOpen(false);
-                          }}
-                        >
-                          <span className="legend-ai__model-dropdown-item-label">
-                            {modelName}
-                          </span>
-                          <span className="legend-ai__model-dropdown-item-check">
-                            {isSelected ? <CheckIcon /> : null}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="legend-ai__input-bottom-right">
-            {state.isSending && (
+          {state.availableModelNames.length > 0 && (
+            <div className="legend-ai__model-selector" ref={modelDropdownRef}>
               <button
                 type="button"
-                title="Stop generation"
-                aria-label="Stop generation"
-                className="legend-ai__stop-btn"
-                onClick={(): void => state.stopGeneration()}
+                className="legend-ai__model-btn"
+                title="Select model"
+                aria-label="Select model"
+                aria-haspopup="true"
+                aria-expanded={isModelDropdownOpen}
+                onClick={(): void =>
+                  setIsModelDropdownOpen((current) => !current)
+                }
               >
-                <SquareIcon />
+                <span className="legend-ai__model-btn-icon">
+                  <SparkleStarsIcon />
+                </span>
+                <span className="legend-ai__model-btn-label">{modelLabel}</span>
               </button>
-            )}
-            <button
-              type="button"
-              title="Send"
-              aria-label="Send"
-              className="legend-ai__send-btn"
-              disabled={state.isSending || !state.questionText.trim()}
-              onClick={(): void => state.askQuestion()}
-            >
-              {state.isSending ? (
-                <LoadingIcon isLoading={true} />
-              ) : (
-                <SendIcon />
+              {isModelDropdownOpen && (
+                <div className="legend-ai__model-dropdown">
+                  {state.availableModelNames.map((modelName) => {
+                    const isSelected = modelName === effectiveModelName;
+                    return (
+                      <button
+                        key={modelName}
+                        type="button"
+                        aria-pressed={isSelected}
+                        className={clsx('legend-ai__model-dropdown-item', {
+                          'legend-ai__model-dropdown-item--selected':
+                            isSelected,
+                        })}
+                        onClick={(): void => {
+                          state.setSelectedModelName(modelName);
+                          setIsModelDropdownOpen(false);
+                        }}
+                      >
+                        <span className="legend-ai__model-dropdown-item-label">
+                          {modelName}
+                        </span>
+                        <span className="legend-ai__model-dropdown-item-check">
+                          {isSelected ? <CheckIcon /> : null}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+            </div>
+          )}
+        </>
+      }
+    />
   );
 };

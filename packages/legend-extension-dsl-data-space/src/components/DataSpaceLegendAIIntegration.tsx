@@ -20,6 +20,7 @@ import { type QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
 import {
   LegendAIChat,
   LegendAIErrorBoundary,
+  collectLegendAIChatModes,
   findLegendAIPlugin,
   LegendAIChatTelemetryEventType,
   bridgeLegendAIServices,
@@ -79,6 +80,13 @@ const DataSpaceLegendAIIntegrationInner = observer(
     const legendAIPlugin = useMemo(
       () =>
         findLegendAIPlugin(
+          dataSpaceViewerState.applicationStore.pluginManager.getApplicationPlugins(),
+        ),
+      [dataSpaceViewerState],
+    );
+    const chatModes = useMemo(
+      () =>
+        collectLegendAIChatModes(
           dataSpaceViewerState.applicationStore.pluginManager.getApplicationPlugins(),
         ),
       [dataSpaceViewerState],
@@ -193,6 +201,7 @@ const DataSpaceLegendAIIntegrationInner = observer(
 
     return (
       <LegendAIChat
+        modes={chatModes}
         services={services}
         coordinates={coordinates}
         config={config}

@@ -307,6 +307,32 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl =
     }`;
 
 /**
+ * A workspace in Legend Studio's editor (`LEGEND_STUDIO_ROUTE_PATTERN.EDIT_GROUP_WORKSPACE` / `EDIT_WORKSPACE`).
+ *
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioWorkspaceUrl = (
+  studioApplicationUrl: string,
+  projectId: string,
+  workspaceId: string,
+  isGroupWorkspace = true,
+): string =>
+  `${studioApplicationUrl}/edit/${projectId}/${
+    isGroupWorkspace ? 'groupWorkspace/' : ''
+  }${encodeURIComponent(workspaceId)}/`;
+
+/**
+ * A review in Legend Studio (`LEGEND_STUDIO_ROUTE_PATTERN.REVIEW`).
+ *
+ * @external_application_navigation This depends on Legend Studio routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateStudioReviewUrl = (
+  studioApplicationUrl: string,
+  projectId: string,
+  reviewId: string,
+): string => `${studioApplicationUrl}/review/${projectId}/${reviewId}`;
+
+/**
  * @external_application_navigation This depends on Ingest Environment swagger URL and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateIngestEnvironemntUrl = (

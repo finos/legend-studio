@@ -16,6 +16,7 @@
 
 export * from './LegendAITypes.js';
 export * from './LegendAI_LegendApplicationPlugin_Extension.js';
+export * from './LegendAIChatMode_LegendApplicationPlugin_Extension.js';
 export {
   bridgeLegendAIServices,
   useLegendAIChatTelemetryLogger,
@@ -23,8 +24,61 @@ export {
 export {
   LegendAIChat,
   LEGEND_AI_ANCHOR_ID,
-  renderStepStatusIcon,
 } from './components/LegendAIChat.js';
+export {
+  LegendAIThinkingSteps,
+  renderStepStatusIcon,
+} from './components/LegendAIThinkingSteps.js';
+export {
+  LegendAIElapsedTime,
+  formatLegendAICompactDuration,
+} from './components/LegendAIElapsedTime.js';
+export {
+  LegendAIUserMessageView,
+  LegendAIAssistantMessageFrame,
+  LegendAIAnswerCodeBlock,
+  LegendAIMarkdownAnswer,
+  LegendAIWorkingIndicator,
+  LegendAIErrorText,
+  LegendAIEmptyState,
+} from './components/LegendAIMessageViews.js';
+export {
+  extractLegendAIHtmlBlock,
+  parseLegendAIEnvelope,
+} from './components/LegendAIAnswerBlocks.js';
+export { LegendAIConversation } from './components/LegendAIConversation.js';
+export {
+  LegendAIChatComposer,
+  LegendAIAttachButton,
+} from './components/LegendAIChatComposer.js';
+export {
+  LegendAIProcessPanel,
+  LegendAIProcessStepRow,
+  LegendAIProcessActivity,
+  type LegendAIProcessRunning,
+  type LegendAIProcessStep,
+} from './components/LegendAIProcessPanel.js';
+export {
+  LegendAIActionBar,
+  LegendAIActionButton,
+  LegendAIActionCard,
+  LegendAIActionLink,
+  LegendAIWaitingArea,
+} from './components/LegendAIActions.js';
+export {
+  LegendAIConversationState,
+  MAX_HISTORY_TURNS,
+  createLegendAIChatMessage,
+  type LegendAIChatMessage,
+  type LegendAIProgressNote,
+  type LegendAITurnStreamer,
+} from './stores/LegendAIConversationState.js';
+// The A2A client and the turn it takes. The stream parsing behind it stays internal until a second
+// consumer needs it.
+export {
+  A2AMessageStreamClient,
+  type A2AMessageStreamTurn,
+} from './agent/A2AMessageStreamClient.js';
 export { LegendAIChatToggle } from './components/LegendAIChatToggle.js';
 export {
   isStringColumn,

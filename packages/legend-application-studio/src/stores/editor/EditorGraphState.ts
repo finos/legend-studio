@@ -27,12 +27,10 @@ import {
   type GeneratorFn,
   type PlainObject,
   LogEvent,
-  UnsupportedOperationError,
   assertErrorThrown,
   assertTrue,
   isNonNullable,
   NetworkClientError,
-  guaranteeNonNullable,
   StopWatch,
   filterByType,
   ActionState,
@@ -42,7 +40,7 @@ import { ElementEditorState } from './editor-state/element-editor-state/ElementE
 import { GraphGenerationState } from './editor-state/GraphGenerationState.js';
 import { MODEL_IMPORT_NATIVE_INPUT_TYPE } from './editor-state/ModelImporterState.js';
 import type { DSL_LegendStudioApplicationPlugin_Extension } from '../LegendStudioApplicationPlugin.js';
-import { type Entity, EntitiesWithOrigin } from '@finos/legend-storage';
+import type { Entity, EntitiesWithOrigin } from '@finos/legend-storage';
 import {
   type EntityChange,
   type ProjectDependency,
@@ -50,11 +48,10 @@ import {
   applyEntityChanges,
 } from '@finos/legend-server-sdlc';
 import {
+  type ProjectDependencyCoordinates,
   type ProjectDependencyGraphReport,
-  ProjectVersionEntities,
-  ProjectDependencyCoordinates,
-  RawProjectDependencyReport,
-  buildDependencyReport,
+  buildProjectDependencyCoordinates,
+  collectIndexedDependencyEntities,
 } from '@finos/legend-server-depot';
 import {
   type EngineError,
@@ -728,118 +725,22 @@ export class EditorGraphState {
   async getIndexedDependencyEntities(
     dependencyReport?: ProjectDependencyGraphReport | undefined,
   ): Promise<Map<string, EntitiesWithOrigin>> {
-    const dependencyEntitiesIndex = new Map<string, EntitiesWithOrigin>();
     const currentConfiguration =
       this.editorStore.projectConfigurationEditorState
         .currentProjectConfiguration;
     try {
-      if (currentConfiguration.projectDependencies.length) {
-        const dependencyCoordinates =
-          await this.buildProjectDependencyCoordinates(
-            currentConfiguration.projectDependencies,
-          );
-        // NOTE: if A@v1 is transitive dependencies of 2 or more
-        // direct dependencies, metadata server will take care of deduplication
-        const dependencyEntitiesJson =
-          await this.editorStore.depotServerClient.collectDependencyEntities(
-            dependencyCoordinates.map((e) =>
-              ProjectDependencyCoordinates.serialization.toJson(e),
-            ),
-            true,
-            true,
-          );
-        const dependencyEntities = dependencyEntitiesJson.map((e) =>
-          ProjectVersionEntities.serialization.fromJson(e),
-        );
-        const dependencyProjects = new Map<string, Set<string>>();
-        dependencyEntities.forEach((dependencyInfo) => {
-          const projectId = dependencyInfo.id;
-          // There are a few validations that must be done:
-          // 1. Unlike above, if in the depdendency graph, we have both A@v1 and A@v2
-          //    then we need to throw. Both SDLC and metadata server should handle this
-          //    validation, but haven't, so for now, we can do that in Studio.
-          // 2. Same as the previous case, but for version-to-version transformation
-          //    This is a special case that needs handling, right now, SDLC does auto
-          //    healing, by scanning all the path and convert them into versioned path
-          //    e.g. model::someClass -> project1::v1_0_0::model::someClass
-          //    But this is a rare and advanced use-case which we will not attempt to handle now.
-          if (dependencyProjects.has(projectId)) {
-            dependencyProjects.get(projectId)?.add(dependencyInfo.versionId);
-          } else {
-            dependencyProjects.set(
-              dependencyInfo.id,
-              new Set<string>([dependencyInfo.versionId]),
-            );
-          }
-          dependencyEntitiesIndex.set(
-            dependencyInfo.id,
-            new EntitiesWithOrigin(
-              dependencyInfo.groupId,
-              dependencyInfo.artifactId,
-              dependencyInfo.versionId,
-              dependencyInfo.entities,
-            ),
-          );
-        });
-        const hasConflicts = Array.from(dependencyProjects.entries()).find(
-          ([k, v]) => v.size > 1,
-        );
-        if (hasConflicts) {
-          let dependencyInfo: ProjectDependencyGraphReport | undefined =
-            dependencyReport;
-          if (!dependencyInfo) {
-            // No dependency report was provided, need to fetch it
-            try {
-              const dependencyTree =
-                await this.editorStore.depotServerClient.analyzeDependencyTree(
-                  dependencyCoordinates.map((e) =>
-                    ProjectDependencyCoordinates.serialization.toJson(e),
-                  ),
-                );
-              const rawReport =
-                RawProjectDependencyReport.serialization.fromJson(
-                  dependencyTree,
-                );
-              dependencyInfo = buildDependencyReport(rawReport);
-            } catch (error) {
-              assertErrorThrown(error);
-              this.editorStore.applicationStore.logService.error(
-                LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
-                error,
-              );
-            }
-          } else {
-          }
-          const startErrorMessage =
-            'Depending on multiple versions of a project is not supported. Found conflicts:\n';
-          if (dependencyInfo?.conflicts.length) {
-            const conflictingProjects = dependencyInfo.conflicts
-              .map(
-                (c) =>
-                  `project: ${c.groupId}:${c.artifactId}\nversions:[${c.versions
-                    .map((v) => v.versionId)
-                    .join(',')}]`,
-              )
-              .join('\n');
-            throw new UnsupportedOperationError(
-              startErrorMessage + conflictingProjects,
-            );
-          } else {
-            const conflictMessages = Array.from(dependencyProjects.entries())
-              .filter(([, v]) => v.size > 1)
-              .map(
-                ([k, v]) =>
-                  `project: ${k}\n versions: ${Array.from(v.values()).join(
-                    ',',
-                  )}`,
-              )
-              .join('\n\n');
-            throw new UnsupportedOperationError(
-              startErrorMessage + conflictMessages,
-            );
-          }
-        }
-      }
+      return await collectIndexedDependencyEntities(
+        this.editorStore.depotServerClient,
+        await this.buildProjectDependencyCoordinates(
+          currentConfiguration.projectDependencies,
+        ),
+        dependencyReport,
+        (error) =>
+          this.editorStore.applicationStore.logService.error(
+            LogEvent.create(LEGEND_STUDIO_APP_EVENT.DEPOT_MANAGER_FAILURE),
+            error,
+          ),
+      );
     } catch (error) {
       assertErrorThrown(error);
       const message = `Can't acquire dependency entitites. Error: ${error.message}`;
@@ -850,30 +751,12 @@ export class EditorGraphState {
       this.editorStore.applicationStore.notificationService.notifyError(error);
       throw new DependencyGraphBuilderError(error);
     }
-    return dependencyEntitiesIndex;
   }
 
   async buildProjectDependencyCoordinates(
     projectDependencies: ProjectDependency[],
   ): Promise<ProjectDependencyCoordinates[]> {
-    return Promise.all(
-      projectDependencies.map(async (dep) => {
-        const exclusionCoordinates = (dep.exclusions ?? []).map(
-          (exclusion) => ({
-            groupId: guaranteeNonNullable(exclusion.groupId),
-            artifactId: guaranteeNonNullable(exclusion.artifactId),
-          }),
-        );
-        return Promise.resolve(
-          new ProjectDependencyCoordinates(
-            guaranteeNonNullable(dep.groupId),
-            guaranteeNonNullable(dep.artifactId),
-            dep.versionId,
-            exclusionCoordinates.length > 0 ? exclusionCoordinates : undefined,
-          ),
-        );
-      }),
-    );
+    return buildProjectDependencyCoordinates(projectDependencies);
   }
 
   // -------------------------------------------------- UTILITIES -----------------------------------------------------

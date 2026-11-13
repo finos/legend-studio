@@ -35,7 +35,6 @@ import {
   PythonIcon,
   JupyterIcon,
   CubeIcon,
-  MarkdownTextViewer,
   clsx,
 } from '@finos/legend-art';
 import { assertErrorThrown, noop } from '@finos/legend-shared';
@@ -44,6 +43,10 @@ import type {
   LegendAIPythonCodegenRequest,
   LegendAIDataCubeQueryTranslationRequest,
 } from '../LegendAI_LegendApplicationPlugin_Extension.js';
+import type {
+  LegendAIChatModeConfig,
+  LegendAIChatModeContext,
+} from '../LegendAIChatMode_LegendApplicationPlugin_Extension.js';
 import {
   type LegendAIChatProps,
   type LegendAIAssistantMessage,
@@ -53,7 +56,6 @@ import {
   type LegendAIQuestionIntent,
   type LegendAIChatTelemetryEvent,
   LegendAIMessageFeedbackRating,
-  LegendAIThinkingStepStatus,
   LegendAIMessageRole,
   LegendAIErrorType,
   LegendAIPythonCodeStatus,
@@ -71,6 +73,16 @@ import { LegendAIResultGrid } from './LegendAIResultGrid.js';
 import { LegendAIAnalysisPanel } from './LegendAIAnalysisPanel.js';
 import { LegendAIChatInput } from './LegendAIChatInput.js';
 import { buildSuggestedQueries } from './LegendAIChatHelpers.js';
+import { LegendAIThinkingSteps } from './LegendAIThinkingSteps.js';
+import {
+  LegendAIAssistantMessageFrame,
+  LegendAIEmptyState,
+  LegendAIErrorText,
+  LegendAIMarkdownAnswer,
+  LegendAIUserMessageView,
+  LegendAIWorkingIndicator,
+} from './LegendAIMessageViews.js';
+import { LegendAIConversation } from './LegendAIConversation.js';
 
 export const LEGEND_AI_ANCHOR_ID = 'legend-ai-anchor';
 
@@ -210,10 +222,6 @@ function splitCombinedAnswer(textAnswer: string | null): {
   };
 }
 
-const AISummaryRenderer = ({ value }: { value: string }): React.ReactNode => (
-  <MarkdownTextViewer value={{ value }} className="legend-ai__text-answer-md" />
-);
-
 const DEFAULT_SCOPES: LegendAIScopeItem[] = [
   {
     id: 'legend-ai-mcp',
@@ -221,19 +229,6 @@ const DEFAULT_SCOPES: LegendAIScopeItem[] = [
     description: 'Model Context Protocol via Marketplace /mcp proxy',
   },
 ];
-
-export function renderStepStatusIcon(
-  status: LegendAIThinkingStepStatus,
-): React.ReactNode {
-  if (status === LegendAIThinkingStepStatus.ACTIVE) {
-    return <LoadingIcon isLoading={true} />;
-  }
-  return status === LegendAIThinkingStepStatus.DONE ? (
-    <CheckIcon />
-  ) : (
-    <TimesIcon />
-  );
-}
 
 const SuggestionButton = (props: {
   query: string;
@@ -437,445 +432,438 @@ const AssistantMessageView = memo(function AssistantMessageView(props: {
   );
 
   return (
-    <div className="legend-ai__msg legend-ai__msg--assistant">
-      <div className="legend-ai__msg-avatar">
-        <SparkleStarsIcon />
-      </div>
-      <div className="legend-ai__msg-content">
-        {visibleThinkingSteps.length > 0 && (
-          <div className="legend-ai__thinking">
-            {!msg.isProcessing && (
+    <LegendAIAssistantMessageFrame>
+      {visibleThinkingSteps.length > 0 && (
+        <LegendAIThinkingSteps
+          steps={visibleThinkingSteps}
+          isOpen={isThinkingVisible}
+          toggleLabel={`Thought for ${msg.thinkingDuration ?? '...'}s`}
+          onToggle={
+            msg.isProcessing
+              ? undefined
+              : (): void => onToggleThinking(msgIndex)
+          }
+        />
+      )}
+
+      {metadataContext && msg.gridData && (
+        <div className="legend-ai__inline-answer">
+          <LegendAIMarkdownAnswer value={metadataContext} />
+        </div>
+      )}
+
+      {msg.sql && (
+        <details
+          className="legend-ai__sql-details"
+          open={msg.gridData !== null}
+          onToggle={(event): void =>
+            onLogTelemetryEvent?.({
+              type: LegendAIChatTelemetryEventType.SQL_DETAILS_TOGGLED,
+              shown: event.currentTarget.open,
+            })
+          }
+        >
+          <summary className="legend-ai__sql-details-summary">
+            {msg.gridData === null ? 'Show the query I tried' : 'Query'}
+          </summary>
+          <div className="legend-ai__sql-block">
+            <div className="legend-ai__sql-block-header">
+              <span className="legend-ai__sql-block-header-icon">
+                <CodeIcon />
+              </span>
+              <span>Generated SQL</span>
+              {msg.sqlGenTime && (
+                <span className="legend-ai__sql-block-time">
+                  {msg.sqlGenTime}s
+                </span>
+              )}
               <button
                 type="button"
-                className="legend-ai__thinking-toggle"
-                onClick={(): void => onToggleThinking(msgIndex)}
+                className="legend-ai__sql-copy-btn"
+                title="Copy SQL"
+                aria-label="Copy SQL"
+                onClick={handleCopySql}
               >
-                <span className="legend-ai__thinking-toggle-icon">
-                  {isThinkingVisible ? <CaretDownIcon /> : <CaretRightIcon />}
-                </span>
-                Thought for {msg.thinkingDuration ?? '...'}s
+                {sqlCopied ? (
+                  <span className="legend-ai__sql-copy-btn--copied">
+                    <CheckIcon />
+                  </span>
+                ) : (
+                  <CopyIcon />
+                )}
               </button>
-            )}
-            {isThinkingVisible && (
-              <div className="legend-ai__thinking-steps">
-                {visibleThinkingSteps.map((step) => (
-                  <div
-                    key={step.id}
-                    className={clsx(
-                      'legend-ai__thinking-step',
-                      `legend-ai__thinking-step--${step.status}`,
-                    )}
-                  >
-                    <span className="legend-ai__thinking-step-icon">
-                      {renderStepStatusIcon(step.status)}
-                    </span>
-                    <span>{step.label}</span>
-                  </div>
-                ))}
+            </div>
+            <div className="legend-ai__sql-scroll">
+              <pre className="legend-ai__sql-display">{msg.sql}</pre>
+            </div>
+          </div>
+        </details>
+      )}
+
+      {msg.isExecuting && (
+        <LegendAIWorkingIndicator label="Executing query..." />
+      )}
+
+      {msg.error && (
+        <LegendAIErrorText>
+          {msg.error}
+          {msg.errorType === LegendAIErrorType.PERMISSION &&
+            hasPermissionAccessLinks && (
+              <div className="legend-ai__permission-error-action">
+                <span className="legend-ai__permission-error-note">
+                  Need access?
+                </span>
+                <div className="legend-ai__permission-error-btns">
+                  {enghubDocUrl && (
+                    <a
+                      className="legend-ai__permission-error-btn"
+                      href={enghubDocUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLinkIcon />
+                      <span>View Documentation</span>
+                    </a>
+                  )}
+                  {enthubRequestAccessUrl && (
+                    <a
+                      className="legend-ai__permission-error-btn legend-ai__permission-error-btn--primary"
+                      href={enthubRequestAccessUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLinkIcon />
+                      <span>Request Access</span>
+                    </a>
+                  )}
+                </div>
               </div>
             )}
-          </div>
-        )}
-
-        {metadataContext && msg.gridData && (
-          <div className="legend-ai__inline-answer">
-            <MarkdownTextViewer
-              value={{ value: metadataContext }}
-              className="legend-ai__text-answer-md"
-            />
-          </div>
-        )}
-
-        {msg.sql && (
-          <details
-            className="legend-ai__sql-details"
-            open={msg.gridData !== null}
-            onToggle={(event): void =>
-              onLogTelemetryEvent?.({
-                type: LegendAIChatTelemetryEventType.SQL_DETAILS_TOGGLED,
-                shown: event.currentTarget.open,
-              })
-            }
-          >
-            <summary className="legend-ai__sql-details-summary">
-              {msg.gridData === null ? 'Show the query I tried' : 'Query'}
-            </summary>
-            <div className="legend-ai__sql-block">
-              <div className="legend-ai__sql-block-header">
-                <span className="legend-ai__sql-block-header-icon">
-                  <CodeIcon />
+          {msg.errorType === LegendAIErrorType.EXECUTION &&
+            onRequestAccess &&
+            msg.queriedAccessPointGroups.length > 0 &&
+            looksLikeAccessError(msg.error) && (
+              <div className="legend-ai__permission-error-action">
+                <span className="legend-ai__permission-error-note">
+                  {msg.queriedAccessPointGroups.length === 1
+                    ? 'You may not have access to this data. You can request access below.'
+                    : `This query uses ${msg.queriedAccessPointGroups.length} access point groups. You can request access to each one below.`}
                 </span>
-                <span>Generated SQL</span>
-                {msg.sqlGenTime && (
-                  <span className="legend-ai__sql-block-time">
-                    {msg.sqlGenTime}s
-                  </span>
-                )}
+                <div className="legend-ai__permission-error-btns">
+                  {msg.queriedAccessPointGroups.map((apgTitle) => (
+                    <button
+                      key={apgTitle}
+                      type="button"
+                      className="legend-ai__permission-error-btn legend-ai__permission-error-btn--primary"
+                      onClick={(): void => onRequestAccess(apgTitle)}
+                    >
+                      <ExternalLinkIcon />
+                      <span>Request Access — {apgTitle}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+        </LegendAIErrorText>
+      )}
+
+      {msg.gridData && (
+        <div className="legend-ai__results-block">
+          <div className="legend-ai__results-header">
+            <span className="legend-ai__results-header-icon">
+              <TableIcon />
+            </span>
+            <span>Results</span>
+            <span className="legend-ai__results-meta">
+              {msg.gridData.rowData.length} row
+              {msg.gridData.rowData.length === 1 ? '' : 's'}
+              {msg.execTime ? (
+                <>
+                  {' '}
+                  <DotIcon className="legend-ai__results-meta-dot" />{' '}
+                  {msg.execTime}s
+                </>
+              ) : (
+                ''
+              )}
+            </span>
+          </div>
+          <LegendAIResultGrid data={msg.gridData} />
+        </div>
+      )}
+
+      {plainAnswer && (
+        <div className="legend-ai__inline-answer">
+          <LegendAIMarkdownAnswer value={plainAnswer} />
+        </div>
+      )}
+
+      {analysisSummary && msg.gridData && (
+        <LegendAIAnalysisPanel
+          gridData={msg.gridData}
+          summary={analysisSummary}
+          SummaryRenderer={LegendAIMarkdownAnswer}
+        />
+      )}
+
+      {msg.isProcessing && !msg.isExecuting && msg.gridData && (
+        <div className="legend-ai__analyzing">
+          <LoadingIcon isLoading={true} />
+          <span>Analyzing results...</span>
+        </div>
+      )}
+
+      {!msg.isProcessing &&
+        msg.suggestedQueries.length > 0 &&
+        onSuggestedQueryClick && (
+          <div className="legend-ai__follow-up-suggestions">
+            <span className="legend-ai__follow-up-label">
+              Try a data query:
+            </span>
+            {msg.suggestedQueries.map((q, position) => (
+              <SuggestionButton
+                key={q}
+                query={q}
+                position={position}
+                className="legend-ai__follow-up-btn"
+                source={LegendAISuggestedQuerySource.FOLLOW_UP}
+                onSelect={onSuggestedQueryClick}
+                {...(onLogTelemetryEvent ? { onLogTelemetryEvent } : {})}
+              />
+            ))}
+          </div>
+        )}
+
+      {msg.fallbackAction && !msg.isProcessing && onFallbackAction && (
+        <button
+          type="button"
+          className="legend-ai__fallback-action-btn"
+          onClick={(): void => {
+            if (msg.fallbackAction?.actionId) {
+              onFallbackAction(msg.id);
+            }
+          }}
+        >
+          <SparkleStarsIcon />
+          <span>{msg.fallbackAction.label}</span>
+        </button>
+      )}
+
+      {(onRequestPython || onOpenInDataCube) &&
+        !msg.isProcessing &&
+        (msg.sql !== null || msg.gridData !== null) && (
+          <div className="legend-ai__python-block">
+            <div className="legend-ai__cta-row">
+              {onRequestPython && (
                 <button
                   type="button"
-                  className="legend-ai__sql-copy-btn"
-                  title="Copy SQL"
-                  aria-label="Copy SQL"
-                  onClick={handleCopySql}
+                  className="legend-ai__python-cta"
+                  onClick={handleTogglePython}
                 >
-                  {sqlCopied ? (
-                    <span className="legend-ai__sql-copy-btn--copied">
-                      <CheckIcon />
-                    </span>
-                  ) : (
-                    <CopyIcon />
-                  )}
+                  <PythonIcon />
+                  <span>
+                    {showPython
+                      ? 'Hide Python code'
+                      : 'Want the Python code for this query?'}
+                  </span>
+                  <span className="legend-ai__python-cta-caret">
+                    {showPython ? <CaretDownIcon /> : <CaretRightIcon />}
+                  </span>
                 </button>
-              </div>
-              <div className="legend-ai__sql-scroll">
-                <pre className="legend-ai__sql-display">{msg.sql}</pre>
-              </div>
-            </div>
-          </details>
-        )}
-
-        {msg.isExecuting && (
-          <div className="legend-ai__executing">
-            <LoadingIcon isLoading={true} />
-            <span>Executing query...</span>
-          </div>
-        )}
-
-        {msg.error && (
-          <div className="legend-ai__exec-error">
-            {msg.error}
-            {msg.errorType === LegendAIErrorType.PERMISSION &&
-              hasPermissionAccessLinks && (
-                <div className="legend-ai__permission-error-action">
-                  <span className="legend-ai__permission-error-note">
-                    Need access?
-                  </span>
-                  <div className="legend-ai__permission-error-btns">
-                    {enghubDocUrl && (
-                      <a
-                        className="legend-ai__permission-error-btn"
-                        href={enghubDocUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLinkIcon />
-                        <span>View Documentation</span>
-                      </a>
-                    )}
-                    {enthubRequestAccessUrl && (
-                      <a
-                        className="legend-ai__permission-error-btn legend-ai__permission-error-btn--primary"
-                        href={enthubRequestAccessUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <ExternalLinkIcon />
-                        <span>Request Access</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
               )}
-            {msg.errorType === LegendAIErrorType.EXECUTION &&
-              onRequestAccess &&
-              msg.queriedAccessPointGroups.length > 0 &&
-              looksLikeAccessError(msg.error) && (
-                <div className="legend-ai__permission-error-action">
-                  <span className="legend-ai__permission-error-note">
-                    {msg.queriedAccessPointGroups.length === 1
-                      ? 'You may not have access to this data. You can request access below.'
-                      : `This query uses ${msg.queriedAccessPointGroups.length} access point groups. You can request access to each one below.`}
+              {onOpenInDataCube && msg.sql !== null && (
+                <button
+                  type="button"
+                  className="legend-ai__datacube-cta"
+                  onClick={(): void => {
+                    onLogTelemetryEvent?.({
+                      type: LegendAIChatTelemetryEventType.OPEN_IN_DATACUBE_CLICKED,
+                    });
+                    onOpenInDataCube(msg);
+                  }}
+                  disabled={isOpeningInDataCube}
+                  title="Open this query in DataCube"
+                  aria-label="Open this query in DataCube"
+                >
+                  {isOpeningInDataCube ? (
+                    <LoadingIcon isLoading={true} />
+                  ) : (
+                    <CubeIcon />
+                  )}
+                  <span>
+                    {isOpeningInDataCube
+                      ? 'Opening in DataCube...'
+                      : 'Open in DataCube'}
                   </span>
-                  <div className="legend-ai__permission-error-btns">
-                    {msg.queriedAccessPointGroups.map((apgTitle) => (
-                      <button
-                        key={apgTitle}
-                        type="button"
-                        className="legend-ai__permission-error-btn legend-ai__permission-error-btn--primary"
-                        onClick={(): void => onRequestAccess(apgTitle)}
-                      >
-                        <ExternalLinkIcon />
-                        <span>Request Access — {apgTitle}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                  <span className="legend-ai__datacube-cta-launch">
+                    <ExternalLinkIcon />
+                  </span>
+                </button>
               )}
-          </div>
-        )}
-
-        {msg.gridData && (
-          <div className="legend-ai__results-block">
-            <div className="legend-ai__results-header">
-              <span className="legend-ai__results-header-icon">
-                <TableIcon />
-              </span>
-              <span>Results</span>
-              <span className="legend-ai__results-meta">
-                {msg.gridData.rowData.length} row
-                {msg.gridData.rowData.length === 1 ? '' : 's'}
-                {msg.execTime ? (
-                  <>
-                    {' '}
-                    <DotIcon className="legend-ai__results-meta-dot" />{' '}
-                    {msg.execTime}s
-                  </>
-                ) : (
-                  ''
-                )}
-              </span>
             </div>
-            <LegendAIResultGrid data={msg.gridData} />
-          </div>
-        )}
-
-        {plainAnswer && (
-          <div className="legend-ai__inline-answer">
-            <MarkdownTextViewer
-              value={{ value: plainAnswer }}
-              className="legend-ai__text-answer-md"
-            />
-          </div>
-        )}
-
-        {analysisSummary && msg.gridData && (
-          <LegendAIAnalysisPanel
-            gridData={msg.gridData}
-            summary={analysisSummary}
-            SummaryRenderer={AISummaryRenderer}
-          />
-        )}
-
-        {msg.isProcessing && !msg.isExecuting && msg.gridData && (
-          <div className="legend-ai__analyzing">
-            <LoadingIcon isLoading={true} />
-            <span>Analyzing results...</span>
-          </div>
-        )}
-
-        {!msg.isProcessing &&
-          msg.suggestedQueries.length > 0 &&
-          onSuggestedQueryClick && (
-            <div className="legend-ai__follow-up-suggestions">
-              <span className="legend-ai__follow-up-label">
-                Try a data query:
-              </span>
-              {msg.suggestedQueries.map((q, position) => (
-                <SuggestionButton
-                  key={q}
-                  query={q}
-                  position={position}
-                  className="legend-ai__follow-up-btn"
-                  source={LegendAISuggestedQuerySource.FOLLOW_UP}
-                  onSelect={onSuggestedQueryClick}
-                  {...(onLogTelemetryEvent ? { onLogTelemetryEvent } : {})}
-                />
-              ))}
-            </div>
-          )}
-
-        {msg.fallbackAction && !msg.isProcessing && onFallbackAction && (
-          <button
-            type="button"
-            className="legend-ai__fallback-action-btn"
-            onClick={(): void => {
-              if (msg.fallbackAction?.actionId) {
-                onFallbackAction(msg.id);
-              }
-            }}
-          >
-            <SparkleStarsIcon />
-            <span>{msg.fallbackAction.label}</span>
-          </button>
-        )}
-
-        {(onRequestPython || onOpenInDataCube) &&
-          !msg.isProcessing &&
-          (msg.sql !== null || msg.gridData !== null) && (
-            <div className="legend-ai__python-block">
-              <div className="legend-ai__cta-row">
-                {onRequestPython && (
-                  <button
-                    type="button"
-                    className="legend-ai__python-cta"
-                    onClick={handleTogglePython}
-                  >
-                    <PythonIcon />
-                    <span>
-                      {showPython
-                        ? 'Hide Python code'
-                        : 'Want the Python code for this query?'}
-                    </span>
-                    <span className="legend-ai__python-cta-caret">
-                      {showPython ? <CaretDownIcon /> : <CaretRightIcon />}
-                    </span>
-                  </button>
-                )}
-                {onOpenInDataCube && msg.sql !== null && (
-                  <button
-                    type="button"
-                    className="legend-ai__datacube-cta"
-                    onClick={(): void => {
-                      onLogTelemetryEvent?.({
-                        type: LegendAIChatTelemetryEventType.OPEN_IN_DATACUBE_CLICKED,
-                      });
-                      onOpenInDataCube(msg);
-                    }}
-                    disabled={isOpeningInDataCube}
-                    title="Open this query in DataCube"
-                    aria-label="Open this query in DataCube"
-                  >
-                    {isOpeningInDataCube ? (
-                      <LoadingIcon isLoading={true} />
-                    ) : (
-                      <CubeIcon />
-                    )}
-                    <span>
-                      {isOpeningInDataCube
-                        ? 'Opening in DataCube...'
-                        : 'Open in DataCube'}
-                    </span>
-                    <span className="legend-ai__datacube-cta-launch">
-                      <ExternalLinkIcon />
-                    </span>
-                  </button>
-                )}
-              </div>
-              {showPython && onRequestPython && (
-                <div className="legend-ai__python-panel">
-                  <div className="legend-ai__python-panel-header">
-                    <span className="legend-ai__python-panel-header-icon">
-                      <CodeIcon />
-                    </span>
-                    <span>Python</span>
-                    {pythonEntry?.status === LegendAIPythonCodeStatus.READY &&
-                      pythonEntry.code && (
-                        <button
-                          type="button"
-                          className="legend-ai__sql-copy-btn"
-                          title="Copy Python code"
-                          aria-label="Copy Python code"
-                          onClick={handleCopyPython}
-                        >
-                          {pythonCopied ? (
-                            <span className="legend-ai__sql-copy-btn--copied">
-                              <CheckIcon />
-                            </span>
-                          ) : (
-                            <CopyIcon />
-                          )}
-                        </button>
-                      )}
-                  </div>
-                  {pythonEntry?.status === LegendAIPythonCodeStatus.LOADING && (
-                    <div className="legend-ai__python-panel-loading">
-                      <LoadingIcon isLoading={true} />
-                      <span>Generating Python…</span>
-                    </div>
-                  )}
-                  {pythonEntry?.status === LegendAIPythonCodeStatus.ERROR && (
-                    <div className="legend-ai__python-panel-error">
-                      <span>
-                        Could not generate Python code. Try again in a moment.
-                      </span>
-                      <button
-                        type="button"
-                        className="legend-ai__permission-error-btn"
-                        onClick={(): void => {
-                          onLogTelemetryEvent?.({
-                            type: LegendAIChatTelemetryEventType.PYTHON_CODE_REQUESTED,
-                          });
-                          onRequestPython(msg);
-                        }}
-                      >
-                        Retry
-                      </button>
-                    </div>
-                  )}
-                  {pythonEntry?.status === LegendAIPythonCodeStatus.READY &&
-                    pythonEntry.code === undefined && (
-                      <div className="legend-ai__python-panel-loading">
-                        <span>
-                          Python code is not available for this data source.
-                        </span>
-                      </div>
-                    )}
+            {showPython && onRequestPython && (
+              <div className="legend-ai__python-panel">
+                <div className="legend-ai__python-panel-header">
+                  <span className="legend-ai__python-panel-header-icon">
+                    <CodeIcon />
+                  </span>
+                  <span>Python</span>
                   {pythonEntry?.status === LegendAIPythonCodeStatus.READY &&
                     pythonEntry.code && (
-                      <>
-                        <div className="legend-ai__sql-scroll">
-                          <pre className="legend-ai__sql-display">
-                            {pythonEntry.code.code}
-                          </pre>
-                        </div>
-                        {pythonEntry.code.notebookUrl && (
-                          <div className="legend-ai__python-panel-actions">
-                            <a
-                              className="legend-ai__permission-error-btn"
-                              href={pythonEntry.code.notebookUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <JupyterIcon />
-                              <span>Launch Notebook</span>
-                            </a>
-                          </div>
+                      <button
+                        type="button"
+                        className="legend-ai__sql-copy-btn"
+                        title="Copy Python code"
+                        aria-label="Copy Python code"
+                        onClick={handleCopyPython}
+                      >
+                        {pythonCopied ? (
+                          <span className="legend-ai__sql-copy-btn--copied">
+                            <CheckIcon />
+                          </span>
+                        ) : (
+                          <CopyIcon />
                         )}
-                      </>
+                      </button>
                     )}
                 </div>
-              )}
-            </div>
-          )}
-
-        {canShowFeedback && (
-          <div className="legend-ai__message-feedback">
-            <span className="legend-ai__message-feedback-label">
-              {LEGEND_AI_FEEDBACK_PROMPT}
-            </span>
-            <div className="legend-ai__message-feedback-actions">
-              <button
-                type="button"
-                className={clsx('legend-ai__message-feedback-btn', {
-                  'legend-ai__message-feedback-btn--selected':
-                    selectedFeedbackRating ===
-                    LegendAIMessageFeedbackRating.THUMBS_UP,
-                })}
-                title="Thumbs up"
-                aria-label="Thumbs up"
-                onClick={(): void =>
-                  submitFeedback(LegendAIMessageFeedbackRating.THUMBS_UP)
-                }
-                disabled={feedbackSubmitting}
-              >
-                <LikeIcon />
-              </button>
-              <button
-                type="button"
-                className={clsx('legend-ai__message-feedback-btn', {
-                  'legend-ai__message-feedback-btn--selected':
-                    selectedFeedbackRating ===
-                    LegendAIMessageFeedbackRating.THUMBS_DOWN,
-                })}
-                title="Thumbs down"
-                aria-label="Thumbs down"
-                onClick={(): void =>
-                  submitFeedback(LegendAIMessageFeedbackRating.THUMBS_DOWN)
-                }
-                disabled={feedbackSubmitting}
-              >
-                <DislikeIcon />
-              </button>
-            </div>
+                {pythonEntry?.status === LegendAIPythonCodeStatus.LOADING && (
+                  <div className="legend-ai__python-panel-loading">
+                    <LoadingIcon isLoading={true} />
+                    <span>Generating Python…</span>
+                  </div>
+                )}
+                {pythonEntry?.status === LegendAIPythonCodeStatus.ERROR && (
+                  <div className="legend-ai__python-panel-error">
+                    <span>
+                      Could not generate Python code. Try again in a moment.
+                    </span>
+                    <button
+                      type="button"
+                      className="legend-ai__permission-error-btn"
+                      onClick={(): void => {
+                        onLogTelemetryEvent?.({
+                          type: LegendAIChatTelemetryEventType.PYTHON_CODE_REQUESTED,
+                        });
+                        onRequestPython(msg);
+                      }}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
+                {pythonEntry?.status === LegendAIPythonCodeStatus.READY &&
+                  pythonEntry.code === undefined && (
+                    <div className="legend-ai__python-panel-loading">
+                      <span>
+                        Python code is not available for this data source.
+                      </span>
+                    </div>
+                  )}
+                {pythonEntry?.status === LegendAIPythonCodeStatus.READY &&
+                  pythonEntry.code && (
+                    <>
+                      <div className="legend-ai__sql-scroll">
+                        <pre className="legend-ai__sql-display">
+                          {pythonEntry.code.code}
+                        </pre>
+                      </div>
+                      {pythonEntry.code.notebookUrl && (
+                        <div className="legend-ai__python-panel-actions">
+                          <a
+                            className="legend-ai__permission-error-btn"
+                            href={pythonEntry.code.notebookUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <JupyterIcon />
+                            <span>Launch Notebook</span>
+                          </a>
+                        </div>
+                      )}
+                    </>
+                  )}
+              </div>
+            )}
           </div>
         )}
-      </div>
-    </div>
+
+      {canShowFeedback && (
+        <div className="legend-ai__message-feedback">
+          <span className="legend-ai__message-feedback-label">
+            {LEGEND_AI_FEEDBACK_PROMPT}
+          </span>
+          <div className="legend-ai__message-feedback-actions">
+            <button
+              type="button"
+              className={clsx('legend-ai__message-feedback-btn', {
+                'legend-ai__message-feedback-btn--selected':
+                  selectedFeedbackRating ===
+                  LegendAIMessageFeedbackRating.THUMBS_UP,
+              })}
+              title="Thumbs up"
+              aria-label="Thumbs up"
+              onClick={(): void =>
+                submitFeedback(LegendAIMessageFeedbackRating.THUMBS_UP)
+              }
+              disabled={feedbackSubmitting}
+            >
+              <LikeIcon />
+            </button>
+            <button
+              type="button"
+              className={clsx('legend-ai__message-feedback-btn', {
+                'legend-ai__message-feedback-btn--selected':
+                  selectedFeedbackRating ===
+                  LegendAIMessageFeedbackRating.THUMBS_DOWN,
+              })}
+              title="Thumbs down"
+              aria-label="Thumbs down"
+              onClick={(): void =>
+                submitFeedback(LegendAIMessageFeedbackRating.THUMBS_DOWN)
+              }
+              disabled={feedbackSubmitting}
+            >
+              <DislikeIcon />
+            </button>
+          </div>
+        </div>
+      )}
+    </LegendAIAssistantMessageFrame>
   );
 });
 
+const LegendAIChatModeSwitches = (props: {
+  modes: LegendAIChatModeConfig[];
+  activeKey: string | undefined;
+  onChange: (key: string | undefined) => void;
+}): React.ReactNode => {
+  const { modes, activeKey, onChange } = props;
+  return (
+    <div className="legend-ai__modes" role="group" aria-label="Chat mode">
+      {modes.map((mode) => {
+        const isActive = mode.key === activeKey;
+        return (
+          <button
+            key={mode.key}
+            type="button"
+            className={clsx('legend-ai__mode', {
+              'legend-ai__mode--active': isActive,
+            })}
+            aria-pressed={isActive}
+            onClick={(): void => onChange(isActive ? undefined : mode.key)}
+          >
+            {mode.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
   const {
+    modes = [],
     services,
     coordinates,
     config,
@@ -894,6 +882,29 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
     contextBannerMessage,
     onLogTelemetryEvent,
   } = props;
+  // Modes opened so far stay mounted, hidden while another view is shown, so
+  // switching back finds each conversation where it was.
+  const [activeModeKey, setActiveModeKey] = useState<string | undefined>();
+  const [openedModeKeys, setOpenedModeKeys] = useState<string[]>([]);
+  const activeMode = modes.find((mode) => mode.key === activeModeKey);
+  const switchMode = useCallback((key: string | undefined): void => {
+    setActiveModeKey(key);
+    if (key !== undefined) {
+      setOpenedModeKeys((opened) =>
+        opened.includes(key) ? opened : [...opened, key],
+      );
+    }
+  }, []);
+  const modeContext = useMemo(
+    (): LegendAIChatModeContext => ({
+      dataProductPath: dataProductCoordinates?.data_product,
+      title,
+      groupId: dataProductCoordinates?.group_id,
+      artifactId: dataProductCoordinates?.artifact_id,
+      versionId: dataProductCoordinates?.version,
+    }),
+    [dataProductCoordinates, title],
+  );
   const state = useLegendAIChatState(
     services,
     coordinates,
@@ -1173,16 +1184,27 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
           <SparkleStarsIcon />
         </div>
         <div className="legend-ai__title">{title ?? 'Legend AI'}</div>
+        {modes.length > 0 && (
+          <LegendAIChatModeSwitches
+            modes={modes}
+            activeKey={activeMode?.key}
+            onChange={switchMode}
+          />
+        )}
         <div className="legend-ai__header-actions">
-          <button
-            type="button"
-            className="legend-ai__header-action"
-            title="New chat"
-            aria-label="New chat"
-            onClick={(): void => state.clearChat()}
-          >
-            <PlusIcon />
-          </button>
+          {/* It clears the data chat, which a mode hides: pressed there, it
+              would wipe that conversation with nothing visible changing. */}
+          {!activeMode && (
+            <button
+              type="button"
+              className="legend-ai__header-action"
+              title="New chat"
+              aria-label="New chat"
+              onClick={(): void => state.clearChat()}
+            >
+              <PlusIcon />
+            </button>
+          )}
           {onMinimize && (
             <button
               type="button"
@@ -1213,22 +1235,34 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
         </div>
       </div>
 
-      {showContextBanner && contextBannerMessage && (
+      {modes
+        .filter((mode) => openedModeKeys.includes(mode.key))
+        .map((mode) => (
+          <div
+            key={mode.key}
+            className={clsx('legend-ai__mode-body', {
+              'legend-ai__view--hidden': mode !== activeMode,
+            })}
+          >
+            {mode.renderChat(modeContext)}
+          </div>
+        ))}
+
+      {!activeMode && showContextBanner && contextBannerMessage && (
         <LegendAIContextBanner
           message={contextBannerMessage}
           onDismiss={dismissBanner}
         />
       )}
 
-      <div className="legend-ai__conversation" ref={state.conversationRef}>
+      <LegendAIConversation
+        className={clsx({
+          'legend-ai__view--hidden': activeMode !== undefined,
+        })}
+        containerRef={state.conversationRef}
+      >
         {!hasMessages && (
-          <div className="legend-ai__empty-state">
-            <div className="legend-ai__empty-icon">
-              <SparkleStarsIcon />
-            </div>
-            <div className="legend-ai__empty-text">
-              Ask a question about your data
-            </div>
+          <LegendAIEmptyState title="Ask a question about your data">
             {overview.summary.length > 0 && (
               <div className="legend-ai__empty-overview">
                 {overview.summary}
@@ -1265,16 +1299,12 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
                 />
               ))}
             </div>
-          </div>
+          </LegendAIEmptyState>
         )}
 
         {state.messages.map((msg, msgIndex) => {
           if (msg.role === LegendAIMessageRole.USER) {
-            return (
-              <div key={msg.id} className="legend-ai__msg legend-ai__msg--user">
-                <div className="legend-ai__msg-bubble">{msg.text}</div>
-              </div>
-            );
+            return <LegendAIUserMessageView key={msg.id} text={msg.text} />;
           }
 
           const isThinkingVisible =
@@ -1320,9 +1350,9 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
             />
           );
         })}
-      </div>
+      </LegendAIConversation>
 
-      <LegendAIChatInput state={state} scopes={scopes} />
+      {!activeMode && <LegendAIChatInput state={state} scopes={scopes} />}
     </div>
   );
 };
