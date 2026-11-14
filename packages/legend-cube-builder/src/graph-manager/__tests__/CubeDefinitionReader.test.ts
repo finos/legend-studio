@@ -32,7 +32,6 @@ import {
 } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import { CUBE_DEFINITION_FLOW_MESSAGE } from '../../__lib__/LegendCubeDefinitionFlowLabels.js';
-import { V1_CUBE_LAMBDA_READER_MESSAGE } from '../protocol/pure/v1/V1_CubeLambdaReader.js';
 import {
   findCubeDefinitionIngestDefinitions,
   readCubeDefinition,
@@ -480,7 +479,8 @@ describe("Reading a definition of a data set's batch metadata", () => {
     expect(reading).toEqual({
       kind: 'refused',
       reason: CubeLambdaReadErrorKind.SOURCE,
-      message: V1_CUBE_LAMBDA_READER_MESSAGE.INGEST_QUALIFIER('incoming'),
+      message:
+        "Cube reads an ingest data set's rows, #I{…}#, and its batch metadata, #I{…|metadata}#, not #I{…|incoming}#.",
     });
   });
 });
