@@ -74,6 +74,7 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import { DataProductAPGState } from './DataProductAPGState.js';
+import { DataProductQualityState } from './DataProductQualityState.js';
 import type { DataProductConfig } from './DataProductConfig.js';
 import {
   type ProjectGAVCoordinates,
@@ -93,7 +94,10 @@ import {
 } from '@finos/legend-extension-dsl-diagram';
 import type { ViewerModelsDocumentationState } from '@finos/legend-lego/model-documentation';
 import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramViewerState.js';
-import type { RegistryServerClient } from '@finos/legend-server-marketplace';
+import type {
+  DataProductQualityResponse,
+  RegistryServerClient,
+} from '@finos/legend-server-marketplace';
 import type { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import type {
   DataProductDefinitionFlowEntry,
@@ -167,7 +171,11 @@ export class DataProductViewerState extends BaseViewerState<
    * flow draws the data sets by name
    */
   readonly loadIngestDefinition?: DataProductIngestDefinitionLoader | undefined;
+  readonly fetchDataProductQuality?:
+    | (() => Promise<DataProductQualityResponse>)
+    | undefined;
   dataProductDataAccessState: DataProductDataAccessState | undefined;
+  readonly qualityState: DataProductQualityState;
 
   batchRelationTypePromise: Promise<V1_BatchLambdaRelationTypeResult> =
     Promise.resolve({
@@ -218,6 +226,9 @@ export class DataProductViewerState extends BaseViewerState<
           ) => void)
         | undefined;
       loadIngestDefinition?: DataProductIngestDefinitionLoader | undefined;
+      fetchDataProductQuality?:
+        | (() => Promise<DataProductQualityResponse>)
+        | undefined;
     },
     registryServerClient?: RegistryServerClient | undefined,
   ) {
@@ -274,6 +285,8 @@ export class DataProductViewerState extends BaseViewerState<
     this.openSampleQuery = actions.openSampleQuery;
     this.openIngestQuery = actions.openIngestQuery;
     this.loadIngestDefinition = actions.loadIngestDefinition;
+    this.fetchDataProductQuality = actions.fetchDataProductQuality;
+    this.qualityState = new DataProductQualityState(this);
   }
 
   /**

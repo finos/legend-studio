@@ -16,6 +16,10 @@
 
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
 import { createModelSchema, optional, primitive } from 'serializr';
+import {
+  type QUALITY_LEVEL,
+  createQualityResponseFactory,
+} from './QualityLevel.js';
 
 export class DataSpaceQualityBreakdown {
   isDescriptionDocumented!: boolean;
@@ -40,15 +44,19 @@ export class DataSpaceQualityBreakdown {
 }
 
 export class DataSpaceQualityResponse {
-  qualityLevel!: string; // 'DIAMOND' | 'PLATINUM' | 'GOLD' | 'SILVER' | 'BRONZE'
+  qualityLevel!: QUALITY_LEVEL;
   qualityBreakdown!: DataSpaceQualityBreakdown;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(DataSpaceQualityResponse, {
-      qualityLevel: primitive(),
-      qualityBreakdown: usingModelSchema(
-        DataSpaceQualityBreakdown.serialization.schema,
-      ),
-    }),
+    createModelSchema(
+      DataSpaceQualityResponse,
+      {
+        qualityLevel: primitive(),
+        qualityBreakdown: usingModelSchema(
+          DataSpaceQualityBreakdown.serialization.schema,
+        ),
+      },
+      createQualityResponseFactory(() => new DataSpaceQualityResponse()),
+    ),
   );
 }

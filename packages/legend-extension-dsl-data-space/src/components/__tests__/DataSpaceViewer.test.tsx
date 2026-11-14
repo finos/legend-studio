@@ -153,6 +153,95 @@ describe(integrationTest('DataSpaceViewer'), () => {
     expect(screen.getByText('AI-Ready')).toBeDefined();
   });
 
+  describe('quality badge', () => {
+    const buildQualityResult = (
+      qualityLevel: DATA_SPACE_QUALITY_LEVEL,
+      breakdown: Partial<DataSpaceQualityResult['qualityBreakdown']> = {},
+    ): DataSpaceQualityResult => ({
+      qualityLevel,
+      qualityBreakdown: {
+        isDescriptionDocumented: true,
+        isExecutablesPresent: true,
+        isModelsDocumentationPresent: true,
+        isEveryServiceDocumented: true,
+        attributeCoverage: 0.4,
+        documentedAttributeCount: 4,
+        totalAttributeCount: 10,
+        ...breakdown,
+      },
+    });
+
+    const renderWithQuality = async (
+      qualityResult: DataSpaceQualityResult,
+    ): Promise<void> => {
+      const analysisResult: PlainObject<V1_DataSpaceAnalysisResult> =
+        TEST_DATA__mappingProviderNoRuntime;
+      await renderDataSpaceViewer(analysisResult, {
+        fetchDataSpaceQuality: async () => qualityResult,
+      });
+      fireEvent.mouseOver(await screen.findByText(/AI Readiness Badge:/));
+    };
+
+    test.each([
+      [DATA_SPACE_QUALITY_LEVEL.BRONZE, 'Bronze quality'],
+      [DATA_SPACE_QUALITY_LEVEL.SILVER, 'Silver quality'],
+      [DATA_SPACE_QUALITY_LEVEL.GOLD, 'Gold quality'],
+      [DATA_SPACE_QUALITY_LEVEL.PLATINUM, 'Platinum quality'],
+      [DATA_SPACE_QUALITY_LEVEL.DIAMOND, 'Diamond quality'],
+    ])('shows the badge of a %s data space', async (level, label) => {
+      await renderWithQuality(buildQualityResult(level));
+
+      expect(await screen.findByLabelText(label)).toBeDefined();
+    });
+
+    test('lists what a BRONZE data space is missing for Silver, in its own words', async () => {
+      await renderWithQuality(
+        buildQualityResult(DATA_SPACE_QUALITY_LEVEL.BRONZE, {
+          isDescriptionDocumented: false,
+          isExecutablesPresent: false,
+          isModelsDocumentationPresent: false,
+        }),
+      );
+
+      expect(
+        await screen.findByText(
+          '➡️ 🥈 Silver quality: Write a description (2+ sentences), add Executables, add Models Documentation.',
+        ),
+      ).toBeDefined();
+    });
+
+    test('asks a SILVER data space to describe every executable only when some are not', async () => {
+      await renderWithQuality(
+        buildQualityResult(DATA_SPACE_QUALITY_LEVEL.SILVER, {
+          isEveryServiceDocumented: false,
+        }),
+      );
+
+      expect(
+        await screen.findByText(
+          '➡️ 🥇 Gold quality: Describe every executable, and describe at least 50% of attributes.',
+        ),
+      ).toBeDefined();
+    });
+
+    test('shows the current coverage, and what Diamond will also need, in the roadmap', async () => {
+      await renderWithQuality(
+        buildQualityResult(DATA_SPACE_QUALITY_LEVEL.GOLD),
+      );
+
+      expect(
+        await screen.findByText(
+          '➡️ 🏆 Platinum quality (AI-Ready): Describe 90%-95% of attributes (currently 40%).',
+        ),
+      ).toBeDefined();
+      expect(
+        screen.getByText(
+          '🔒 💎 Diamond quality (AI-Ready): Describe 95%+ of attributes (currently 40%). Coming soon: will also require MCPs + Verified NLQs ground truth.',
+        ),
+      ).toBeDefined();
+    });
+  });
+
   test('renders no quality badge when fetchDataSpaceQuality is not wired up', async () => {
     await renderDataSpaceViewer(
       TEST_DATA__mappingProviderNoRuntime as PlainObject<V1_DataSpaceAnalysisResult>,

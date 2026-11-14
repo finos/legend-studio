@@ -32,6 +32,13 @@ export { MultiUserRenderer } from './components/UserRenderer/MultiUserRenderer.j
 export { UserRenderer } from './components/UserRenderer/UserRenderer.js';
 export { LakehouseDataProductOwnersTooltip } from './components/DataProduct/LakehouseDataProductOwnersTooltip.js';
 export { describeDefinitionFlowRefusal } from './components/DataProduct/DataProductAccessPointDefinitionFlow.js';
+export { DataProductQualityEmote } from './components/DataProductQualityEmote.js';
+export {
+  QualityEmote,
+  formatAttributeCoverageSuffix,
+} from './components/QualityEmote.js';
+// the tiers the shared emote renders, defined once with the quality response model
+export { QUALITY_LEVEL } from '@finos/legend-server-marketplace';
 
 export * from './stores/BaseLayoutState.js';
 export * from './stores/BaseViewerState.js';
@@ -42,6 +49,7 @@ export * from './stores/DataProduct/DataProductDocumentationState.js';
 export * from './stores/DataProduct/DataProductLegendAISchema.js';
 export * from './stores/DataProduct/DataProductSampleQueryTabState.js';
 export * from './stores/DataProduct/DataProductViewerState.js';
+export * from './stores/DataProduct/DataProductQualityState.js';
 export * from './stores/DataProduct/DataProductAccessPointState.js';
 export * from './stores/DataProduct/DataProductDefinitionFlow.js';
 export * from './stores/DataProduct/DataAccess/DataAccessRequestState.js';

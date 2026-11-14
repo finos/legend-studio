@@ -640,6 +640,10 @@
       color: var(--color-hclight-grey-60);
     }
 
+    &__header__ids .copyable-id {
+      border-color: var(--color-hclight-grey-30);
+    }
+
     &__columns-strip,
     &__definition-toggle,
     &__definition__caption,
