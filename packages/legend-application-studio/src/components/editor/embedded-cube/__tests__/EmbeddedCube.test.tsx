@@ -46,6 +46,7 @@ import {
   DataProductAccessPointSource,
   dataProductAccessor,
   func,
+  IngestDatasetQualifier,
   IngestDatasetSource,
   ingestAccessor,
   lambda,
@@ -330,6 +331,56 @@ const TRADES_INGEST_WITH_VIEW = tradesIngestWithView({
   primaryKey: ['DESK_ID'],
   privacyClassification: { sensitivity: 'DP10' },
 });
+
+/** TRADES's batch metadata, `#I{…TRADES|metadata}#`, as legend-graph writes its accessor */
+const TRADES_METADATA_ACCESSOR = {
+  path: [INGEST_PATH, 'TRADES'],
+  metadata: true,
+  accessorQualifier: 'metadata',
+};
+
+/** TradesIngest with a view Cube wrote of TRADES's batch metadata: the batches after the tenth */
+const TRADES_INGEST_WITH_BATCHES_VIEW: PlainObject<Entity> = {
+  ...TRADES_INGEST,
+  content: {
+    ...(TRADES_INGEST.content as PlainObject),
+    datasets: [
+      ...((TRADES_INGEST.content as PlainObject).datasets as object[]),
+      {
+        name: 'LATER_BATCHES',
+        primaryKey: ['table_batch_id'],
+        privacyClassification: { sensitivity: 'DP10' },
+        source: {
+          _type: 'FunctionSource',
+          function: serializeCubeLambdaForHost(
+            lambda(
+              [],
+              [
+                func('filter', [
+                  ingestAccessor(
+                    [INGEST_PATH, 'TRADES'],
+                    undefined,
+                    undefined,
+                    IngestDatasetQualifier.METADATA,
+                  ),
+                  lambda(
+                    ['row'],
+                    [
+                      func('greaterThan', [
+                        columnAccess('row', 'table_batch_id'),
+                        literal({ kind: 'integer', value: '10' }),
+                      ]),
+                    ],
+                  ),
+                ]),
+              ],
+            ),
+          ),
+        },
+      },
+    ],
+  },
+};
 
 const setUp = async (
   entities: PlainObject<Entity>[],
@@ -875,6 +926,62 @@ describe('Legend Cube in Studio', () => {
       expect(ingest.hashCode).not.toBe(hashBefore);
       await renderResult.findByText(
         'Saved materialized view BIG_TRADES of TradesIngest',
+      );
+    },
+  );
+
+  test(
+    integrationTest(
+      "Edit MatView reads a view of a data set's batch metadata into its steps, and Save MatView keeps what the view reads",
+    ),
+    async () => {
+      const { editorStore, renderResult } = await setUp([
+        TRADES_INGEST_WITH_BATCHES_VIEW,
+        LAKEHOUSE_RUNTIME,
+      ]);
+      await openIngestDefinition(renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      await editMatViewInCube(editorGroup, 'LATER_BATCHES');
+      await renderResult.findByText(
+        `Edit MatView LATER_BATCHES of ${INGEST_PATH} with Cube`,
+      );
+      // the batch metadata, then the filter, and nothing to say: Cube writes
+      // them back the same
+      await waitFor(() =>
+        expect(getCubeCanvasNodes(renderResult)).toHaveLength(2),
+      );
+      expect(
+        getCubeCanvasNodes(renderResult).map((node) => node.textContent),
+      ).toEqual(
+        expect.arrayContaining([expect.stringContaining('TRADES metadata')]),
+      );
+      expect(
+        renderResult.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT),
+      ).toBeNull();
+
+      // its key, table_batch_id, is a column of the batch metadata: nothing
+      // to ask again
+      const saveMatView = await renderResult.findByRole('button', {
+        name: 'Save MatView',
+      });
+      await waitFor(() =>
+        expect((saveMatView as HTMLButtonElement).disabled).toBe(false),
+      );
+      fireEvent.click(saveMatView);
+      await renderResult.findByText(
+        'Saved materialized view LATER_BATCHES of TradesIngest',
+      );
+      const saved = (
+        ingestOf(editorStore).content.datasets as PlainObject[]
+      ).at(-1) as {
+        source: { function: { body: { parameters: { value: unknown }[] }[] } };
+      };
+      // the filter's input: the batch metadata still, with the flag the
+      // engine routes it by and the qualifier it types it by
+      expect(saved.source.function.body[0]?.parameters[0]?.value).toEqual(
+        TRADES_METADATA_ACCESSOR,
       );
     },
   );

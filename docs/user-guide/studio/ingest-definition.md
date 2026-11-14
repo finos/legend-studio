@@ -84,4 +84,9 @@ its function, to change it. The step that runs becomes the view:
   with as it was: the classification of its data, or a primary key whose column is gone.
 - **×** closes Legend Cube, adding or saving nothing.
 
+A view can read a data set's batch metadata instead of its rows: a row for each batch the data set was sent in, with its
+status, its times and its statistics. In the Legend language, it reads `#I{…|metadata}#`. Its first step is named after
+the data set, e.g. **FIRM metadata**, in its flow and in Legend Cube, and **Save MatView** keeps it reading the batch
+metadata.
+
 The [Legend Cube guide](https://legend.finos.org/guides/cube) explains Legend Cube's steps.

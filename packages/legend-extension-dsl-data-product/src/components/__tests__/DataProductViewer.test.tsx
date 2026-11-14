@@ -5215,6 +5215,70 @@ describe('DataProductViewer', () => {
       );
     });
 
+    test("draws a definition of a data set's batch metadata, its columns known with no ingest definition to load", async () => {
+      const loadIngestDefinition = jest.fn(loadTradePositionsIngest);
+      // the batches that succeeded: `#I{…EOD_POSITIONS|metadata}#`, as
+      // legend-graph writes its accessor
+      const { logEvent } = await setupDefinition(
+        {
+          _type: 'lambda',
+          parameters: [],
+          body: [
+            {
+              _type: 'func',
+              function: 'filter',
+              parameters: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: true,
+                    accessorQualifier: 'metadata',
+                    path: [DEFINITIONS.ingestDefinition, 'EOD_POSITIONS'],
+                  },
+                },
+                {
+                  _type: 'lambda',
+                  parameters: [{ _type: 'var', name: 'b' }],
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'equal',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          property: 'batch_status',
+                          parameters: [{ _type: 'var', name: 'b' }],
+                        },
+                        { _type: 'string', value: 'SUCCESS' },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        loadIngestDefinition,
+      );
+
+      const definition = await openDefinition();
+      // the batch metadata, then the filter
+      const [metadata] = await findFlowNodes(definition, 2);
+      expect(metadata?.textContent).toContain('EOD_POSITIONS metadata');
+      expect(
+        within(definition).queryByText(/^No flow for this definition/),
+      ).toBeNull();
+      expect(
+        within(definition).queryByText(/^Couldn't load the columns/),
+      ).toBeNull();
+      expect(loadIngestDefinition).not.toHaveBeenCalled();
+      expect(logEvent).toHaveBeenCalledWith(
+        DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+        expect.objectContaining({ steps: 2, unknownDataSets: [] }),
+      );
+    });
+
     test('draws a definition that takes parameters, each wired into the step that reads it', async () => {
       const { logEvent } = await setupDefinition(
         DEFINITIONS.accessPoints.CLIENT_POSITIONS,

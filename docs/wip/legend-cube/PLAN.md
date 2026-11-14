@@ -1352,7 +1352,8 @@ source for now; the user plans to improve it later.
   read by position).
 - **Accessor and run:** `#I{definition.dataSet}#` (`metadata: false`), run on a model of the definitions the cube reads
   plus a LakehouseRuntime at `cube::ingest::Runtime`. Its environment is the one of the ingest server that served the
-  definition; the warehouse follows the data product rule (§6.8).
+  definition; the warehouse follows the data product rule (§6.8). _(2026-11-14: a data set's batch metadata too,
+  `#I{definition.dataSet|metadata}#`, read and written, not yet picked: §11.32.)_
 - **Saved:** a Cube-owned model kind `cubeIngest` (the class, the producer deployment, the warehouse); each source
   saves the definition's URN, its path and the data set. Never a server URL. One cube reads one kind of source (tables,
   data products or ingest data sets) and one producer deployment. _(2026-11-09: data products and ingest data sets of
@@ -6037,6 +6038,52 @@ frame takes in its steps' notes.
 - In Chromium, on Legend Analytics: the guide's screenshot scripts, and the demo video (44, 1:17) with 13 checks.
 
 **Status:** finos/legend-studio#5853 merged into `cube-dev` (29831a734, user, 2026-11-09).
+
+### 11.32 An ingest data set's batch metadata, `#I{…|metadata}#` (2026-11-14)
+
+**Ask:** the user, on 2026-11-14: some views and access points read a data set's batch metadata, and Cube couldn't
+read them. The user modelled the accessor's qualifier in legend-graph (finos/legend-studio#5906): an ingest accessor
+keeps it, `#I{ingest.dataSet|metadata}#`, and legend-graph types a metadata accessor by the batch metadata's columns,
+the same for every data set. Cube should read these queries in its editor, Edit in Cube included, and draw them
+read-only in the viewers: the data product viewer and Studio's ingest definition Overview.
+
+**Before:** Cube refused `metadata: true` ("Cube reads an ingest data set's rows, not its metadata"), so these views had
+no flow, and Edit in Cube couldn't open them. A qualifier other than `metadata` (`incoming`, `milestoned`,
+`incomingMilestoned`, which legend-graph keeps since #5906) was read as the data set's rows, and Save MatView wrote
+them back without it.
+
+**How:**
+
+- **The qualifier is part of the source.** The IR's `ingestAccessor` and `IngestDatasetSource` carry
+  `IngestDatasetQualifier.METADATA`, or none for the rows. The spec saves `qualifier: "metadata"` after the data set,
+  and a source of the rows saves none, as before. Show Pure prints `#I{definition.dataSet|metadata}#`, and two
+  accessors of one data set compare equal only with the same qualifier.
+- **Read as legend-graph reads it:** the `accessorQualifier`, else, in JSON written before there was one, the
+  `metadata` flag. The qualifier wins when both are there. Written as legend-graph writes it: `metadata: true` and
+  `accessorQualifier: "metadata"`, the flag the engine routes it by and the qualifier it types it by. The rows are
+  written `metadata: false`, as before.
+- **Refused, by name, rather than read as the rows:** a qualifier Cube can't type yet, as legend-graph types only
+  `metadata` (its TODO for `incoming`). The refusal is a source's, so the viewers show the Pure and say why.
+- **Typed without the definition:** the batch metadata's nine columns are legend-graph's
+  (`V1_getIngestMetadataRelationType`, exported for a reader with no graph), read by the column reader that reads a
+  data set's (`V1_getCubeIngestMetadataSchema`), once. A test checks they match legend-graph's metamodel typing.
+  - **The viewers** (`readCubeDefinition`) type it with no definition to load, so a definition that reads only batch
+    metadata loads none (`findCubeDefinitionIngestDefinitions`).
+  - **The editor's import** (Edit in Cube, Import Pure) needs only the data set to exist: a materialized view's batch
+    metadata reads, though its rows can't. A data set's rows and its batch metadata are two sources, bound apart.
+  - **Typing again** (Refresh, a spec without a snapshot) answers the batch metadata without the catalog.
+- **Shown:** the step's title is the data set's name and "metadata", e.g. `TRADES metadata`, with the definition below.
+  Its Source panel says it reads the data set's batch metadata, a row per batch, and has no Refresh.
+
+**Not yet:**
+
+- Picking a data set's batch metadata in the Ingest tab, to start a query on it in Cube.
+- A Studio Overview's Reads names the data set, whichever it reads.
+- A Cube older than this one would keep a saved spec's `qualifier` as an unknown key, and so read the data set's rows.
+  Cubes aren't saved yet (M8, #5679), so the spec's format version stays as it is; whether `qualifier` needs a new one
+  is for M8 to settle.
+
+**Status:** a pull request into `cube-view-dev`, after #5906.
 
 ## 12. G. Risks and open questions
 

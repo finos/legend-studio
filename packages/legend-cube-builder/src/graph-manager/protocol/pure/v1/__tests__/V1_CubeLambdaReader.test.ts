@@ -25,6 +25,7 @@ import {
   func,
   genericType,
   ingestAccessor,
+  IngestDatasetQualifier,
   isSameCubeIR,
   JOIN_KIND_PATH,
   lambda,
@@ -332,6 +333,107 @@ describe('Reading the JSON of a lambda', () => {
     ).toBe(true);
   });
 
+  test("Reads an ingest data set's batch metadata by its qualifier, or by its flag in JSON written before there was one", () => {
+    const path = ['demo::Ingest', 'TRADES'] as const;
+    const read = (value: PlainObject): IR =>
+      V1_readCubeLambda(queryOf({ _type: 'classInstance', type: 'I', value }));
+    const metadata = lambda(
+      [],
+      [
+        ingestAccessor(
+          path,
+          undefined,
+          undefined,
+          IngestDatasetQualifier.METADATA,
+        ),
+      ],
+    );
+    [
+      // as legend-graph writes it: the flag the engine routes it by, and
+      // the qualifier it types it by
+      { path: [...path], metadata: true, accessorQualifier: 'metadata' },
+      // written before there was a qualifier
+      { path: [...path], metadata: true },
+      // the qualifier alone; it wins over the flag, as legend-graph reads it
+      { path: [...path], accessorQualifier: 'metadata' },
+      { path: [...path], metadata: false, accessorQualifier: 'metadata' },
+    ].forEach((value) => expect(read(value)).toStrictEqual(metadata));
+    // its rows
+    [
+      { path: [...path], metadata: false },
+      { path: [...path] },
+      { path: [...path], accessorQualifier: null },
+    ].forEach((value) =>
+      expect(read(value)).toStrictEqual(lambda([], [ingestAccessor(path)])),
+    );
+  });
+
+  test("Refuses an ingest data set's qualifier Cube can't type, rather than read its rows instead", () => {
+    ['incoming', 'milestoned', 'incomingMilestoned', 'METADATA'].forEach(
+      (qualifier) =>
+        [
+          { path: ['demo::Ingest', 'TRADES'], accessorQualifier: qualifier },
+          {
+            path: ['demo::Ingest', 'TRADES'],
+            metadata: true,
+            accessorQualifier: qualifier,
+          },
+        ].forEach((value) =>
+          expect(() =>
+            V1_readCubeLambda(
+              queryOf({ _type: 'classInstance', type: 'I', value }),
+            ),
+          ).toThrow(V1_CUBE_LAMBDA_READER_MESSAGE.INGEST_QUALIFIER(qualifier)),
+        ),
+    );
+  });
+
+  test("Writes a data set's batch metadata as legend-graph does, and its rows as before", () => {
+    const path = ['demo::Ingest', 'TRADES'] as const;
+    const accessorOf = (ir: IR): unknown =>
+      (
+        (V1_serializeCubeLambda(lambda([], [ir])) as { body: PlainObject[] })
+          .body[0] as { value: unknown }
+      ).value;
+    expect(
+      accessorOf(
+        ingestAccessor(
+          path,
+          undefined,
+          undefined,
+          IngestDatasetQualifier.METADATA,
+        ),
+      ),
+    ).toEqual({
+      path: [...path],
+      metadata: true,
+      accessorQualifier: 'metadata',
+    });
+    expect(accessorOf(ingestAccessor(path))).toEqual({
+      path: [...path],
+      metadata: false,
+    });
+    // read back, the same
+    const metadata = lambda(
+      [],
+      [
+        ingestAccessor(
+          path,
+          undefined,
+          undefined,
+          IngestDatasetQualifier.METADATA,
+        ),
+      ],
+    );
+    expect(
+      isSameCubeIR(
+        V1_readCubeLambda(asHostJson(V1_serializeCubeLambda(metadata))),
+        metadata,
+        COMPARISON,
+      ),
+    ).toBe(true);
+  });
+
   test('Refuses what Cube has no IR for, by name', () => {
     expect(() =>
       V1_readCubeLambda(
@@ -357,10 +459,14 @@ describe('Reading the JSON of a lambda', () => {
         queryOf({
           _type: 'classInstance',
           type: 'I',
-          value: { path: ['demo::Ingest', 'TRADES'], metadata: true },
+          value: {
+            path: ['demo::Ingest', 'TRADES'],
+            metadata: false,
+            accessorQualifier: 'incoming',
+          },
         }),
       ),
-    ).toThrow(V1_CUBE_LAMBDA_READER_MESSAGE.INGEST_METADATA);
+    ).toThrow(V1_CUBE_LAMBDA_READER_MESSAGE.INGEST_QUALIFIER('incoming'));
     expect(() =>
       V1_readCubeLambda(
         queryOf({
@@ -402,7 +508,10 @@ describe('Reading the JSON of a lambda', () => {
       {
         _type: 'classInstance',
         type: 'I',
-        value: { path: ['demo::Ingest', 'TRADES'], metadata: true },
+        value: {
+          path: ['demo::Ingest', 'TRADES'],
+          accessorQualifier: 'milestoned',
+        },
       },
       {
         _type: 'classInstance',

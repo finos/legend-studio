@@ -20,6 +20,7 @@ import {
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   DataProductAccessPointSource,
   INGEST_DATASET_SOURCE_DEFINITION,
+  IngestDatasetQualifier,
   IngestDatasetSource,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
   RelationalTableSource,
@@ -49,6 +50,7 @@ import type {
   CubeIngestDefinitionCandidate,
   CubeIngestEnvironmentKey,
 } from '../graph-manager/CubeIngestCatalog.js';
+import { getCubeIngestMetadataSchema } from '../graph-manager/protocol/pure/CubeProtocolJson.js';
 import { isCubeProjectHost, mixesCubeLakehouseSources } from './CubeHost.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 
@@ -102,11 +104,12 @@ export interface CubeLambdaBinding {
 }
 
 const keyOf = (source: IR): string =>
-  source.k === 'ingestAccessor' ||
-  source.k === 'dataProductAccessor' ||
-  source.k === 'storeAccessor'
-    ? `${source.k}:${source.path.join('\u0000')}`
-    : `${source.k}`;
+  source.k === 'ingestAccessor'
+    ? // a data set's batch metadata is another source than its rows
+      `${source.k}:${source.path.join('\u0000')}\u0000${source.qualifier ?? ''}`
+    : source.k === 'dataProductAccessor' || source.k === 'storeAccessor'
+      ? `${source.k}:${source.path.join('\u0000')}`
+      : `${source.k}`;
 
 const bindingOf = (
   context: CubeContext,
@@ -146,7 +149,8 @@ const newCubeWarehouse = async (
 /**
  * The step of each of a lambda's ingest data sets, bound to the listed
  * definition of its path, as the definition declares its columns; a data
- * product cube's as its project has them at its version (PLAN §11.30)
+ * product cube's as its project has them at its version (PLAN §11.30). A
+ * data set's batch metadata needs only the data set, whatever its columns.
  */
 const bindIngestSteps = async (
   catalog: CubeIngestCatalog,
@@ -188,8 +192,14 @@ const bindIngestSteps = async (
         CUBE_LAMBDA_SOURCES_MESSAGE.NO_DATA_SET(dataSetName, definition),
       );
     }
-    const { schema } = dataSet;
-    if (!dataSet.isPickable || !schema) {
+    const { qualifier } = source;
+    const schema =
+      qualifier === IngestDatasetQualifier.METADATA
+        ? getCubeIngestMetadataSchema()
+        : dataSet.isPickable
+          ? dataSet.schema
+          : undefined;
+    if (!schema) {
       throw new CubeLambdaReadError(
         CubeLambdaReadErrorKind.SOURCE,
         CUBE_LAMBDA_SOURCES_MESSAGE.DATA_SET_UNREADABLE(
@@ -207,6 +217,7 @@ const bindIngestSteps = async (
             ingestDefinitionUrn: candidate.urn,
             ingestDefinition: definition,
             dataSet: dataSetName,
+            qualifier,
           }),
           { kind: 'resolved', schema },
         ),

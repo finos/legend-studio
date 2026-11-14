@@ -56,7 +56,7 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Sources data from an access point of a deployed data product.',
   /** Added by Cube: the original has no ingest data set source (PLAN §6.7) */
   [IngestDatasetSource.TYPE]:
-    'Sources data from a data set of a deployed ingest definition.',
+    'Sources data from a data set of a deployed ingest definition: its rows, or its batch metadata, a row per batch it was sent in.',
   /** Added by Cube: the original's service source is read another way, still to come (PLAN §6.4) */
   [ServiceSource.TYPE]:
     "Sources data from a deployed service. In progress: Cube can't read services yet.",

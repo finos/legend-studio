@@ -18,13 +18,14 @@ import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
   CubeDocument,
   diffSchemas,
+  IngestDatasetQualifier,
   IngestDatasetSource,
   PrimitiveType,
   Query,
   Schema,
   SchemaColumn,
 } from '@finos/legend-cube';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
   act,
   fireEvent,
@@ -34,7 +35,10 @@ import {
 } from '@testing-library/react';
 import { flowResult } from 'mobx';
 import { getCubeWarehouseErrorHint } from '../../../__lib__/LegendCubeDataProductLabels.js';
-import { getDataSetDriftWarning } from '../../../__lib__/LegendCubeIngestLabels.js';
+import {
+  CUBE_INGEST_METADATA_READS_LABEL,
+  getDataSetDriftWarning,
+} from '../../../__lib__/LegendCubeIngestLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
@@ -101,6 +105,76 @@ const warehouseInput = (): HTMLInputElement =>
 
 beforeEach(() => {
   localStorage.clear();
+});
+
+/** An ingest cube of TRADES's batch metadata, saved without its columns, as a spec without a snapshot loads */
+const metadataCube = (): CubeDocument =>
+  new CubeDocument({
+    context: ingestCube().context,
+    query: new Query(
+      [
+        new IngestDatasetSource('ingestDataset101', {
+          ingestDefinitionUrn: fakeIngestUrnOf(FAKE_INGEST_ORDERS),
+          ingestDefinition: FAKE_INGEST_ORDERS,
+          dataSet: 'TRADES',
+          qualifier: IngestDatasetQualifier.METADATA,
+        }),
+      ],
+      [],
+      'ingestDataset101',
+    ),
+  });
+
+describe("A data set's batch metadata", () => {
+  test('Is typed again without the catalog, its columns the same for every data set, and its panel says what it reads, with no Refresh', async () => {
+    const { host } = TEST__createCubeHost();
+    const ingest = createFakeCubeIngestCatalog();
+    const editorState = new CubeEditorState(
+      { ...host, ingestCatalog: ingest.catalog },
+      metadataCube(),
+    );
+    await flowResult(editorState.reresolveSources());
+    const node = guaranteeType(
+      editorState.document.query.getNode('ingestDataset101'),
+      IngestDatasetSource,
+    );
+    expect(node.qualifier).toBe(IngestDatasetQualifier.METADATA);
+    expect(node.resolution.kind).toBe('resolved');
+    expect(node.schematize([])?.names()).toEqual([
+      'table_name',
+      'batch_start_ts_utc',
+      'batch_end_ts_utc',
+      'batch_status',
+      'table_batch_id',
+      'ingest_request_id',
+      'batch_source_info',
+      'additional_metadata',
+      'batch_statistics',
+    ]);
+    expect(ingest.resolveSchemas).not.toHaveBeenCalled();
+    await TEST__renderInCubeApplication(
+      <div style={{ display: 'flex' }}>
+        <div style={{ width: 800, height: 400 }}>
+          <CubeCanvas editorState={editorState} />
+        </div>
+      </div>,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.CANVAS,
+    );
+    const step = await TEST__findCanvasNode('ingestDataset101');
+    expect(step.textContent).toContain('TRADES metadata');
+    fireEvent.click(step);
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    expect(within(panel()).getByText('TRADES')).toBeTruthy();
+    expect(
+      within(panel()).getByText(CUBE_INGEST_METADATA_READS_LABEL),
+    ).toBeTruthy();
+    expect(within(panel()).queryByRole('button', { name: 'Refresh' })).toBe(
+      null,
+    );
+    // its columns, after the header
+    expect(within(panel()).getAllByRole('row')).toHaveLength(10);
+  });
 });
 
 describe("An ingest data set's panel", () => {
