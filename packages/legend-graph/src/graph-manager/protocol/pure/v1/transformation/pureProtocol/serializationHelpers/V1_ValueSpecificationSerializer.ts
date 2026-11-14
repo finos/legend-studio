@@ -70,6 +70,7 @@ import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/
 import {
   V1_DataProductAccessor,
   V1_IngestDefinitionAccessor,
+  V1_IngestAccessorQualifier,
   V1_RelationStoreAccessor,
   V1_SQLAccessor,
 } from '../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
@@ -778,13 +779,45 @@ const relationStoreAccessorModelSchema = createModelSchema(
   },
 );
 
+/**
+ * The engine types an ingest accessor by `accessorQualifier` but routes it by
+ * `metadata`, so both are written. JSON from before the qualifier existed only
+ * has `metadata`.
+ */
 const ingestAccessorModelSchema = createModelSchema(
   V1_IngestDefinitionAccessor,
   {
     path: list(primitive()),
-    metadata: optional(primitive()),
+    metadata: custom(
+      (value: boolean, _key, accessor: V1_IngestDefinitionAccessor) =>
+        value ||
+        accessor.accessorQualifier === V1_IngestAccessorQualifier.METADATA,
+      (value) => value,
+    ),
+    accessorQualifier: custom(
+      (
+        value: V1_IngestAccessorQualifier | undefined,
+        _key,
+        accessor: V1_IngestDefinitionAccessor,
+      ) =>
+        value ??
+        (accessor.metadata ? V1_IngestAccessorQualifier.METADATA : SKIP),
+      (value) => value,
+    ),
   },
 );
+
+const deserializeIngestAccessor = (
+  json: PlainObject<V1_IngestDefinitionAccessor>,
+): V1_IngestDefinitionAccessor => {
+  const accessor = deserialize(ingestAccessorModelSchema, json);
+  if (accessor.metadata && !accessor.accessorQualifier) {
+    accessor.accessorQualifier = V1_IngestAccessorQualifier.METADATA;
+  }
+  accessor.metadata =
+    accessor.accessorQualifier === V1_IngestAccessorQualifier.METADATA;
+  return accessor;
+};
 
 const dataProductAccessorModelSchema = createModelSchema(
   V1_DataProductAccessor,
@@ -885,7 +918,7 @@ export function V1_deserializeClassInstanceValue(
     case V1_ClassInstanceType.RELATION_STORE_ACCESSOR:
       return deserialize(relationStoreAccessorModelSchema, json);
     case V1_ClassInstanceType.INGEST_ACCESSOR:
-      return deserialize(ingestAccessorModelSchema, json);
+      return deserializeIngestAccessor(json);
     case V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR:
       return deserialize(dataProductAccessorModelSchema, json);
     case V1_ClassInstanceType.SQL_ACCESSOR:
