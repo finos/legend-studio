@@ -269,3 +269,75 @@ describe('layoutCubeCanvas', () => {
     );
   });
 });
+
+describe('layoutCubeCanvas, containers inside containers (PLAN §11.33)', () => {
+  // as a definition's flow draws a call in a function's body: ORDERS → filter
+  // in the inner call, the join in the outer one
+  const nested = (
+    id: string,
+    steps: string[],
+    parentId?: string,
+    folded = false,
+  ): StepContainer => ({
+    ...container(id, steps, folded),
+    ...(parentId === undefined ? {} : { parentId }),
+  });
+
+  test('Draws the inner frame inside the outer one, each round its own steps', () => {
+    const query = managerQuery();
+    const { positions, containers: places } = layoutCubeCanvas(query, [
+      nested('outer', ['join101']),
+      nested('inner', ['relational102', 'filter101'], 'outer'),
+    ]);
+    const outer = placeOf(places, 'outer');
+    const inner = placeOf(places, 'inner');
+    expect(contains(outer, inner)).toBe(true);
+    ['relational102', 'filter101'].forEach((id) =>
+      expect(
+        contains(inner, stepBox(positions.get(id) as CubeCanvasPosition)),
+      ).toBe(true),
+    );
+    expect(
+      contains(outer, stepBox(positions.get('join101') as CubeCanvasPosition)),
+    ).toBe(true);
+    // a step outside both is in neither
+    expect(
+      intersects(
+        outer,
+        stepBox(positions.get('relational101') as CubeCanvasPosition),
+      ),
+    ).toBe(false);
+  });
+
+  test('Folds the containers inside a folded one into its box', () => {
+    const query = managerQuery();
+    const { positions, containers: places } = layoutCubeCanvas(query, [
+      nested('outer', ['join101'], undefined, true),
+      nested('inner', ['relational102', 'filter101'], 'outer'),
+    ]);
+    expect(places.map((place) => place.container.id)).toEqual(['outer']);
+    expect(placeOf(places, 'outer').steps).toEqual([
+      'filter101',
+      'join101',
+      'relational102',
+    ]);
+    ['join101', 'relational102', 'filter101'].forEach((id) =>
+      expect(positions.has(id)).toBe(false),
+    );
+  });
+
+  test('Draws a folded inner container as a box inside the open outer frame', () => {
+    const query = managerQuery();
+    const { containers: places } = layoutCubeCanvas(query, [
+      nested('outer', ['join101']),
+      nested('inner', ['relational102', 'filter101'], 'outer', true),
+    ]);
+    expect(contains(placeOf(places, 'outer'), placeOf(places, 'inner'))).toBe(
+      true,
+    );
+    expect(placeOf(places, 'inner')).toMatchObject({
+      width: CUBE_CANVAS_NODE_WIDTH,
+      height: CUBE_CANVAS_NODE_HEIGHT,
+    });
+  });
+});

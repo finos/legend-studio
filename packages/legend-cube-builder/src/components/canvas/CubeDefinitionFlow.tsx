@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import { clsx, Tooltip } from '@finos/legend-art';
+import { clsx, FunctionIcon, Tooltip } from '@finos/legend-art';
 import {
   createNodeRegistry,
   IngestDatasetSource,
   type QueryNode,
+  type StepContainer,
 } from '@finos/legend-cube';
 import {
   Background,
@@ -31,11 +32,18 @@ import {
 } from '@xyflow/react';
 // as the editor's canvas imports it: with the chunk that draws the flow
 import '@xyflow/react/dist/style.css';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CUBE_DEFINITION_FLOW_LABEL } from '../../__lib__/LegendCubeDefinitionFlowLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
-import type { CubeDefinitionFlowReading } from '../../graph-manager/CubeDefinitionReader.js';
 import {
+  countCubeDefinitionCallSteps,
+  getCubeDefinitionCallsFoldedAtFirst,
+  type CubeDefinitionFlowReading,
+  type CubeDefinitionFunctionContainer,
+  type CubeDefinitionScalarFunction,
+} from '../../graph-manager/CubeDefinitionReader.js';
+import {
+  buildCubeCanvasContainerNodes,
   buildCubeCanvasEdges,
   buildCubeCanvasNodes,
   CUBE_CANVAS_EDGE_TYPE,
@@ -52,7 +60,17 @@ import {
   type CubeDefinitionParameterNode,
   CubeDefinitionStepParametersHandle,
 } from './CubeDefinitionFlowParameters.js';
-import { layoutCubeQuery } from './CubeCanvasLayout.js';
+import { layoutCubeCanvas } from './CubeCanvasLayout.js';
+import {
+  CUBE_DEFINITION_FUNCTION_BOX_TYPE,
+  CUBE_DEFINITION_FUNCTION_FRAME_TYPE,
+  CubeDefinitionFunctionBox,
+  CubeDefinitionFunctionFrame,
+  type CubeDefinitionFunctionNode,
+  describeClosedCall,
+  describeCubeDefinitionCall,
+  printCubeDefinitionCall,
+} from './CubeDefinitionFlowFunctions.js';
 import {
   CubeCanvasInputHandles,
   CubeCanvasNodeLabel,
@@ -85,6 +103,12 @@ type CubeDefinitionStepData = {
   readonly isSelectable: boolean;
   /** Whether it reads any of the definition's parameters, whose wires come in at its top */
   readonly readsParameters: boolean;
+  /** The call of a user-defined function it is, drawn as one box */
+  readonly closedCall?: CubeDefinitionFunctionContainer | undefined;
+  /** The user-defined functions its expressions call */
+  readonly scalarFunctions?:
+    | readonly CubeDefinitionScalarFunction[]
+    | undefined;
 };
 type CubeDefinitionStepNode = Node<
   CubeDefinitionStepData,
@@ -101,6 +125,7 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
 ) => {
   const { node, icon, title, detail, tooltip, isOutput } = props.data;
   const { isSelected, isSelectable, readsParameters } = props.data;
+  const { closedCall, scalarFunctions } = props.data;
   return (
     <>
       <CubeCanvasInputHandles node={node} connectable={false} />
@@ -118,6 +143,7 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
           className={clsx(
             'legend-cube__node relative flex h-full w-full items-center gap-2 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
             {
+              'legend-cube__node--function border-dashed': closedCall,
               'cursor-pointer': isSelectable,
               'legend-cube__node--selected ring-2 ring-[var(--color-accent)]':
                 isSelected,
@@ -127,7 +153,31 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
           aria-current={isSelected}
           data-testid={LEGEND_CUBE_TEST_ID.CANVAS_NODE}
         >
-          <CubeCanvasNodeLabel icon={icon} title={title} detail={detail} />
+          {closedCall ? (
+            <>
+              <FunctionIcon
+                className="shrink-0 text-lg text-[var(--color-text-secondary)]"
+                aria-hidden={true}
+              />
+              <span className="flex min-w-0 flex-col leading-tight">
+                <span className="truncate font-mono font-medium">{title}</span>
+                <span className="truncate text-sm text-[var(--color-text-muted)]">
+                  {detail}
+                </span>
+              </span>
+            </>
+          ) : (
+            <CubeCanvasNodeLabel icon={icon} title={title} detail={detail} />
+          )}
+          {scalarFunctions?.length ? (
+            <span
+              className="absolute right-1 top-1 flex items-center gap-0.5 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-app)] px-0.5 text-xs text-[var(--color-text-secondary)]"
+              aria-label={`Calls ${scalarFunctions.map((each) => each.name).join(', ')}`}
+            >
+              <FunctionIcon aria-hidden={true} />
+              {scalarFunctions.length > 1 ? scalarFunctions.length : ''}
+            </span>
+          ) : null}
           {isOutput && (
             <CubeCanvasOutputCaption
               title={CUBE_DEFINITION_FLOW_LABEL.OUTPUT_TITLE}
@@ -144,6 +194,8 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
 const NODE_TYPES = {
   [CUBE_DEFINITION_STEP_TYPE]: CubeDefinitionStep,
   [CUBE_DEFINITION_PARAMETER_TYPE]: CubeDefinitionParameterBox,
+  [CUBE_DEFINITION_FUNCTION_FRAME_TYPE]: CubeDefinitionFunctionFrame,
+  [CUBE_DEFINITION_FUNCTION_BOX_TYPE]: CubeDefinitionFunctionBox,
 };
 const EDGE_TYPES = { [CUBE_CANVAS_EDGE_TYPE]: CubeCanvasEdge };
 const PRO_OPTIONS = { hideAttribution: true };
@@ -166,22 +218,82 @@ export interface CubeDefinitionFlowProps {
    * colours from Cube's theme tokens, as its steps do
    */
   readonly colorMode?: 'light' | 'dark' | undefined;
+  /**
+   * Shows a user-defined function's Pure, from its container's header, its
+   * box, or a step whose expression calls it (PLAN §11.33)
+   */
+  readonly onShowFunction?:
+    | ((call: CubeDefinitionFunctionContainer) => void)
+    | undefined;
+  /**
+   * The calls folded to one box when the flow opens; by default, those
+   * holding more than `CUBE_DEFINITION_CALL_OPEN_STEPS` steps
+   */
+  readonly initiallyFolded?: readonly string[] | undefined;
 }
 
 const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
-  const { flow, selectedStepId, onSelectStep, colorMode } = props;
+  const { flow, selectedStepId, onSelectStep, colorMode, onShowFunction } =
+    props;
   const { query } = flow;
   const registry = useMemo(() => createNodeRegistry(), []);
-  const { positions, lanes } = useMemo(() => layoutCubeQuery(query), [query]);
+  // each opened call a container; folding is the viewer's own
+  const [folded, setFolded] = useState<ReadonlySet<string>>(
+    () =>
+      new Set(
+        props.initiallyFolded ??
+          getCubeDefinitionCallsFoldedAtFirst(flow.functionCalls),
+      ),
+  );
+  const toggle = (callId: string): void =>
+    setFolded((current) => {
+      const next = new Set(current);
+      if (!next.delete(callId)) {
+        next.add(callId);
+      }
+      return next;
+    });
+  const calls = flow.functionCalls;
+  const containers = useMemo(
+    (): StepContainer[] =>
+      calls
+        .filter((call) => call.opened)
+        .map((call) => ({
+          id: call.id,
+          title: call.shortName,
+          steps: call.stepIds,
+          folded: folded.has(call.id),
+          ...(call.parentId !== undefined ? { parentId: call.parentId } : {}),
+        })),
+    [calls, folded],
+  );
+  const layout = useMemo(
+    () => layoutCubeCanvas(query, containers),
+    [query, containers],
+  );
+  const { positions, lanes } = layout;
+  /** How many steps each call holds, the calls in it included */
+  const countOf = (callId: string): number =>
+    countCubeDefinitionCallSteps(calls, callId);
   const isSelectable = onSelectStep !== undefined;
   const steps = useMemo(
     (): CubeDefinitionStepNode[] =>
       buildCubeCanvasNodes(query, positions).map((flowNode) => {
         const { node } = flowNode.data;
         const definition = registry.get(node.type);
-        const label = getCubeCanvasNodeLabel(node, definition?.label, {
-          namesUnresolvedSources: true,
-        });
+        const closedCall = calls.find(
+          (call) => !call.opened && call.stepIds.includes(node.id),
+        );
+        const closed = closedCall ? describeClosedCall(closedCall) : undefined;
+        const scalarFunctions = flow.scalarFunctions.get(node.id);
+        const label = closedCall
+          ? {
+              title: printCubeDefinitionCall(closedCall),
+              detail: closed?.line,
+            }
+          : getCubeCanvasNodeLabel(node, definition?.label, {
+              namesUnresolvedSources: true,
+            });
         const isUnknown =
           node instanceof IngestDatasetSource &&
           node.resolution.kind !== 'resolved';
@@ -202,8 +314,21 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
             icon: definition?.icon,
             title: label.title,
             detail: label.detail,
+            ...(closedCall ? { closedCall } : {}),
+            ...(scalarFunctions ? { scalarFunctions } : {}),
             tooltip: [
-              describeStep(node),
+              ...(closedCall
+                ? [describeCubeDefinitionCall(closedCall), closed?.why ?? '']
+                : [describeStep(node)]),
+              ...(scalarFunctions
+                ? scalarFunctions.map((each) =>
+                    CUBE_DEFINITION_FLOW_LABEL.CALLS_FUNCTION(
+                      each.name,
+                      each.signature,
+                      each.origin,
+                    ),
+                  )
+                : []),
               ...(isUnknown
                 ? [CUBE_DEFINITION_FLOW_LABEL.UNKNOWN_COLUMNS]
                 : []),
@@ -218,21 +343,57 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
           },
         };
       }),
-    [query, positions, registry, flow, selectedStepId, isSelectable],
+    [query, positions, registry, flow, calls, selectedStepId, isSelectable],
+  );
+  const functionNodes = useMemo(
+    (): CubeDefinitionFunctionNode[] =>
+      buildCubeCanvasContainerNodes(layout.containers).flatMap((flowNode) => {
+        const call = calls.find(
+          (each) => each.id === flowNode.data.place.container.id,
+        );
+        return call
+          ? [
+              {
+                ...flowNode,
+                type: flowNode.data.place.container.folded
+                  ? CUBE_DEFINITION_FUNCTION_BOX_TYPE
+                  : CUBE_DEFINITION_FUNCTION_FRAME_TYPE,
+                data: {
+                  place: flowNode.data.place,
+                  call,
+                  stepCount: countOf(call.id),
+                  onToggle: toggle,
+                  onShowFunction,
+                },
+              },
+            ]
+          : [];
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [layout, calls, onShowFunction],
   );
   const nodes = useMemo(
-    (): (CubeDefinitionStepNode | CubeDefinitionParameterNode)[] => [
+    (): (
+      | CubeDefinitionStepNode
+      | CubeDefinitionParameterNode
+      | CubeDefinitionFunctionNode
+    )[] => [
+      // frames first, behind the steps
+      ...functionNodes,
       ...steps,
       ...buildCubeDefinitionParameterNodes(flow, positions),
     ],
-    [steps, flow, positions],
+    [functionNodes, steps, flow, positions],
   );
   const edges = useMemo(
     (): (CubeCanvasFlowEdge | Edge)[] => [
-      ...buildCubeCanvasEdges(query, lanes),
-      ...buildCubeDefinitionParameterEdges(flow),
+      ...buildCubeCanvasEdges(query, lanes, layout.containers),
+      // a step in a folded container has no place: its parameters' wires go
+      ...buildCubeDefinitionParameterEdges(flow).filter((edge) =>
+        positions.has(edge.target),
+      ),
     ],
-    [query, lanes, flow],
+    [query, lanes, flow, layout, positions],
   );
   const layoutSignature = useMemo(
     () => JSON.stringify([...positions]),
@@ -242,7 +403,9 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
 
   return (
     <ReactFlow<
-      CubeDefinitionStepNode | CubeDefinitionParameterNode,
+      | CubeDefinitionStepNode
+      | CubeDefinitionParameterNode
+      | CubeDefinitionFunctionNode,
       CubeCanvasFlowEdge | Edge
     >
       nodes={nodes}
@@ -262,6 +425,10 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
       onNodeClick={(_event, flowNode) => {
         // a parameter is no step
         if (flowNode.type === CUBE_DEFINITION_STEP_TYPE) {
+          // a call Cube can't open: its Pure, as its tooltip offers
+          if (flowNode.data.closedCall && onShowFunction) {
+            onShowFunction(flowNode.data.closedCall);
+          }
           onSelectStep?.(flowNode.id);
         }
       }}

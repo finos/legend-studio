@@ -6122,7 +6122,7 @@ goes to master once the steps are in):**
 | ---- | --------------------------------------------------------------------------- | ------ |
 | F1   | Core: a call read as one step with inputs; containers that nest (#5910)     | 🚧     |
 | F2   | The flow's reader opens calls: loader, rules, boxes, scalar calls (#5911)   | 🚧     |
-| F3   | The flow draws them: frames, nesting, folding, boxes, the ƒ badge           | ⏳     |
+| F3   | The flow draws them: frames, nesting, folding, boxes, the ƒ badge (#?)      | 🚧     |
 | F4   | Marketplace's viewer: the Depot loader, the read order, the function's Pure | ⏳     |
 | F5   | Studio: the preview and the ingest Overview, from the graph                 | ⏳     |
 | F6   | Producer Info's view flows                                                  | ⏳     |

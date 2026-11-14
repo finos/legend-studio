@@ -18,6 +18,8 @@ import dagre from '@dagrejs/dagre';
 import {
   type Connection,
   getShownContainers,
+  isInFoldedStepContainer,
+  type ShownStepContainer,
   type Query,
   type StepContainer,
 } from '@finos/legend-cube';
@@ -275,6 +277,84 @@ const getKeyColumns = (
 };
 
 /**
+ * Where each container drawn goes: a folded one's box where the layout put
+ * it, holding the steps of the containers inside it too; an open one's frame
+ * round its steps, its notes and the containers inside it (PLAN
+ * §11.33), each one's frame worked out before the frame round it
+ */
+const placeContainers = (
+  drawn: readonly ShownStepContainer[],
+  positions: ReadonlyMap<string, CubeCanvasPosition>,
+  noted: ReadonlySet<string>,
+  topLeftOf: (key: string) => CubeCanvasPosition,
+): CubeCanvasContainerPlace[] => {
+  const places = new Map<string, CubeCanvasContainerPlace>();
+  const placeOf = (shown: ShownStepContainer): CubeCanvasContainerPlace => {
+    const { container, steps, nestedSteps } = shown;
+    const known = places.get(container.id);
+    if (known) {
+      return known;
+    }
+    let place: CubeCanvasContainerPlace;
+    if (container.folded) {
+      place = {
+        container,
+        steps: [...steps, ...(nestedSteps ?? [])].sort(compareText),
+        ...topLeftOf(boxKey(container.id)),
+        width: CUBE_CANVAS_NODE_WIDTH,
+        height: CUBE_CANVAS_NODE_HEIGHT,
+      };
+    } else {
+      // a step's note is under it, in the frame
+      const boxes = [
+        ...steps.map((id) => {
+          const { x, y } = positions.get(id) ?? { x: 0, y: 0 };
+          return {
+            left: x,
+            top: y,
+            right: x + CUBE_CANVAS_NODE_WIDTH,
+            bottom:
+              y +
+              CUBE_CANVAS_NODE_HEIGHT +
+              (noted.has(id) ? CUBE_CANVAS_NOTE_HEIGHT : 0),
+          };
+        }),
+        ...drawn
+          .filter((each) => each.container.parentId === container.id)
+          .map((each) => {
+            const inner = placeOf(each);
+            return {
+              left: inner.x,
+              top: inner.y,
+              right: inner.x + inner.width,
+              bottom: inner.y + inner.height,
+            };
+          }),
+      ];
+      const left = Math.min(...boxes.map((box) => box.left));
+      const top = Math.min(...boxes.map((box) => box.top));
+      const right = Math.max(...boxes.map((box) => box.right));
+      const bottom = Math.max(...boxes.map((box) => box.bottom));
+      place = {
+        container,
+        steps,
+        x: left - CUBE_CANVAS_FRAME_PADDING,
+        y: top - CUBE_CANVAS_FRAME_PADDING - CUBE_CANVAS_FRAME_HEAD_HEIGHT,
+        width: right - left + 2 * CUBE_CANVAS_FRAME_PADDING,
+        height:
+          bottom -
+          top +
+          2 * CUBE_CANVAS_FRAME_PADDING +
+          CUBE_CANVAS_FRAME_HEAD_HEIGHT,
+      };
+    }
+    places.set(container.id, place);
+    return place;
+  };
+  return drawn.map(placeOf);
+};
+
+/**
  * The canvas laid out with its containers (PLAN §11.28): `layoutCubeQuery`'s
  * when none is drawn. An open container's steps are a cluster of dagre's
  * compound graph, so nothing else lands inside its frame; a folded one's are
@@ -295,14 +375,21 @@ export const layoutCubeCanvas = (
   if (!shown.length) {
     return { ...layoutCubeQuery(query, noted), containers: [] };
   }
+  // a container inside a folded one isn't drawn: the folded one's box holds
+  // its steps (PLAN §11.33)
+  const drawn = shown.filter(
+    ({ container }) => !isInFoldedStepContainer(shown, container),
+  );
   const boxOf = new Map<string, string>();
-  shown.forEach(
-    ({ container, steps }) =>
+  drawn.forEach(
+    ({ container, steps, nestedSteps }) =>
       container.folded &&
-      steps.forEach((id) => boxOf.set(id, boxKey(container.id))),
+      [...steps, ...(nestedSteps ?? [])].forEach((id) =>
+        boxOf.set(id, boxKey(container.id)),
+      ),
   );
   const keyOf = (id: string): string => boxOf.get(id) ?? id;
-  const open = shown
+  const open = drawn
     .filter(({ container }) => !container.folded)
     .sort((a, b) => compareText(a.container.id, b.container.id));
   const keys = [...new Set(query.nodes.map((node) => keyOf(node.id)))].sort(
@@ -339,6 +426,16 @@ export const layoutCubeCanvas = (
   open.forEach(({ container, steps }) => {
     graph.setNode(frameKey(container.id), {});
     steps.forEach((id) => graph.setParent(id, frameKey(container.id)));
+  });
+  // a container drawn inside an open one: its frame, or its box, in the other's
+  const isOpen = new Set(open.map(({ container }) => container.id));
+  drawn.forEach(({ container }) => {
+    if (container.parentId !== undefined && isOpen.has(container.parentId)) {
+      graph.setParent(
+        container.folded ? boxKey(container.id) : frameKey(container.id),
+        frameKey(container.parentId),
+      );
+    }
   });
   edges.forEach((edge) =>
     graph.setEdge(
@@ -397,43 +494,7 @@ export const layoutCubeCanvas = (
   return {
     positions,
     lanes,
-    containers: shown.map(({ container, steps }) => {
-      if (container.folded) {
-        return {
-          container,
-          steps,
-          ...topLeftOf(boxKey(container.id)),
-          width: CUBE_CANVAS_NODE_WIDTH,
-          height: CUBE_CANVAS_NODE_HEIGHT,
-        };
-      }
-      const corners = steps.map((id) => positions.get(id) ?? { x: 0, y: 0 });
-      const left = Math.min(...corners.map(({ x }) => x));
-      const top = Math.min(...corners.map(({ y }) => y));
-      const right =
-        Math.max(...corners.map(({ x }) => x)) + CUBE_CANVAS_NODE_WIDTH;
-      // a step's note is under it, in the frame
-      const bottom = Math.max(
-        ...steps.map(
-          (id, index) =>
-            (corners[index]?.y ?? 0) +
-            CUBE_CANVAS_NODE_HEIGHT +
-            (noted.has(id) ? CUBE_CANVAS_NOTE_HEIGHT : 0),
-        ),
-      );
-      return {
-        container,
-        steps,
-        x: left - CUBE_CANVAS_FRAME_PADDING,
-        y: top - CUBE_CANVAS_FRAME_PADDING - CUBE_CANVAS_FRAME_HEAD_HEIGHT,
-        width: right - left + 2 * CUBE_CANVAS_FRAME_PADDING,
-        height:
-          bottom -
-          top +
-          2 * CUBE_CANVAS_FRAME_PADDING +
-          CUBE_CANVAS_FRAME_HEAD_HEIGHT,
-      };
-    }),
+    containers: placeContainers(drawn, positions, noted, topLeftOf),
   };
 };
 
