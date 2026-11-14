@@ -114,7 +114,10 @@ import { V1_getGenericTypeFullPath } from './V1_DomainHelper.js';
 import { V1_relationTypeModelSchema } from '../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 import type { TaggedValue } from '../../../../../graph/metamodel/pure/packageableElements/domain/TaggedValue.js';
 import { StereotypeExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/domain/StereotypeReference.js';
-import { getStereotype } from '../../../../../graph/helpers/DomainHelper.js';
+import {
+  getFunctionNameWithPath,
+  getStereotype,
+} from '../../../../../graph/helpers/DomainHelper.js';
 import { V1_buildTaggedValue } from '../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
 
 const buildV1GenericType = (fullPath: string): V1_GenericTypeProtocol => {
@@ -926,17 +929,27 @@ const collectV1AccessorsFromValueSpecification = (
         visitedFunctions,
       );
     }
-    // Also follow the function body if it's a user-defined function in the graph
+    // Also follow the body of a user-defined function the graph has: a call
+    // names one by its path without the signature its element's path carries,
+    // e.g. `my::orders` for `my::orders__Relation_1_`, and takes as many values
+    // as it has parameters. Overloads with as many parameters, which only the
+    // engine tells apart, are each followed.
     if (graph) {
       const funcPath = valueSpec.function;
-      // ConcreteFunctionDefinition paths include the signature suffix; strip it
-      // by matching functions whose path starts with the applied function name
-      const funcDef = returnUndefOnError(() =>
-        graph.functions.find(
-          (f) => f.path === funcPath || f.path.startsWith(`${funcPath}_`),
-        ),
-      );
-      if (funcDef && !visitedFunctions.has(funcDef)) {
+      const parameterCount = valueSpec.parameters.length;
+      const funcDefs =
+        returnUndefOnError(() =>
+          graph.functions.filter(
+            (f) =>
+              f.path === funcPath ||
+              (getFunctionNameWithPath(f) === funcPath &&
+                f.parameters.length === parameterCount),
+          ),
+        ) ?? [];
+      for (const funcDef of funcDefs) {
+        if (visitedFunctions.has(funcDef)) {
+          continue;
+        }
         visitedFunctions.add(funcDef);
         // expressionSequence is stored as raw JSON on ConcreteFunctionDefinition
         for (const rawExpr of funcDef.expressionSequence) {
