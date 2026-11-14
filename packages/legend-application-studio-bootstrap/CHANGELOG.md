@@ -1,5 +1,11 @@
 # @finos/legend-application-studio-bootstrap
 
+## 13.280.1
+
+### Patch Changes
+
+- [#5900](https://github.com/finos/legend-studio/pull/5900) [`655b368`](https://github.com/finos/legend-studio/commit/655b3686eaef0706de076d9ca55b8812d8cc88f5) ([@marsah-gs](https://github.com/marsah-gs)) - Register the GraphQL store extension (`@finos/legend-extension-store-graphql`) in Legend Studio.
+
 ## 13.280.0
 
 ## 13.279.0
