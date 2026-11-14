@@ -17,6 +17,8 @@
 import type * as CubeDefinitionFlowEntry from '@finos/legend-cube-builder/definition-flow';
 import type {
   CubeDefinitionFlowReading,
+  CubeDefinitionFunctionElement,
+  CubeDefinitionFunctionLoader,
   CubeDefinitionRefusal,
 } from '@finos/legend-cube-builder/definition-flow';
 import {
@@ -62,6 +64,80 @@ export const createDepotIngestDefinitionLoader =
         path,
       )
     ).content as PlainObject | undefined;
+
+/**
+ * The user-defined functions a definition calls, by the names calls name
+ * them by (`pkg::name`): every overload, from the data product's project and
+ * its dependencies (PLAN §11.33). Marketplace reads them from
+ * Depot, Studio from its graph.
+ */
+export type DataProductFunctionLoader = CubeDefinitionFunctionLoader;
+
+const FUNCTION_CLASSIFIER =
+  'meta::pure::metamodel::function::ConcreteFunctionDefinition';
+
+/** A Depot entity, flat or as Depot's classifier routes wrap it */
+const readStoredEntity = (
+  value: PlainObject,
+  origin: string | undefined,
+): CubeDefinitionFunctionElement | undefined => {
+  const entity = (value.entity ?? value) as PlainObject;
+  const path = entity.path;
+  const content = entity.content;
+  return typeof path === 'string' && content && typeof content === 'object'
+    ? {
+        path,
+        content: content as PlainObject,
+        origin,
+      }
+    : undefined;
+};
+
+/**
+ * Functions from Depot, at the data product's version: its project's and its
+ * dependencies', in one request (`…/classifiers/<function>/dependencies`,
+ * transitive, the project itself included), made the first time a definition
+ * calls a function and kept for the page: a released version doesn't change
+ */
+export const createDepotFunctionLoader = (
+  depotServerClient: DepotServerClient,
+  projectGAV: ProjectGAVCoordinates,
+): DataProductFunctionLoader => {
+  let all: Promise<CubeDefinitionFunctionElement[]> | undefined;
+  const loadAll = async (): Promise<CubeDefinitionFunctionElement[]> => {
+    const projects = await depotServerClient.getDependencyEntities(
+      projectGAV.groupId,
+      projectGAV.artifactId,
+      resolveVersion(projectGAV.versionId),
+      true,
+      true,
+      FUNCTION_CLASSIFIER,
+    );
+    return projects.flatMap((project) => {
+      // the data product's own project goes without saying
+      const origin =
+        project.groupId === projectGAV.groupId &&
+        project.artifactId === projectGAV.artifactId
+          ? undefined
+          : `${String(project.groupId)}:${String(project.artifactId)}:${String(project.versionId)}`;
+      return ((project.entities ?? []) as PlainObject[]).flatMap((each) => {
+        const element = readStoredEntity(each, origin);
+        return element ? [element] : [];
+      });
+    });
+  };
+  return async (names) => {
+    all ??= loadAll().catch((error: unknown) => {
+      // a failure isn't kept: the next definition asks again
+      all = undefined;
+      throw error;
+    });
+    // a path is its name and its signature: Cube tells overloads apart
+    return (await all).filter((element) =>
+      names.some((name) => element.path.startsWith(`${name}_`)),
+    );
+  };
+};
 
 /** Why the flow can't be shown, when Cube didn't refuse the definition */
 export enum DataProductDefinitionFlowFailureKind {

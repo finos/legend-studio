@@ -371,3 +371,28 @@
     outline-offset: 0.1rem;
   }
 }
+
+// PROTOTYPE (PLAN §11.33): a user-defined function's Pure, under the flow
+.data-product__viewer__definition__function {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  &__header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+  }
+
+  &__title {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-left: auto;
+  }
+}

@@ -98,6 +98,7 @@ import {
   DataProductDataAccessState,
   DataProductViewerState,
   createDepotIngestDefinitionLoader,
+  createDepotFunctionLoader,
   TerminalProductDataAccessState,
   TerminalProductLayoutState,
   TerminalProductViewerState,
@@ -475,6 +476,13 @@ export class LegendMarketplaceProductViewerStore {
                 rawResult,
               );
             },
+          // PLAN §11.33: the functions its definitions call
+          loadFunctions: projectGAV
+            ? createDepotFunctionLoader(
+                this.marketplaceBaseStore.depotServerClient,
+                projectGAV,
+              )
+            : undefined,
         },
         this.marketplaceBaseStore.registryServerClient,
       );
@@ -732,6 +740,10 @@ export class LegendMarketplaceProductViewerStore {
                   );
                 },
                 loadIngestDefinition: createDepotIngestDefinitionLoader(
+                  this.marketplaceBaseStore.depotServerClient,
+                  projectGAV,
+                ),
+                loadFunctions: createDepotFunctionLoader(
                   this.marketplaceBaseStore.depotServerClient,
                   projectGAV,
                 ),
