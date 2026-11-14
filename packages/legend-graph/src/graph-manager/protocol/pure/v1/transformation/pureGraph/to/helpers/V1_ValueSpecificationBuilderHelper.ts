@@ -130,6 +130,7 @@ import {
 import {
   AccessorInstanceValue,
   DataProductAccessor,
+  IngestionAccessor,
   RelationalStoreAccessor,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import {
@@ -140,6 +141,7 @@ import { Database } from '../../../../../../../../graph/metamodel/pure/packageab
 import { IngestDefinition } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
   V1_createAccessorFromPackageableElementWithNonFunctionSources,
+  V1_qualifyIngestAccessor,
   V1_resolveRelationalStoreAccessorPath,
 } from '../../../../helpers/V1_AccessorHelper.js';
 
@@ -604,15 +606,20 @@ export class V1_ValueSpecificationBuilder
           this.context.resolveElement(ingestPath, false).value,
           IngestDefinition,
         );
-        const accessor = guaranteeNonNullable(
-          V1_createAccessorFromPackageableElementWithNonFunctionSources(
-            ingestDef,
-            this.context,
-            {
-              tableName: datasetName,
-            },
+        const accessor = V1_qualifyIngestAccessor(
+          guaranteeType(
+            V1_createAccessorFromPackageableElementWithNonFunctionSources(
+              ingestDef,
+              this.context,
+              {
+                tableName: datasetName,
+              },
+            ),
+            IngestionAccessor,
+            `Can't build accessor for ingest definition '${ingestPath}'`,
           ),
-          `Can't build accessor for ingest definition '${ingestPath}'`,
+          protocol,
+          this.context.graph,
         );
         const accessorInstanceValue = new AccessorInstanceValue();
         accessorInstanceValue.values = [accessor];

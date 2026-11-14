@@ -342,6 +342,7 @@ export {
   V1_RelationStoreAccessor,
   V1_DataProductAccessor,
   V1_IngestDefinitionAccessor,
+  V1_IngestAccessorQualifier,
   V1_SQLAccessor,
 } from './graph-manager/protocol/pure/v1/model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 export { V1_PackageableConnection } from './graph-manager/protocol/pure/v1/model/packageableElements/connection/V1_PackageableConnection.js';
@@ -964,6 +965,7 @@ export {
   Accessor,
   DataProductAccessor,
   IngestionAccessor,
+  IngestAccessorQualifier,
   RelationalStoreAccessor,
   AccessorInstanceValue,
   type AccessorOwner,
@@ -973,6 +975,8 @@ export {
   V1_createAccessorFromPackageableElement,
   V1_createAccessorFromPackageableElementWithNonFunctionSources,
   V1_resolveAccessorsFromRawLambda,
+  V1_buildIngestMetadataRelationType,
+  V1_qualifyIngestAccessor,
   V1_buildRelationElementsDataFromAccessors,
   V1_buildRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,

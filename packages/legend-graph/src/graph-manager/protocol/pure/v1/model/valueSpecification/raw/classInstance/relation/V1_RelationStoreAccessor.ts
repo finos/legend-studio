@@ -37,8 +37,24 @@ export class V1_DataProductAccessor extends V1_Accessor {
   }
 }
 
+/**
+ * What an ingest accessor reads of its data set, written `#I{ingest.dataSet|qualifier}#`
+ */
+export enum V1_IngestAccessorQualifier {
+  METADATA = 'metadata',
+  INCOMING = 'incoming',
+  MILESTONED = 'milestoned',
+  INCOMING_MILESTONED = 'incomingMilestoned',
+}
+
 export class V1_IngestDefinitionAccessor extends V1_Accessor {
+  /**
+   * Whether the accessor reads the data set's batch metadata. The engine
+   * routes the accessor by this flag but types it by `accessorQualifier`, so
+   * the serializer keeps the two in step.
+   */
   metadata = false;
+  accessorQualifier?: V1_IngestAccessorQualifier | undefined;
 
   get INSTANCE_TYPE(): V1_ClassInstanceType {
     return V1_ClassInstanceType.INGEST_ACCESSOR;

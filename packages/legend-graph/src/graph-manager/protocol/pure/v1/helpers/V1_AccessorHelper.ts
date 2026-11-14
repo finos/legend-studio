@@ -16,6 +16,7 @@
 
 import {
   type Accessor,
+  IngestAccessorQualifier,
   IngestionAccessor,
   RelationalStoreAccessor,
   type AccessorOwner,
@@ -48,9 +49,11 @@ import {
 import { V1_GraphBuilderExtensions } from '../transformation/pureGraph/to/V1_GraphBuilderExtensions.js';
 import { V1_GenericType as V1_GenericTypeProtocol } from '../model/packageableElements/type/V1_GenericType.js';
 import { V1_PackageableType } from '../model/packageableElements/type/V1_PackageableType.js';
+import { deserialize } from 'serializr';
 import {
   LogEvent,
   LogService,
+  UnsupportedOperationError,
   assertTrue,
   returnUndefOnError,
   type PlainObject,
@@ -59,6 +62,7 @@ import {
   CORE_PURE_PATH,
   DEFAULT_DATABASE_SCHEMA_NAME,
   ELEMENT_PATH_DELIMITER,
+  PRECISE_PRIMITIVE_TYPE,
   PRIMITIVE_TYPE,
 } from '../../../../../graph/MetaModelConst.js';
 import {
@@ -91,6 +95,7 @@ import { V1_Collection } from '../model/valueSpecification/raw/V1_Collection.js'
 import {
   type V1_Accessor,
   V1_DataProductAccessor,
+  V1_IngestAccessorQualifier,
   V1_IngestDefinitionAccessor,
   V1_RelationStoreAccessor,
   V1_SQLAccessor,
@@ -106,6 +111,7 @@ import {
   V1_RelationType,
 } from '../model/packageableElements/type/V1_RelationType.js';
 import { V1_getGenericTypeFullPath } from './V1_DomainHelper.js';
+import { V1_relationTypeModelSchema } from '../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 import type { TaggedValue } from '../../../../../graph/metamodel/pure/packageableElements/domain/TaggedValue.js';
 import { StereotypeExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/domain/StereotypeReference.js';
 import { getStereotype } from '../../../../../graph/helpers/DomainHelper.js';
@@ -705,6 +711,106 @@ export const V1_buildDataProductAccessor = async (
     relationType,
     element,
   );
+};
+
+const ingestMetadataColumn = (
+  name: string,
+  typePath: string,
+  typeVariableValues: PlainObject[] = [],
+): PlainObject => ({
+  name,
+  genericType: {
+    rawType: { _type: 'packageableType', fullPath: typePath },
+    typeArguments: [],
+    multiplicityArguments: [],
+    typeVariableValues,
+  },
+  multiplicity: { lowerBound: 0, upperBound: 1 },
+});
+
+const varcharLength = (length: number): PlainObject[] => [
+  { _type: 'integer', value: length },
+];
+
+/**
+ * The columns of `#I{ingest.dataSet|metadata}#`, the same for every data set.
+ * They mirror the engine's `buildMetadataRelationType` in alloy-lakehouse
+ * `core_ingest/transformation/dbGeneration/dbGeneration.pure`.
+ */
+const INGEST_METADATA_RELATION_TYPE: PlainObject<V1_RelationType> = {
+  _type: 'relationType',
+  columns: [
+    ingestMetadataColumn(
+      'table_name',
+      PRECISE_PRIMITIVE_TYPE.VARCHAR,
+      varcharLength(255),
+    ),
+    ingestMetadataColumn('batch_start_ts_utc', PRECISE_PRIMITIVE_TYPE.DATETIME),
+    ingestMetadataColumn('batch_end_ts_utc', PRECISE_PRIMITIVE_TYPE.DATETIME),
+    ingestMetadataColumn(
+      'batch_status',
+      PRECISE_PRIMITIVE_TYPE.VARCHAR,
+      varcharLength(32),
+    ),
+    ingestMetadataColumn('table_batch_id', PRECISE_PRIMITIVE_TYPE.INT),
+    ingestMetadataColumn(
+      'ingest_request_id',
+      PRECISE_PRIMITIVE_TYPE.VARCHAR,
+      varcharLength(64),
+    ),
+    ingestMetadataColumn('batch_source_info', CORE_PURE_PATH.VARIANT),
+    ingestMetadataColumn('additional_metadata', CORE_PURE_PATH.VARIANT),
+    ingestMetadataColumn('batch_statistics', CORE_PURE_PATH.VARIANT),
+  ],
+};
+
+export const V1_buildIngestMetadataRelationType = (
+  graph: PureModel,
+): RelationType =>
+  V1_buildRelationTypeFromV1RelationType(
+    deserialize(V1_relationTypeModelSchema, INGEST_METADATA_RELATION_TYPE),
+    graph,
+  );
+
+const V1_buildIngestAccessorQualifier = (
+  qualifier: V1_IngestAccessorQualifier,
+): IngestAccessorQualifier => {
+  switch (qualifier) {
+    case V1_IngestAccessorQualifier.METADATA:
+      return IngestAccessorQualifier.METADATA;
+    case V1_IngestAccessorQualifier.INCOMING:
+      return IngestAccessorQualifier.INCOMING;
+    case V1_IngestAccessorQualifier.MILESTONED:
+      return IngestAccessorQualifier.MILESTONED;
+    case V1_IngestAccessorQualifier.INCOMING_MILESTONED:
+      return IngestAccessorQualifier.INCOMING_MILESTONED;
+    default:
+      throw new UnsupportedOperationError(
+        `Can't build ingest accessor qualifier '${qualifier}'`,
+      );
+  }
+};
+
+/**
+ * Gives an accessor built for a data set the qualifier the protocol reads it
+ * with. A metadata accessor is typed by the batch metadata columns, not by the
+ * data set's.
+ *
+ * TODO: type `incoming` with the system columns the engine adds; it is typed
+ * by the data set's columns for now.
+ */
+export const V1_qualifyIngestAccessor = (
+  accessor: IngestionAccessor,
+  protocol: V1_IngestDefinitionAccessor,
+  graph: PureModel,
+): IngestionAccessor => {
+  accessor.qualifier = protocol.accessorQualifier
+    ? V1_buildIngestAccessorQualifier(protocol.accessorQualifier)
+    : undefined;
+  if (accessor.qualifier === IngestAccessorQualifier.METADATA) {
+    accessor.relationType = V1_buildIngestMetadataRelationType(graph);
+  }
+  return accessor;
 };
 
 const collectV1AccessorsFromValueSpecification = (

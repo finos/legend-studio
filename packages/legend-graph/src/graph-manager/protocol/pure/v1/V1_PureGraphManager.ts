@@ -439,6 +439,7 @@ import type { MetadataRequestOptions } from '../../../action/dev-metadata/Metada
 import {
   type Accessor,
   type DataProductAccessor,
+  IngestionAccessor,
   RelationalStoreAccessor,
 } from '../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import { IngestDefinition } from '../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
@@ -450,6 +451,7 @@ import {
   V1_createAccessorFromPackageableElement,
   V1_buildDataProductAccessor,
   V1_resolveAccessorsFromRawLambda,
+  V1_qualifyIngestAccessor,
   V1_resolveRelationalStoreAccessorPath,
   V1_buildRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
@@ -2445,10 +2447,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           });
         }
         if (v1Accessor instanceof V1_IngestDefinitionAccessor) {
-          return this.createAccessorFromPackageableElement(element, graph, {
-            schemaName: undefined,
-            tableName: v1Accessor.path[1],
-          });
+          const accessor = await this.createAccessorFromPackageableElement(
+            element,
+            graph,
+            {
+              schemaName: undefined,
+              tableName: v1Accessor.path[1],
+            },
+          );
+          return accessor instanceof IngestionAccessor
+            ? V1_qualifyIngestAccessor(accessor, v1Accessor, graph)
+            : accessor;
         }
         if (v1Accessor instanceof V1_RelationStoreAccessor) {
           // best effort: skip an accessor whose path is malformed
