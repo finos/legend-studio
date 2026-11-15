@@ -22,6 +22,8 @@ import {
   EmitRole,
   enumValue,
   func,
+  ingestAccessor,
+  IngestDatasetQualifier,
   lambda,
   lambdaJson,
   letBinding,
@@ -46,6 +48,30 @@ describe('Comparing lambdas Cube reads with the ones it writes', () => {
     expect(getCanonicalNumberText('1000')).toBe(getCanonicalNumberText('1e3'));
     expect(getCanonicalNumberText('-42')).toBe('-42');
     expect(getCanonicalNumberText('2')).not.toBe(getCanonicalNumberText('20'));
+  });
+
+  test("Tells a data set's batch metadata from its rows", () => {
+    const path = ['sales::OrdersIngest', 'TRADES'] as const;
+    const metadata = ingestAccessor(
+      path,
+      undefined,
+      undefined,
+      IngestDatasetQualifier.METADATA,
+    );
+    expect(isSameCubeIR(metadata, ingestAccessor(path))).toBe(false);
+    expect(isSameCubeIR(ingestAccessor(path), metadata)).toBe(false);
+    expect(
+      isSameCubeIR(
+        metadata,
+        // its origin and URN aside
+        ingestAccessor(
+          path,
+          { nodeId: 'ingestDataset101', role: EmitRole.ACCESSOR },
+          'urn:ingest',
+          IngestDatasetQualifier.METADATA,
+        ),
+      ),
+    ).toBe(true);
   });
 
   test('Compares numbers by value, within their kind', () => {

@@ -31,20 +31,14 @@ import {
   type CubeIngestCatalog,
   getCubeIngestEnvironmentKeyOfModel,
 } from '../graph-manager/CubeIngestCatalog.js';
+import { getCubeIngestMetadataSchema } from '../graph-manager/protocol/pure/CubeProtocolJson.js';
 
-/**
- * Reads an ingest cube's data sets again (PLAN §6.7), or a data product
- * cube's, read in its class (§11.30): their columns as their deployed
- * definitions declare them, a data product cube's as its project has them
- * at its version, through the catalog, with no engine call; `fresh` reads
- * the definitions again rather than what this page visit read. One answer
- * per source, failures included; never rejects.
- */
-export const recheckCubeIngestSources = async (
+/** The columns of data sets' rows, through the catalog */
+const recheckCubeIngestRows = async (
   catalog: CubeIngestCatalog | undefined,
   model: ModelContext,
   sources: readonly IngestDatasetSource[],
-  fresh = false,
+  fresh: boolean,
 ): Promise<Map<NodeId, Schema | CubeEngineError>> => {
   const failAll = (
     kind: CubeEngineErrorKind,
@@ -92,4 +86,33 @@ export const recheckCubeIngestSources = async (
           error instanceof Error ? error.message : String(error),
         );
   }
+};
+
+/**
+ * Reads an ingest cube's data sets again (PLAN §6.7), or a data product
+ * cube's, read in its class (§11.30): their columns as their deployed
+ * definitions declare them, a data product cube's as its project has them
+ * at its version, through the catalog, with no engine call; `fresh` reads
+ * the definitions again rather than what this page visit read. A data set's
+ * batch metadata has the same columns whatever the data set, so is answered
+ * without the catalog. One answer per source, failures included; never
+ * rejects.
+ */
+export const recheckCubeIngestSources = async (
+  catalog: CubeIngestCatalog | undefined,
+  model: ModelContext,
+  sources: readonly IngestDatasetSource[],
+  fresh = false,
+): Promise<Map<NodeId, Schema | CubeEngineError>> => {
+  const metadata = sources.filter((source) => source.readsMetadata);
+  const answers = new Map<NodeId, Schema | CubeEngineError>(
+    metadata.map((source) => [source.id, getCubeIngestMetadataSchema()]),
+  );
+  const rows = sources.filter((source) => !source.readsMetadata);
+  if (rows.length) {
+    (await recheckCubeIngestRows(catalog, model, rows, fresh)).forEach(
+      (answer, id) => answers.set(id, answer),
+    );
+  }
+  return answers;
 };

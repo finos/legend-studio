@@ -15,7 +15,11 @@
  */
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
-import { IngestDatasetSource, RelationalTableSource } from '@finos/legend-cube';
+import {
+  IngestDatasetQualifier,
+  IngestDatasetSource,
+  RelationalTableSource,
+} from '@finos/legend-cube';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
@@ -54,6 +58,18 @@ import { CubeEditorState } from '../CubeEditorState.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
 
 const { PRODUCTION, PRODUCTION_PARALLEL } = CubeDataProductEnvironmentType;
+/** The columns of a data set's batch metadata, as legend-graph types them */
+const METADATA_COLUMNS = [
+  'table_name',
+  'batch_start_ts_utc',
+  'batch_end_ts_utc',
+  'batch_status',
+  'table_batch_id',
+  'ingest_request_id',
+  'batch_source_info',
+  'additional_metadata',
+  'batch_statistics',
+];
 /** The viewer's own production environment, as a cube naming none reads it */
 const VIEWER_PRODUCTION = { environmentType: PRODUCTION, name: undefined };
 
@@ -273,6 +289,39 @@ describe('The Ingest tab', () => {
     expect(tab.dataSetNames).toEqual([]);
     await settle();
     expect(tab.dataSetNames).toEqual(['DESKS']);
+  });
+
+  test("Reads the data sets' batch metadata when asked: any data set can be picked, a view too, each added reading it, with the batch metadata's columns", async () => {
+    const { state } = setUp();
+    const tab = await openOnOrders(state);
+    // TRADES, whose rows alone can be added, picked for the viewer
+    expect(tab.dataSetNames).toEqual(['TRADES']);
+    expect(tab.qualifier).toBeUndefined();
+    tab.setQualifier(IngestDatasetQualifier.METADATA);
+    // a materialized view's batch metadata can be added, though its rows can't
+    tab.toggleDataSet('DAILY');
+    expect(tab.dataSetNames).toEqual(['TRADES', 'DAILY']);
+    expect(tab.previewSchema?.names()).toEqual(METADATA_COLUMNS);
+    expect(tab.canConfirm).toBe(true);
+    // back to the rows: the view's pick is dropped
+    tab.setQualifier(undefined);
+    expect(tab.dataSetNames).toEqual(['TRADES']);
+    expect(tab.previewSchema).toBe(FAKE_INGEST_TRADES_SCHEMA);
+
+    tab.setQualifier(IngestDatasetQualifier.METADATA);
+    tab.toggleDataSet('DAILY');
+    await flowResult(state.sourcePicker.confirm());
+    const nodes = state.document.query.nodes as IngestDatasetSource[];
+    expect(nodes.map((node) => [node.dataSet, node.qualifier])).toEqual([
+      ['TRADES', IngestDatasetQualifier.METADATA],
+      ['DAILY', IngestDatasetQualifier.METADATA],
+    ]);
+    nodes.forEach((node) =>
+      expect(node.schematize([])?.names()).toEqual(METADATA_COLUMNS),
+    );
+    expect(state.history).toHaveLength(1);
+    // the next data sets added are read as rows again
+    expect(tab.qualifier).toBeUndefined();
   });
 
   test('Opens several definitions, ticked, and adds data sets of each in one undo step; a plain pick opens one alone again', async () => {

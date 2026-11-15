@@ -19,7 +19,8 @@ import { EmitRole, ingestAccessor, type RelationExpr } from '../CubeIR.js';
 import { originOf } from '../EmitContext.js';
 
 /**
- * An ingest data set is its accessor, `#I{ingestDefinition.dataSet}#`, which
+ * An ingest data set is its accessor, `#I{ingestDefinition.dataSet}#`, or
+ * `#I{ingestDefinition.dataSet|metadata}#` for its batch metadata, which
  * carries the deployed definition's URN for the host
  */
 export const emitIngestDatasetSource = (
@@ -29,4 +30,5 @@ export const emitIngestDatasetSource = (
     [node.ingestDefinition, node.dataSet],
     originOf(node.id, EmitRole.ACCESSOR),
     node.ingestDefinitionUrn,
+    node.qualifier,
   );

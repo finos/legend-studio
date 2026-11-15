@@ -18,7 +18,9 @@ import {
   type CubeContext,
   DataProductAccessPointSource,
   INGEST_DATASET_SOURCE_DEFINITION,
+  IngestDatasetQualifier,
   IngestDatasetSource,
+  type Schema,
 } from '@finos/legend-cube';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
@@ -58,6 +60,7 @@ import type {
   CubeIngestEnvironmentKey,
   CubeIngestProducer,
 } from '../../graph-manager/CubeIngestCatalog.js';
+import { getCubeIngestMetadataSchema } from '../../graph-manager/protocol/pure/CubeProtocolJson.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { mixesCubeLakehouseSources } from '../CubeHost.js';
 import {
@@ -134,6 +137,12 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     new Map();
   /** The picked data sets, in the order picked, of any opened definition; several are added at once */
   picks: readonly CubeIngestPick[] = [];
+  /**
+   * What Add reads of each picked data set: its rows, or, with a qualifier,
+   * its batch metadata (`#I{…|metadata}#`), which every data set has, those
+   * whose rows Cube can't read included
+   */
+  qualifier: IngestDatasetQualifier | undefined = undefined;
   /** The warehouse of a cube without one yet: the one the viewer last picked, else the default */
   warehouse = CUBE_DEFAULT_CONSUMER_WAREHOUSE;
   isLoadingEnvironment = false;
@@ -174,6 +183,8 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         definitions: observable.ref,
         dataSetsByDefinition: observable.ref,
         picks: observable.ref,
+        qualifier: observable,
+        previewSchema: computed,
         definition: computed,
         dataSets: computed,
         dataSetNames: computed,
@@ -205,6 +216,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         toggleDefinition: action,
         selectDataSet: action,
         toggleDataSet: action,
+        setQualifier: action,
         setWarehouse: action,
         retry: action,
         open: action,
@@ -359,6 +371,26 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
     return this.findDataSet(this.picks.at(-1));
   }
 
+  /** The columns of the data set picked last, as Add would read it */
+  get previewSchema(): Schema | undefined {
+    return this.dataSet ? this.getSchema(this.dataSet) : undefined;
+  }
+
+  /** Whether the data set can be added as the tab reads it now: its batch metadata always can */
+  canPick(dataSet: CubeIngestDataSet | undefined): boolean {
+    return (
+      dataSet !== undefined &&
+      (this.qualifier === IngestDatasetQualifier.METADATA || dataSet.isPickable)
+    );
+  }
+
+  /** The columns the data set is added with, as the tab reads it now */
+  getSchema(dataSet: CubeIngestDataSet): Schema | undefined {
+    return this.qualifier === IngestDatasetQualifier.METADATA
+      ? getCubeIngestMetadataSchema()
+      : dataSet.schema;
+  }
+
   /** The definition of the data set picked last */
   get previewedDefinition(): CubeIngestDefinitionCandidate | undefined {
     const urn = this.picks.at(-1)?.definitionUrn;
@@ -404,7 +436,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       (this.joinedProject !== undefined ||
         this.producerDeploymentId !== undefined) &&
       this.pickedDataSets.length > 0 &&
-      this.pickedDataSets.every((each) => each?.isPickable === true) &&
+      this.pickedDataSets.every((each) => this.canPick(each)) &&
       this.warehouse.trim() !== ''
     );
   }
@@ -515,7 +547,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   ): void {
     if (
       definitionUrn !== undefined &&
-      this.findDataSet({ definitionUrn, dataSet: name })?.isPickable
+      this.canPick(this.findDataSet({ definitionUrn, dataSet: name }))
     ) {
       this.picks = [{ definitionUrn, dataSet: name }];
     }
@@ -533,9 +565,22 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       this.picks = this.picks.filter(
         (pick) => pick.definitionUrn !== definitionUrn || pick.dataSet !== name,
       );
-    } else if (this.findDataSet({ definitionUrn, dataSet: name })?.isPickable) {
+    } else if (
+      this.canPick(this.findDataSet({ definitionUrn, dataSet: name }))
+    ) {
       this.picks = [...this.picks, { definitionUrn, dataSet: name }];
     }
+  }
+
+  /**
+   * Reads the picked data sets' rows, or their batch metadata; going back to
+   * the rows drops a pick whose rows Cube can't read
+   */
+  setQualifier(qualifier: IngestDatasetQualifier | undefined): void {
+    this.qualifier = qualifier;
+    this.picks = this.picks.filter((pick) =>
+      this.canPick(this.findDataSet(pick)),
+    );
   }
 
   /** The warehouse of a cube without one yet; a saved cube's is kept */
@@ -905,6 +950,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
         IngestDatasetSource.TYPE,
         picked.length,
       );
+      const { qualifier } = this;
       const nodes = picked.map(({ definition, dataSet }, index) =>
         INGEST_DATASET_SOURCE_DEFINITION.resolve(
           INGEST_DATASET_SOURCE_DEFINITION.fromCoordinates(
@@ -913,11 +959,12 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
               ingestDefinitionUrn: definition.urn,
               ingestDefinition: definition.definition,
               dataSet: dataSet.name,
+              qualifier,
             },
           ),
           {
             kind: 'resolved',
-            schema: dataSet.schema as NonNullable<CubeIngestDataSet['schema']>,
+            schema: this.getSchema(dataSet) as Schema,
           },
         ),
       );
@@ -964,8 +1011,10 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
       if (!settings && !joined) {
         editorState.dataProductRuntime.remember(warehouse);
       }
-      // the definitions stay open, to add others of their data sets
+      // the definitions stay open, to add others of their data sets, which
+      // the tab reads as rows again
       this.picks = [];
+      this.qualifier = undefined;
       return true;
     } catch (error) {
       if (request === this.confirmRequest) {

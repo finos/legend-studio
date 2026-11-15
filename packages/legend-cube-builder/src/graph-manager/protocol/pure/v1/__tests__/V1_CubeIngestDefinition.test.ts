@@ -15,12 +15,13 @@
  */
 
 import { beforeAll, describe, expect, test } from '@jest/globals';
-import { PrimitiveType, type Schema } from '@finos/legend-cube';
+import { PrimitiveType, type Schema, TypeFamily } from '@finos/legend-cube';
 import {
   IngestDefinition,
   IngestionAccessor,
   MILESTONE_INGEST_COLUMNS,
   PrimitiveInstanceValue,
+  V1_buildIngestMetadataRelationType,
 } from '@finos/legend-graph';
 import {
   TEST__buildGraphWithEntities,
@@ -30,6 +31,7 @@ import { guaranteeType, type PlainObject } from '@finos/legend-shared';
 import type { CubeIngestDataSet } from '../../../../CubeIngestCatalog.js';
 import {
   V1_CUBE_INGEST_DATA_SET_REASON,
+  V1_getCubeIngestMetadataSchema,
   V1_readCubeIngestDataSets,
 } from '../V1_CubeIngestDefinition.js';
 
@@ -236,6 +238,27 @@ describe("An ingest definition's data sets", () => {
   test('Has no data sets when the definition declares none', () => {
     expect(V1_readCubeIngestDataSets({})).toEqual([]);
   });
+
+  test("Types a data set's batch metadata, `#I{…|metadata}#`, the same whatever the data set", () => {
+    const schema = V1_getCubeIngestMetadataSchema();
+    expect(describeSchema(schema)).toEqual([
+      'table_name: meta::pure::precisePrimitives::Varchar(255)?',
+      'batch_start_ts_utc: meta::pure::precisePrimitives::Timestamp?',
+      'batch_end_ts_utc: meta::pure::precisePrimitives::Timestamp?',
+      'batch_status: meta::pure::precisePrimitives::Varchar(32)?',
+      'table_batch_id: meta::pure::precisePrimitives::Int?',
+      'ingest_request_id: meta::pure::precisePrimitives::Varchar(64)?',
+      'batch_source_info: meta::pure::metamodel::variant::Variant?',
+      'additional_metadata: meta::pure::metamodel::variant::Variant?',
+      'batch_statistics: meta::pure::metamodel::variant::Variant?',
+    ]);
+    // each a type Cube knows, none opaque
+    schema.columns.forEach((each) =>
+      expect(each.type.family).not.toBe(TypeFamily.OPAQUE),
+    );
+    // read once
+    expect(V1_getCubeIngestMetadataSchema()).toBe(schema);
+  });
 });
 
 /**
@@ -310,5 +333,30 @@ describe("An ingest definition's data sets, as legend-graph types them", () => {
         sortByName(graphColumns.filter(isMilestoningColumn)),
       );
     }
+  });
+
+  test("Type a data set's batch metadata as legend-graph types `#I{…|metadata}#`, in its order", () => {
+    const graphColumns = V1_buildIngestMetadataRelationType(
+      graphManagerState.graph,
+    ).columns.map((graphColumn) => ({
+      name: graphColumn.name,
+      type: lastSegment(graphColumn.genericType.value.rawType.path),
+      params: (graphColumn.genericType.value.typeVariableValues ?? []).map(
+        (value) => guaranteeType(value, PrimitiveInstanceValue).values[0],
+      ),
+      nullable: graphColumn.multiplicity.lowerBound === 0,
+    }));
+    const cubeColumns = V1_getCubeIngestMetadataSchema().columns.map(
+      (cubeColumn) => ({
+        name: cubeColumn.name,
+        type: lastSegment(cubeColumn.type.path),
+        params:
+          cubeColumn.type instanceof PrimitiveType
+            ? [...cubeColumn.type.params]
+            : [],
+        nullable: cubeColumn.nullable,
+      }),
+    );
+    expect(cubeColumns).toEqual(graphColumns);
   });
 });

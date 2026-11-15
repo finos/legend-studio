@@ -30,6 +30,16 @@ export interface Origin {
 }
 
 /**
+ * What an ingest accessor reads of its data set other than its rows, as its
+ * qualifier says: `#I{definition.dataSet|metadata}#`. legend-graph keeps
+ * others too (incoming, milestoned), which Cube can't type, so doesn't read.
+ */
+export enum IngestDatasetQualifier {
+  /** The data set's batch metadata: a row per batch, with the same columns for every data set */
+  METADATA = 'metadata',
+}
+
+/**
  * The Cube IR: a host-free model of the Pure expression Cube runs, one-to-one
  * with the engine's protocol JSON (which the builder's serializer produces).
  * Every arrow call and operator is a `func` whose first parameter is its
@@ -84,8 +94,9 @@ export type IR =
       readonly origin?: Origin;
     }
   /**
-   * A data set of a deployed ingest definition (`#I{definition.dataSet}#`):
-   * read as data, never its metadata
+   * A data set of a deployed ingest definition: its rows,
+   * `#I{definition.dataSet}#`, or, with a qualifier, e.g. its batch
+   * metadata, `#I{definition.dataSet|metadata}#`
    */
   | {
       readonly k: 'ingestAccessor';
@@ -94,6 +105,8 @@ export type IR =
       readonly origin?: Origin;
       /** The deployed definition's URN, which the host reads it by: not part of the query */
       readonly urn?: string;
+      /** What it reads of the data set other than its rows; none for its rows */
+      readonly qualifier?: IngestDatasetQualifier;
     }
   /** A packageable element, such as the runtime; never a type */
   | { readonly k: 'elementPtr'; readonly path: string }
@@ -322,11 +335,13 @@ export const ingestAccessor = (
   path: readonly [string, string],
   origin?: Origin,
   urn?: string,
+  qualifier?: IngestDatasetQualifier,
 ): IR => ({
   k: 'ingestAccessor',
   path,
   ...(origin ? { origin } : {}),
   ...(urn !== undefined ? { urn } : {}),
+  ...(qualifier !== undefined ? { qualifier } : {}),
 });
 
 export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });

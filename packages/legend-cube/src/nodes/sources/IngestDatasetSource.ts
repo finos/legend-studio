@@ -20,6 +20,7 @@ import {
   UNRESOLVED,
 } from '../../graph/QueryNode.js';
 import { ensureSchemas, validate } from '../../inference/ValidationUtils.js';
+import { IngestDatasetQualifier } from '../../ir/CubeIR.js';
 import { MESSAGE_SOURCE_SCHEMA_UNRESOLVED } from '../../messages/CubeMessages.js';
 import type { Schema } from '../../schema/Schema.js';
 import type { JsonObject } from '../../utils/Json.js';
@@ -27,9 +28,10 @@ import type { SnapshotColumnRest } from './RelationalTableSource.js';
 
 /**
  * Which data set a source reads: a data set of a deployed ingest definition,
- * as Data Cube picks one (the definition's URN, then a data set). The class
- * (production or production parallel), the producer deployment and the
- * warehouse are the cube's, not the source's.
+ * as Data Cube picks one (the definition's URN, then a data set), and what
+ * of it, its rows unless a qualifier says otherwise. The class (production or
+ * production parallel), the producer deployment and the warehouse are the
+ * cube's, not the source's.
  */
 export interface IngestDatasetCoordinates {
   /** The deployed definition's URN, as the ingest server lists it */
@@ -38,6 +40,8 @@ export interface IngestDatasetCoordinates {
   readonly ingestDefinition: string;
   /** The data set's name */
   readonly dataSet: string;
+  /** What it reads of the data set other than its rows, e.g. its batch metadata; none for its rows */
+  readonly qualifier?: IngestDatasetQualifier | undefined;
 }
 
 const NO_COLUMN_REST: ReadonlyMap<string, SnapshotColumnRest> = new Map();
@@ -52,6 +56,26 @@ const COORDINATES_REQUIRED = `An ingest data set source needs an ingest definiti
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0;
+
+/** A qualifier Cube reads, or none for the data set's rows */
+const readIngestDatasetQualifier = (
+  value: unknown,
+): IngestDatasetQualifier | undefined => {
+  if (value === undefined) {
+    return undefined;
+  }
+  const qualifier = Object.values(IngestDatasetQualifier).find(
+    (each) => each === value,
+  );
+  if (qualifier === undefined) {
+    throw new Error(
+      `An ingest data set source reads its rows or one of ${Object.values(
+        IngestDatasetQualifier,
+      ).join(', ')}, not ${JSON.stringify(value)}`,
+    );
+  }
+  return qualifier;
+};
 
 /** The coordinates in a value, or an error when one is missing or not text */
 const readCoordinates = (value: unknown): IngestDatasetCoordinates => {
@@ -68,16 +92,23 @@ const readCoordinates = (value: unknown): IngestDatasetCoordinates => {
     ingestDefinitionUrn: fields.ingestDefinitionUrn as string,
     ingestDefinition: fields.ingestDefinition as string,
     dataSet: fields.dataSet as string,
+    qualifier: readIngestDatasetQualifier(fields.qualifier),
   };
 };
 
-/** One data set of a deployed ingest definition, read through `#I{ingestDefinition.dataSet}#` */
+/**
+ * One data set of a deployed ingest definition: its rows, read through
+ * `#I{ingestDefinition.dataSet}#`, or its batch metadata, through
+ * `#I{ingestDefinition.dataSet|metadata}#`
+ */
 export class IngestDatasetSource extends SourceNode {
   static readonly TYPE = 'ingestDataset';
 
   readonly ingestDefinitionUrn: string;
   readonly ingestDefinition: string;
   readonly dataSet: string;
+  /** What it reads of the data set other than its rows; none for its rows */
+  readonly qualifier: IngestDatasetQualifier | undefined;
   readonly resolution: SourceResolution;
   /**
    * Unknown keys of the saved schema snapshot's columns, by column name. They
@@ -97,6 +128,7 @@ export class IngestDatasetSource extends SourceNode {
     this.ingestDefinitionUrn = read.ingestDefinitionUrn;
     this.ingestDefinition = read.ingestDefinition;
     this.dataSet = read.dataSet;
+    this.qualifier = read.qualifier;
     this.resolution = resolution;
     this.columnRest = columnRest;
   }
@@ -122,6 +154,19 @@ export class IngestDatasetSource extends SourceNode {
     return index < 0
       ? this.ingestDefinition
       : this.ingestDefinition.slice(index + 2);
+  }
+
+  /** Whether it reads the data set's batch metadata, not its rows */
+  get readsMetadata(): boolean {
+    return this.qualifier === IngestDatasetQualifier.METADATA;
+  }
+
+  /** What it reads, in words, whether or not its columns are known */
+  describeDataSet(): string {
+    const dataSet = `"${this.dataSet}" from ingest definition "${this.ingestDefinitionName}"`;
+    return this.readsMetadata
+      ? `Batch metadata of data set ${dataSet}`
+      : `Data set ${dataSet}`;
   }
 
   /** A new source, with the same id and coordinates, and this resolution */
@@ -167,6 +212,6 @@ export class IngestDatasetSource extends SourceNode {
   describe(): string {
     return this.resolution.kind === 'unresolved'
       ? '(unknown)'
-      : `Data set "${this.dataSet}" from ingest definition "${this.ingestDefinitionName}"`;
+      : this.describeDataSet();
   }
 }

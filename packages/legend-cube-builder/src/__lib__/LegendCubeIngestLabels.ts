@@ -32,6 +32,23 @@ export const CUBE_INGEST_RECHECK_MESSAGE = {
   NO_CATALOG: "This Legend deployment doesn't serve ingest data sets",
 } as const;
 
+/** What a source of a data set's batch metadata, `#I{…|metadata}#`, reads, as its panel says */
+export const CUBE_INGEST_METADATA_READS_LABEL =
+  'Its batch metadata: a row per batch the data set was sent in';
+
+/** The Ingest tab's choice of what to read of the data sets picked: their rows or their batch metadata */
+export const CUBE_INGEST_READ_LABEL = {
+  GROUP: 'Read',
+  ROWS: 'Rows',
+  METADATA: 'Batch metadata',
+  METADATA_TITLE:
+    "Each data set's batch metadata, #I{…|metadata}#: a row per batch it was sent in, with the same columns whatever the data set",
+  /** A data set's line in the list, its batch metadata picked */
+  METADATA_DETAIL: 'batch metadata',
+  /** The preview's title, its batch metadata picked */
+  METADATA_PREVIEW: (dataSet: string): string => `Batch metadata of ${dataSet}`,
+} as const;
+
 /**
  * Why an ingest data set can't be read by a data product cube (PLAN
  * §11.30): a data product cube reads its own project's data sets, in its

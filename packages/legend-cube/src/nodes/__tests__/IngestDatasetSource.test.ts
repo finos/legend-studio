@@ -19,6 +19,7 @@ import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Query } from '../../graph/Query.js';
 import { type QueryNode, UNRESOLVED } from '../../graph/QueryNode.js';
+import { IngestDatasetQualifier } from '../../ir/CubeIR.js';
 import { emitIngestDatasetSource } from '../../ir/emitters/IngestDatasetSourceEmitter.js';
 import {
   MESSAGE_SOURCE_KINDS_MIXED,
@@ -192,6 +193,51 @@ describe(unitTest('Ingest data set source'), () => {
 
   test('Is a source the host resolves', () => {
     expect(isResolvableSource(resolvedDataSet('ingestDataset101'))).toBe(true);
+  });
+
+  test("Reads the data set's batch metadata when its qualifier says so, and keeps the qualifier as it resolves", () => {
+    const node = IngestDatasetSource.fromCoordinates('ingestDataset101', {
+      ...COORDINATES,
+      qualifier: IngestDatasetQualifier.METADATA,
+    });
+    expect(node.qualifier).toBe(IngestDatasetQualifier.METADATA);
+    expect(node.readsMetadata).toBe(true);
+    const resolved = node.withResolution({ kind: 'resolved', schema: SCHEMA });
+    const failed = resolved.withResolution({ kind: 'failed', message: 'gone' });
+    [resolved, failed].forEach((next) =>
+      expect(next.qualifier).toBe(IngestDatasetQualifier.METADATA),
+    );
+    expect(resolved.describe()).toBe(
+      'Batch metadata of data set "TRADES" from ingest definition "OrdersIngest"',
+    );
+    // named whether or not its columns are known, as a definition's flow shows it
+    expect(node.describe()).toBe('(unknown)');
+    expect(node.describeDataSet()).toBe(resolved.describe());
+    expect(emitIngestDatasetSource(resolved)).toStrictEqual({
+      k: 'ingestAccessor',
+      path: ['sales::ingest::OrdersIngest', 'TRADES'],
+      origin: { nodeId: 'ingestDataset101', role: 'accessor' },
+      urn: COORDINATES.ingestDefinitionUrn,
+      qualifier: 'metadata',
+    });
+    // its rows, as before
+    const rows = resolvedDataSet('ingestDataset102');
+    expect(rows.qualifier).toBeUndefined();
+    expect(rows.readsMetadata).toBe(false);
+    expect(rows.describeDataSet()).toBe(
+      'Data set "TRADES" from ingest definition "OrdersIngest"',
+    );
+  });
+
+  test("Refuses a qualifier Cube doesn't read", () => {
+    ['incoming', 'milestoned', 'METADATA', '', 1].forEach((qualifier) =>
+      expect(() =>
+        IngestDatasetSource.fromCoordinates('ingestDataset101', {
+          ...COORDINATES,
+          qualifier,
+        }),
+      ).toThrow('An ingest data set source reads its rows or one of metadata'),
+    );
   });
 });
 
