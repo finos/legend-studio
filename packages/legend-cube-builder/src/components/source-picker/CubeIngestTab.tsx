@@ -17,7 +17,9 @@
 import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { Fragment, useId } from 'react';
+import { IngestDatasetQualifier } from '@finos/legend-cube';
 import {
+  CUBE_INGEST_READ_LABEL,
   getDeploymentLabel,
   getDroppedDefinitionsLabel,
   getFixedProducerLabel,
@@ -69,9 +71,53 @@ const CubeIngestTabAlert: React.FC<{
 );
 
 /**
+ * Whether Add reads the picked data sets' rows or their batch metadata
+ * (`#I{…|metadata}#`), which every data set has
+ */
+const CubeIngestReadChoice = observer((props: { tab: CubeIngestTabState }) => {
+  const { tab } = props;
+  const name = useId();
+  return (
+    <div
+      className="flex items-center gap-3 text-base"
+      role="radiogroup"
+      aria-label={CUBE_INGEST_READ_LABEL.GROUP}
+    >
+      <span className="text-[var(--color-text-secondary)]">
+        {CUBE_INGEST_READ_LABEL.GROUP}
+      </span>
+      {[
+        {
+          label: CUBE_INGEST_READ_LABEL.ROWS,
+          value: undefined,
+          title: undefined,
+        },
+        {
+          label: CUBE_INGEST_READ_LABEL.METADATA,
+          value: IngestDatasetQualifier.METADATA,
+          title: CUBE_INGEST_READ_LABEL.METADATA_TITLE,
+        },
+      ].map(({ label, value, title }) => (
+        <label key={label} className="flex items-center gap-1" title={title}>
+          <input
+            type="radio"
+            name={name}
+            checked={tab.qualifier === value}
+            disabled={tab.editorState.readOnly}
+            onChange={() => tab.setQualifier(value)}
+          />
+          {label}
+        </label>
+      ))}
+    </div>
+  );
+});
+
+/**
  * The data sets of the opened definitions, as both Ingest screens list them,
  * each picked or ticked to add, under its definition's name when several are
- * opened; the one picked last previewed
+ * opened; the one picked last previewed. Above them, whether Add reads their
+ * rows or their batch metadata.
  */
 const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
   const { tab } = props;
@@ -79,6 +125,8 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
     (definition) => tab.getDataSets(definition.urn) !== undefined,
   );
   const grouped = tab.definitions.length > 1;
+  const readsMetadata = tab.qualifier === IngestDatasetQualifier.METADATA;
+  const { previewSchema } = tab;
   return (
     <>
       {tab.isDescribing && (
@@ -86,6 +134,7 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
           reading the definition
         </div>
       )}
+      {read.length > 0 && <CubeIngestReadChoice tab={tab} />}
       {read.length > 0 && (
         <ul
           className={`max-h-48 overflow-auto ${CUBE_PICKER_LIST_CLASS}`}
@@ -102,8 +151,10 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
                 <CubePickerListItem
                   key={dataSet.name}
                   picked={tab.isDataSetPicked(dataSet.name, definition.urn)}
-                  disabled={!dataSet.isPickable}
-                  title={dataSet.disabledReason}
+                  disabled={!tab.canPick(dataSet)}
+                  title={
+                    tab.canPick(dataSet) ? undefined : dataSet.disabledReason
+                  }
                   adds={true}
                   onPick={() => tab.selectDataSet(dataSet.name, definition.urn)}
                   onToggle={() =>
@@ -119,9 +170,11 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
                     {dataSet.name}
                   </span>
                   <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                    {dataSet.isPickable
-                      ? `${dataSet.schema?.columns.length ?? 0} columns`
-                      : dataSet.disabledReason}
+                    {readsMetadata
+                      ? CUBE_INGEST_READ_LABEL.METADATA_DETAIL
+                      : dataSet.isPickable
+                        ? `${dataSet.schema?.columns.length ?? 0} columns`
+                        : dataSet.disabledReason}
                   </span>
                 </CubePickerListItem>
               ))}
@@ -129,14 +182,20 @@ const CubeIngestDataSets = observer((props: { tab: CubeIngestTabState }) => {
           ))}
         </ul>
       )}
-      {tab.dataSet?.schema && (
+      {tab.dataSet && previewSchema && (
         <section aria-label="Data set preview" className="flex flex-col gap-1">
-          {grouped && (
+          {(grouped || readsMetadata) && (
             <span className="text-sm text-[var(--color-text-muted)]">
-              {`${tab.dataSet.name} of ${tab.previewedDefinition?.name ?? ''}`}
+              {readsMetadata
+                ? CUBE_INGEST_READ_LABEL.METADATA_PREVIEW(
+                    grouped
+                      ? `${tab.dataSet.name} of ${tab.previewedDefinition?.name ?? ''}`
+                      : tab.dataSet.name,
+                  )
+                : `${tab.dataSet.name} of ${tab.previewedDefinition?.name ?? ''}`}
             </span>
           )}
-          <CubeSchemaColumnsTable schema={tab.dataSet.schema} />
+          <CubeSchemaColumnsTable schema={previewSchema} />
         </section>
       )}
     </>

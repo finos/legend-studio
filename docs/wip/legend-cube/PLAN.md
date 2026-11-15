@@ -1353,7 +1353,7 @@ source for now; the user plans to improve it later.
 - **Accessor and run:** `#I{definition.dataSet}#` (`metadata: false`), run on a model of the definitions the cube reads
   plus a LakehouseRuntime at `cube::ingest::Runtime`. Its environment is the one of the ingest server that served the
   definition; the warehouse follows the data product rule (§6.8). _(2026-11-14: a data set's batch metadata too,
-  `#I{definition.dataSet|metadata}#`, read and written, not yet picked: §11.32.)_
+  `#I{definition.dataSet|metadata}#`, picked, read and written: §11.32.)_
 - **Saved:** a Cube-owned model kind `cubeIngest` (the class, the producer deployment, the warehouse); each source
   saves the definition's URN, its path and the data set. Never a server URL. One cube reads one kind of source (tables,
   data products or ingest data sets) and one producer deployment. _(2026-11-09: data products and ingest data sets of
@@ -6074,10 +6074,13 @@ them back without it.
   - **Typing again** (Refresh, a spec without a snapshot) answers the batch metadata without the catalog.
 - **Shown:** the step's title is the data set's name and "metadata", e.g. `TRADES metadata`, with the definition below.
   Its Source panel says it reads the data set's batch metadata, a row per batch, and has no Refresh.
+- **Picked** (user, 2026-11-14: "yes add it to 5907"): the Ingest tab's **Read: Rows | Batch metadata**, above the data
+  sets of both of its screens, says what Add reads of each data set picked. With Batch metadata, every data set can be
+  picked, a materialized view too, each says "batch metadata", and the preview shows the nine columns under "Batch
+  metadata of TRADES". Going back to Rows drops a pick whose rows Cube can't read. After Add, the tab reads rows again.
 
 **Not yet:**
 
-- Picking a data set's batch metadata in the Ingest tab, to start a query on it in Cube.
 - A Studio Overview's Reads names the data set, whichever it reads.
 - A Cube older than this one would keep a saved spec's `qualifier` as an unknown key, and so read the data set's rows.
   Cubes aren't saved yet (M8, #5679), so the spec's format version stays as it is; whether `qualifier` needs a new one
