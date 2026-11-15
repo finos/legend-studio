@@ -370,6 +370,54 @@ describe('The Ingest tab', () => {
     expect(await TEST__findCanvasNode('ingestDataset102')).toBeDefined();
   });
 
+  test("Reads the picked data sets' batch metadata when asked, a view's included, previewing its columns and adding a step of it", async () => {
+    const { host, ingest } = createProjectHost();
+    ingest.describe.mockResolvedValue(FAKE_INGEST_ORDERS_WITH_FILLS);
+    await TEST__renderInCubeApplication(
+      <CubeEditor host={host} />,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.EDITOR,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Ingest Dataset/u }));
+    const dialog = await screen.findByRole('dialog');
+    const definitions = await within(dialog).findByRole('list', {
+      name: 'Ingest definitions',
+    });
+    fireEvent.click(within(definitions).getByText('OrdersIngest'));
+    const dataSets = await within(dialog).findByRole('list', {
+      name: 'Data sets',
+    });
+    // the rows, unless asked
+    const read = within(dialog).getByRole('radiogroup', { name: 'Read' });
+    expect(within(read).getByLabelText<HTMLInputElement>('Rows').checked).toBe(
+      true,
+    );
+    expect(
+      within(dataSets).getByLabelText<HTMLInputElement>('Pick DAILY').disabled,
+    ).toBe(true);
+
+    fireEvent.click(within(read).getByLabelText('Batch metadata'));
+    // every data set has batch metadata, the materialized view too
+    expect(
+      within(dataSets).getByLabelText<HTMLInputElement>('Pick DAILY').disabled,
+    ).toBe(false);
+    expect(within(dataSets).getAllByText('batch metadata')).toHaveLength(3);
+    fireEvent.click(within(dataSets).getByText('DAILY'));
+    const preview = within(dialog).getByRole('region', {
+      name: 'Data set preview',
+    });
+    within(preview).getByText('Batch metadata of DAILY');
+    within(preview).getByText('batch_status');
+    // its columns, after the header
+    expect(within(preview).getAllByRole('row')).toHaveLength(10);
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(
+      (await TEST__findCanvasNode('ingestDataset101')).textContent,
+    ).toContain('DAILY metadata');
+  });
+
   test('On a host reading one project, as Studio, a plain click on a data set picks it alone', async () => {
     const { host, ingest } = createProjectHost();
     ingest.describe.mockResolvedValue(FAKE_INGEST_ORDERS_WITH_FILLS);

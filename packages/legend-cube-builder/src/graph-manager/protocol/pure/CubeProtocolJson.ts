@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-import type { CubeExpressionCodec, IR, JsonObject } from '@finos/legend-cube';
+import type {
+  CubeExpressionCodec,
+  IR,
+  JsonObject,
+  Schema,
+} from '@finos/legend-cube';
 import {
   parseLosslessJSON,
   type PlainObject,
   stringifyLosslessJSON,
 } from '@finos/legend-shared';
 import type { CubeIngestDataSet } from '../../CubeIngestCatalog.js';
-import { V1_readCubeIngestDataSets } from './v1/V1_CubeIngestDefinition.js';
+import {
+  V1_getCubeIngestMetadataSchema,
+  V1_readCubeIngestDataSets,
+} from './v1/V1_CubeIngestDefinition.js';
 import { V1_serializeCubeLambda } from './v1/V1_CubeLambdaSerializer.js';
 import {
   V1_readCubeLambda,
@@ -43,6 +51,13 @@ import { V1_readCubeExpression } from './v1/V1_CubeExpression.js';
 export const readCubeIngestDataSets = (
   content: PlainObject,
 ): CubeIngestDataSet[] => V1_readCubeIngestDataSets(content);
+
+/**
+ * The columns of a data set's batch metadata, `#I{definition.dataSet|metadata}#`:
+ * the same for every data set, so known without the definition
+ */
+export const getCubeIngestMetadataSchema = (): Schema =>
+  V1_getCubeIngestMetadataSchema();
 
 /**
  * The IR of a lambda's protocol JSON, Cube's or the engine's grammar's, for

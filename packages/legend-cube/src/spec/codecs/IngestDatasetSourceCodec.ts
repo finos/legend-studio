@@ -15,31 +15,53 @@
  */
 
 import { UNRESOLVED } from '../../graph/QueryNode.js';
+import { IngestDatasetQualifier } from '../../ir/CubeIR.js';
 import { IngestDatasetSource } from '../../nodes/sources/IngestDatasetSource.js';
 import type { NodeSpecCodec } from '../NodeSpecCodec.js';
-import { pathTo, readString } from '../SpecReader.js';
+import { fail, pathTo, readOptionalString, readString } from '../SpecReader.js';
+import type { JsonObject } from '../../utils/Json.js';
 import {
   decodeSchemaSnapshot,
   encodeSchemaSnapshot,
 } from './SchemaSnapshotCodec.js';
 
+/** What the source reads of its data set other than its rows; none for its rows */
+const readQualifier = (
+  json: JsonObject,
+  path: string,
+): IngestDatasetQualifier | undefined => {
+  const value = readOptionalString(json, 'qualifier', path);
+  if (value === undefined) {
+    return undefined;
+  }
+  const qualifiers = Object.values(IngestDatasetQualifier);
+  return (
+    qualifiers.find((each) => each === value) ??
+    fail(pathTo(path, 'qualifier'), `must be one of ${qualifiers.join(', ')}`)
+  );
+};
+
 /**
- * An ingest data set: where it is, and once resolved its schema snapshot, so
+ * An ingest data set: where it is, what of it it reads, its rows unless a
+ * qualifier says otherwise, and once resolved its schema snapshot, so
  * inference works offline. The class, the producer deployment and the
  * warehouse are the cube's model's. Unresolved and failed sources have no
- * snapshot and load unresolved: the host resolves them again.
+ * snapshot and load unresolved: the host resolves them again. A source of
+ * the rows saves no qualifier, as before there were any.
  */
 export const INGEST_DATASET_SOURCE_CODEC: NodeSpecCodec<IngestDatasetSource> = {
   keys: [
     'ingestDefinitionUrn',
     'ingestDefinition',
     'dataSet',
+    'qualifier',
     'schemaSnapshot',
   ],
   encode: (node) => ({
     ingestDefinitionUrn: node.ingestDefinitionUrn,
     ingestDefinition: node.ingestDefinition,
     dataSet: node.dataSet,
+    ...(node.qualifier === undefined ? {} : { qualifier: node.qualifier }),
     ...(node.resolution.kind === 'resolved'
       ? {
           schemaSnapshot: encodeSchemaSnapshot(
@@ -54,6 +76,7 @@ export const INGEST_DATASET_SOURCE_CODEC: NodeSpecCodec<IngestDatasetSource> = {
       ingestDefinitionUrn: readString(json, 'ingestDefinitionUrn', path),
       ingestDefinition: readString(json, 'ingestDefinition', path),
       dataSet: readString(json, 'dataSet', path),
+      qualifier: readQualifier(json, path),
     };
     if (json.schemaSnapshot === undefined) {
       return new IngestDatasetSource(id, coordinates, UNRESOLVED, rest);

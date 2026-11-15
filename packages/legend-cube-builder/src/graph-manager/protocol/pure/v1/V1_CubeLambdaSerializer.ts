@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import type { IR, LiteralValue, Origin } from '@finos/legend-cube';
+import {
+  IngestDatasetQualifier,
+  type IR,
+  type LiteralValue,
+  type Origin,
+} from '@finos/legend-cube';
+import { V1_IngestAccessorQualifier } from '@finos/legend-graph';
 import { parseLosslessJSON, type PlainObject } from '@finos/legend-shared';
 
 // Cube IR → V1 protocol lambda JSON (PLAN §8.3, §8.5), built as plain JSON,
@@ -276,13 +282,21 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
       );
     case 'ingestAccessor':
       // as legend-graph sends it, and Legend Query's ingest queries with it:
-      // the data set's rows, never its metadata
+      // the data set's rows, `metadata: false`; its batch metadata with both
+      // the flag the engine routes it by and the qualifier it types it by
       return stamped(
         {
           _type: 'classInstance',
           type: 'I',
           multiplicity: { lowerBound: 1, upperBound: 1 },
-          value: { path: [...ir.path], metadata: false },
+          value:
+            ir.qualifier === IngestDatasetQualifier.METADATA
+              ? {
+                  path: [...ir.path],
+                  metadata: true,
+                  accessorQualifier: V1_IngestAccessorQualifier.METADATA,
+                }
+              : { path: [...ir.path], metadata: false },
         },
         ir.origin ?? inherited,
       );

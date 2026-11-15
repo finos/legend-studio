@@ -219,7 +219,7 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
     case 'dataProductAccessor':
       return `#P{${ir.path.join('.')}}#`;
     case 'ingestAccessor':
-      return `#I{${ir.path.join('.')}}#`;
+      return `#I{${ir.path.join('.')}${ir.qualifier === undefined ? '' : `|${ir.qualifier}`}}#`;
     case 'elementPtr':
       return ir.path;
     case 'genericType':

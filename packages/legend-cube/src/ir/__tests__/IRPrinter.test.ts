@@ -30,6 +30,7 @@ import {
   func,
   genericType,
   ingestAccessor,
+  IngestDatasetQualifier,
   type IR,
   lambda,
   lambdaJson,
@@ -384,6 +385,19 @@ describe(unitTest('IR printer'), () => {
     expect(
       listOrigins(ingestAccessor(['a::sales::OrdersIngest', 'TRADES'])),
     ).toEqual(['#I{a::sales::OrdersIngest.TRADES}#@-']);
+  });
+
+  test("Prints a data set's batch metadata with its qualifier", () => {
+    expect(
+      printIR(
+        ingestAccessor(
+          ['a::sales::OrdersIngest', 'TRADES'],
+          undefined,
+          undefined,
+          IngestDatasetQualifier.METADATA,
+        ),
+      ),
+    ).toBe('#I{a::sales::OrdersIngest.TRADES|metadata}#');
   });
 
   test('Quotes enumeration values that are not identifiers', () => {

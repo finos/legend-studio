@@ -764,11 +764,18 @@ const INGEST_METADATA_RELATION_TYPE: PlainObject<V1_RelationType> = {
   ],
 };
 
+/**
+ * The relation type of `#I{ingest.dataSet|metadata}#`, as protocol: for a
+ * reader with no graph, such as Legend Cube's
+ */
+export const V1_getIngestMetadataRelationType = (): V1_RelationType =>
+  deserialize(V1_relationTypeModelSchema, INGEST_METADATA_RELATION_TYPE);
+
 export const V1_buildIngestMetadataRelationType = (
   graph: PureModel,
 ): RelationType =>
   V1_buildRelationTypeFromV1RelationType(
-    deserialize(V1_relationTypeModelSchema, INGEST_METADATA_RELATION_TYPE),
+    V1_getIngestMetadataRelationType(),
     graph,
   );
 

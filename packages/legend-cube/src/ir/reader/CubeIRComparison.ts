@@ -238,7 +238,10 @@ function same(
       return (
         b.k === a.k &&
         a.path.length === b.path.length &&
-        a.path.every((part, index) => part === b.path[index])
+        a.path.every((part, index) => part === b.path[index]) &&
+        // a data set's metadata is not its rows
+        (a.k !== 'ingestAccessor' ||
+          (b.k === 'ingestAccessor' && a.qualifier === b.qualifier))
       );
     case 'elementPtr':
       return b.k === 'elementPtr' && a.path === b.path;
