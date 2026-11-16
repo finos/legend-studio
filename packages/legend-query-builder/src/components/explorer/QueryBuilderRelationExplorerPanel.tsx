@@ -42,6 +42,8 @@ import { useDrag } from 'react-dnd';
 import {
   type Accessor,
   DataProductAccessor,
+  getIngestDatasetReadLabel,
+  type IngestAccessorQualifier,
   IngestionAccessor,
   RelationalStoreAccessor,
   getMultiplicityDescription,
@@ -78,10 +80,20 @@ const getAccessorIcon = (accessor: Accessor): React.ReactNode => {
   return <PURE_UnknownElementTypeIcon />;
 };
 
-const getAccessorPath = (accessor: Accessor): string =>
-  [accessor.accessorOwner, accessor.schema, accessor.accessor]
+/** What the source reads of its ingest data set other than its rows, e.g. its batch metadata */
+const getAccessorQualifier = (
+  accessor: Accessor,
+): IngestAccessorQualifier | undefined =>
+  accessor instanceof IngestionAccessor ? accessor.qualifier : undefined;
+
+/** The source's path, with its qualifier as the Legend language writes it: `definition.dataSet|metadata` */
+const getAccessorPath = (accessor: Accessor): string => {
+  const path = [accessor.accessorOwner, accessor.schema, accessor.accessor]
     .filter(isNonNullable)
     .join('.');
+  const qualifier = getAccessorQualifier(accessor);
+  return qualifier ? `${path}|${qualifier}` : path;
+};
 
 const buildRelationTreeData = (
   accessor: Accessor,
@@ -106,7 +118,11 @@ const buildRelationTreeData = (
 
   const rootNode = new QueryBuilderExplorerTreeRelationRootNodeData(
     RELATION_ROOT_NODE_ID,
-    accessor.accessor,
+    // e.g. `EOD_POSITIONS (batch metadata)`, its columns the batch metadata's
+    getIngestDatasetReadLabel(
+      accessor.accessor,
+      getAccessorQualifier(accessor),
+    ),
     accessor.accessor,
     false,
     accessor.relationType,

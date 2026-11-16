@@ -26,6 +26,7 @@ import {
   IngestSerializedSource,
   Multiplicity,
   type IngestDataset,
+  type IngestAccessorQualifier,
   type IngestDatasetReference,
   type IngestDefinitionSpecification,
   type IngestWriteMode,
@@ -350,15 +351,27 @@ export class IngestDefinitionFlowState {
 
   /** The views whose functions read the definition's data set of that name */
   getReadBy(dataSet: string): IngestDataset[] {
-    const path = this.editorState.ingest.path;
-    return this.materializedViews.filter((view) =>
-      this.viewReads
-        .get(view.name)
-        ?.some(
-          (read) =>
-            read.ingestDefinitionPath === path && read.datasetName === dataSet,
-        ),
+    return this.materializedViews.filter(
+      (view) => this.getQualifiersRead(view.name, dataSet).length > 0,
     );
+  }
+
+  /**
+   * What the view's function reads of the definition's data set of that
+   * name, each once, in the order it reads them: `undefined` for its rows, a
+   * qualifier for e.g. its batch metadata; none when it doesn't read it
+   */
+  getQualifiersRead(
+    view: string,
+    dataSet: string,
+  ): (IngestAccessorQualifier | undefined)[] {
+    const path = this.editorState.ingest.path;
+    return (this.viewReads.get(view) ?? [])
+      .filter(
+        (read) =>
+          read.ingestDefinitionPath === path && read.datasetName === dataSet,
+      )
+      .map((read) => read.qualifier);
   }
 
   /**

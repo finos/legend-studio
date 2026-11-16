@@ -1183,10 +1183,79 @@ const BATCHES_VIEW: PlainObject = {
   },
 };
 
+/** The data set's rows, `#I{…EOD_POSITIONS}#`, or its batch metadata, as legend-graph writes their accessors */
+const eodPositions = (metadata: boolean): PlainObject => ({
+  _type: 'classInstance',
+  type: 'I',
+  value: metadata
+    ? {
+        path: [INGEST_PATH, 'EOD_POSITIONS'],
+        metadata: true,
+        accessorQualifier: 'metadata',
+      }
+    : { path: [INGEST_PATH, 'EOD_POSITIONS'], metadata: false },
+});
+
+/** A view of EOD_POSITIONS's rows joined to its batch metadata, the join made up */
+const POSITIONS_WITH_BATCH_VIEW: PlainObject = {
+  name: 'POSITIONS_WITH_BATCH',
+  primaryKey: [],
+  privacyClassification: { sensitivity: 'DP10' },
+  source: {
+    _type: 'FunctionSource',
+    function: {
+      _type: 'lambda',
+      parameters: [],
+      body: [
+        {
+          _type: 'func',
+          function: 'join',
+          parameters: [
+            eodPositions(false),
+            eodPositions(true),
+            {
+              _type: 'property',
+              parameters: [
+                { _type: 'packageableElementPtr', fullPath: 'JoinKind' },
+              ],
+              property: 'INNER',
+            },
+            {
+              _type: 'lambda',
+              parameters: [
+                { _type: 'var', name: 'p' },
+                { _type: 'var', name: 'b' },
+              ],
+              body: [
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      property: 'STATUS',
+                      parameters: [{ _type: 'var', name: 'p' }],
+                    },
+                    {
+                      _type: 'property',
+                      property: 'batch_status',
+                      parameters: [{ _type: 'var', name: 'b' }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+};
+
 describe("The Definition tab of a definition with a view of a data set's batch metadata", () => {
   test(
     integrationTest(
-      "Draws the view: the data set's batch metadata, typed as legend-graph types it, then its filter; its Reads names the data set",
+      "Draws the view: the data set's batch metadata, typed as legend-graph types it, then its filter; Reads and Read by say what each view reads of the data set",
     ),
     async () => {
       const editorStore = TEST__provideMockedEditorStore();
@@ -1196,7 +1265,11 @@ describe("The Definition tab of a definition with a view of a data set's batch m
         ...ingest,
         content: {
           ...content,
-          datasets: [...(content.datasets as PlainObject[]), BATCHES_VIEW],
+          datasets: [
+            ...(content.datasets as PlainObject[]),
+            BATCHES_VIEW,
+            POSITIONS_WITH_BATCH_VIEW,
+          ],
         },
       } as PlainObject<Entity>;
       const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
@@ -1229,7 +1302,27 @@ describe("The Definition tab of a definition with a view of a data set's batch m
           'EOD_POSITIONS_BATCHES | 2 steps',
         ),
       );
-      expect((await getMetadata(panel))['Data sets']).toBe('EOD_POSITIONS');
+      // what it reads of the data set, named
+      expect((await getMetadata(panel))['Data sets']).toBe(
+        'EOD_POSITIONS (batch metadata)',
+      );
+
+      // a view of both, the data set's rows and its batch metadata
+      await pick(editorGroup, 'POSITIONS_WITH_BATCH');
+      expect(
+        (await getMetadata(getViewPanel(editorGroup, 'POSITIONS_WITH_BATCH')))[
+          'Data sets'
+        ],
+      ).toBe('EOD_POSITIONS, EOD_POSITIONS (batch metadata)');
+
+      // the data set's Read by says what each view reads of it
+      await pick(editorGroup, 'EOD_POSITIONS');
+      const views = (
+        await getMetadata(getViewPanel(editorGroup, 'EOD_POSITIONS'))
+      ).Views;
+      expect(views).toContain('POSITIONS_BY_LEGAL_ENTITY,');
+      expect(views).toContain('EOD_POSITIONS_BATCHES (batch metadata)');
+      expect(views).toContain('POSITIONS_WITH_BATCH (rows and batch metadata)');
     },
   );
 });
