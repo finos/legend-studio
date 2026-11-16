@@ -1,5 +1,7 @@
 # @finos/legend-application
 
+## 16.1.4
+
 ## 16.1.3
 
 ## 16.1.2
