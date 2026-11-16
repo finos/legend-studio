@@ -18,6 +18,11 @@ import { test, expect } from '@jest/globals';
 import type { PlainObject } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import { RawLambda } from '../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
+import { IngestAccessorQualifier } from '../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
+import {
+  getIngestAccessorQualifierLabel,
+  getIngestDatasetReadLabel,
+} from '../../graph/helpers/IngestDefinitionHelper.js';
 import {
   TEST__buildGraphWithEntities,
   TEST__getTestGraphManagerState,
@@ -82,5 +87,71 @@ test(
         graph,
       ),
     ).toEqual([]);
+  },
+);
+
+test(
+  unitTest(
+    "A data set's batch metadata is read apart from its rows, and named so",
+  ),
+  async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(graphManagerState, []);
+    const { graphManager, graph } = graphManagerState;
+    const metadata = (value: PlainObject): PlainObject => ({
+      _type: 'classInstance',
+      type: 'I',
+      value: { path: ['demo::TradesIngest', 'TRADES'], ...value },
+    });
+    // each trade joined to its batch, then the batches again, written before
+    // there was a qualifier: the rows, then the batch metadata, once
+    const lambda = new RawLambda(
+      [],
+      [
+        {
+          _type: 'func',
+          function: 'concatenate',
+          parameters: [
+            {
+              _type: 'func',
+              function: 'join',
+              parameters: [
+                accessor(['demo::TradesIngest', 'TRADES']),
+                metadata({ metadata: true, accessorQualifier: 'metadata' }),
+              ],
+            },
+            metadata({ metadata: true }),
+          ],
+        },
+      ],
+    );
+    const references = graphManager.getIngestDatasetsReadByRawLambda(
+      lambda,
+      graph,
+    );
+    expect(
+      references.map((reference) => [
+        reference.datasetName,
+        reference.qualifier,
+      ]),
+    ).toEqual([
+      ['TRADES', undefined],
+      ['TRADES', IngestAccessorQualifier.METADATA],
+    ]);
+    expect(
+      references.map((reference) =>
+        getIngestDatasetReadLabel(reference.datasetName, reference.qualifier),
+      ),
+    ).toEqual(['TRADES', 'TRADES (batch metadata)']);
+    expect(
+      Object.values(IngestAccessorQualifier).map(
+        getIngestAccessorQualifierLabel,
+      ),
+    ).toEqual([
+      'batch metadata',
+      'incoming',
+      'milestoned',
+      'incoming milestoned',
+    ]);
   },
 );

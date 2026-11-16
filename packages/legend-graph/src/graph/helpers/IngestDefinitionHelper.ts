@@ -27,6 +27,7 @@ import {
   type IngestDefinitionSpecification,
   type IngestWriteMode,
 } from '../metamodel/pure/packageableElements/ingest/IngestDefinitionSpecification.js';
+import { IngestAccessorQualifier } from '../metamodel/pure/packageableElements/relation/Accessor.js';
 
 /** A column an ingest write mode adds to a data set, after the data set's own */
 export interface IngestWriteModeColumn {
@@ -102,16 +103,54 @@ export const getIngestDatasetWriteMode = (
   specification: IngestDefinitionSpecification,
 ): IngestWriteMode | undefined => dataset.writeMode ?? specification.writeMode;
 
+const INGEST_ACCESSOR_QUALIFIER_LABELS: Record<
+  IngestAccessorQualifier,
+  string
+> = {
+  [IngestAccessorQualifier.METADATA]: 'batch metadata',
+  [IngestAccessorQualifier.INCOMING]: 'incoming',
+  [IngestAccessorQualifier.MILESTONED]: 'milestoned',
+  [IngestAccessorQualifier.INCOMING_MILESTONED]: 'incoming milestoned',
+};
+
+/**
+ * What a lambda reads of a data set other than its rows, in words, e.g.
+ * `batch metadata` for `#I{definition.dataSet|metadata}#`
+ */
+export const getIngestAccessorQualifierLabel = (
+  qualifier: IngestAccessorQualifier,
+): string => INGEST_ACCESSOR_QUALIFIER_LABELS[qualifier];
+
+/**
+ * A data set's name with what a lambda reads of it other than its rows, e.g.
+ * `EOD_POSITIONS (batch metadata)`; its name alone for its rows
+ */
+export const getIngestDatasetReadLabel = (
+  dataSet: string,
+  qualifier: IngestAccessorQualifier | undefined,
+): string =>
+  qualifier === undefined
+    ? dataSet
+    : `${dataSet} (${getIngestAccessorQualifierLabel(qualifier)})`;
+
 /**
  * An ingest data set, by its definition's path and its name, as a lambda
- * reads it: `#I{definition.dataSet}#`
+ * reads it: its rows, `#I{definition.dataSet}#`, or, with a qualifier, e.g.
+ * its batch metadata, `#I{definition.dataSet|metadata}#`
  */
 export class IngestDatasetReference {
   readonly ingestDefinitionPath: string;
   readonly datasetName: string;
+  /** What the lambda reads of the data set other than its rows; none for its rows */
+  readonly qualifier: IngestAccessorQualifier | undefined;
 
-  constructor(ingestDefinitionPath: string, datasetName: string) {
+  constructor(
+    ingestDefinitionPath: string,
+    datasetName: string,
+    qualifier?: IngestAccessorQualifier | undefined,
+  ) {
     this.ingestDefinitionPath = ingestDefinitionPath;
     this.datasetName = datasetName;
+    this.qualifier = qualifier;
   }
 }

@@ -23,6 +23,8 @@ import {
 import { observer } from 'mobx-react-lite';
 import {
   type Runtime,
+  getIngestDatasetReadLabel,
+  IngestionAccessor,
   RuntimePointer,
   PackageableElementExplicitReference,
 } from '@finos/legend-graph';
@@ -73,14 +75,30 @@ const AccessorQueryBuilderSetupPanelContent = observer(
     // accessor (dataset / table)
     const accessorOptions =
       queryBuilderState.accessorsOptions.sort(compareLabelFn);
-    const selectedAccessorOption = queryBuilderState.sourceAccessor
+    const { sourceAccessor } = queryBuilderState;
+    const sourceAccessorOption = sourceAccessor
       ? (queryBuilderState.accessorsOptions.find(
           (opt) =>
-            opt.value.tableName ===
-              queryBuilderState.sourceAccessor?.accessor &&
-            opt.value.schemaName === queryBuilderState.sourceAccessor.schema,
+            opt.value.tableName === sourceAccessor.accessor &&
+            opt.value.schemaName === sourceAccessor.schema,
         ) ?? null)
       : null;
+    // a source of a data set's batch metadata says so, e.g.
+    // `TRADES (batch metadata)`; the data sets to pick are their rows
+    const sourceQualifier =
+      sourceAccessor instanceof IngestionAccessor
+        ? sourceAccessor.qualifier
+        : undefined;
+    const selectedAccessorOption =
+      sourceAccessorOption && sourceQualifier
+        ? {
+            ...sourceAccessorOption,
+            label: getIngestDatasetReadLabel(
+              sourceAccessorOption.label,
+              sourceQualifier,
+            ),
+          }
+        : sourceAccessorOption;
     const changeAccessor = async (val: AccessorOption): Promise<void> => {
       await queryBuilderState.changeAccessor(val.value);
     };

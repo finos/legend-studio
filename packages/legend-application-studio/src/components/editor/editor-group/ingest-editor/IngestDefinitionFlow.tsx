@@ -29,7 +29,13 @@ import {
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
-import type { IngestDataset } from '@finos/legend-graph';
+import { isNonNullable } from '@finos/legend-shared';
+import {
+  getIngestAccessorQualifierLabel,
+  getIngestDatasetReadLabel,
+  type IngestAccessorQualifier,
+  type IngestDataset,
+} from '@finos/legend-graph';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Component, Fragment, useEffect, type ReactNode } from 'react';
@@ -237,6 +243,25 @@ const NameLinks = (props: { links: IngestDefinitionNameLink[] }) => (
 );
 
 /**
+ * A view in a data set's Read by, with what it reads of the data set other
+ * than its rows, e.g. `TRADES_WITH_BATCH (rows and batch metadata)`; its name
+ * alone when it reads only the rows
+ */
+const getViewReadByLabel = (
+  view: string,
+  qualifiers: (IngestAccessorQualifier | undefined)[],
+): string => {
+  const others = qualifiers
+    .filter(isNonNullable)
+    .map(getIngestAccessorQualifierLabel);
+  if (!others.length) {
+    return view;
+  }
+  const read = qualifiers.includes(undefined) ? ['rows', ...others] : others;
+  return `${view} (${read.join(' and ')})`;
+};
+
+/**
  * The data sets the view's function reads: each of this definition a link
  * that picks it in the list, one of another definition after that
  * definition's name
@@ -250,28 +275,31 @@ const getViewReadLinks = (
     ({
       ingestDefinitionPath: ingestDefinition,
       datasetName: dataSet,
+      qualifier,
     }): IngestDefinitionNameLink => {
+      // what it reads of the data set, e.g. `EOD_POSITIONS (batch metadata)`
+      const label = getIngestDatasetReadLabel(dataSet, qualifier);
       if (ingestDefinition !== ingestPath) {
         return {
-          label: `${ingestDefinition.split('::').pop() ?? ingestDefinition}.${dataSet}`,
+          label: `${ingestDefinition.split('::').pop() ?? ingestDefinition}.${label}`,
           title: `Data set ${dataSet} of ingest definition ${ingestDefinition}`,
         };
       }
       if (flowState.dataSets.some((each) => each.name === dataSet)) {
         return {
-          label: dataSet,
+          label,
           title: `Show the data set ${dataSet}`,
           onPick: () => flowState.selectDataSet(dataSet),
         };
       }
       if (flowState.materializedViews.some((each) => each.name === dataSet)) {
         return {
-          label: dataSet,
+          label,
           title: `Show the materialized view ${dataSet}`,
           onPick: () => flowState.selectView(dataSet),
         };
       }
-      return { label: dataSet, title: `Data set ${dataSet}` };
+      return { label, title: `Data set ${dataSet}` };
     },
   );
 };
@@ -792,7 +820,10 @@ const IngestDataSetPanel = observer(
               value: readBy.length ? (
                 <NameLinks
                   links={readBy.map((view) => ({
-                    label: view.name,
+                    label: getViewReadByLabel(
+                      view.name,
+                      flowState.getQualifiersRead(view.name, dataSet.name),
+                    ),
                     title: `Show the materialized view ${view.name}`,
                     onPick: () => flowState.selectView(view.name),
                   }))}
