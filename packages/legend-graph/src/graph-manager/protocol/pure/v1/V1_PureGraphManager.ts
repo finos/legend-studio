@@ -452,6 +452,7 @@ import {
   V1_buildDataProductAccessor,
   V1_resolveAccessorsFromRawLambda,
   V1_qualifyIngestAccessor,
+  V1_buildIngestAccessorQualifier,
   V1_resolveRelationalStoreAccessorPath,
   V1_buildRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
@@ -4816,17 +4817,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .filter(filterByType(V1_IngestDefinitionAccessor))
       .forEach((accessor) => {
         const [ingestDefinitionPath, datasetName] = accessor.path;
+        // a data set's batch metadata is read apart from its rows
+        const { accessorQualifier } = accessor;
+        const qualifier = accessorQualifier
+          ? returnUndefOnError(() =>
+              V1_buildIngestAccessorQualifier(accessorQualifier),
+            )
+          : undefined;
         if (
           ingestDefinitionPath &&
           datasetName &&
           !references.some(
             (reference) =>
               reference.ingestDefinitionPath === ingestDefinitionPath &&
-              reference.datasetName === datasetName,
+              reference.datasetName === datasetName &&
+              reference.qualifier === qualifier,
           )
         ) {
           references.push(
-            new IngestDatasetReference(ingestDefinitionPath, datasetName),
+            new IngestDatasetReference(
+              ingestDefinitionPath,
+              datasetName,
+              qualifier,
+            ),
           );
         }
       });

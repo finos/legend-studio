@@ -22,9 +22,14 @@ import {
   act,
   findByText,
   findAllByTestId,
+  fireEvent,
 } from '@testing-library/react';
 import { integrationTest } from '@finos/legend-shared/test';
-import { create_RawLambda } from '@finos/legend-graph';
+import {
+  create_RawLambda,
+  IngestAccessorQualifier,
+  IngestionAccessor,
+} from '@finos/legend-graph';
 import {
   TEST_DATA__QueryBuilder_Accessors,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
@@ -35,7 +40,68 @@ import {
   TEST__setUpAccessorQueryBuilder,
   dragAndDrop,
 } from '../__test-utils__/QueryBuilderComponentTestUtils.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+
+interface TestProperty {
+  _type: string;
+  property: string;
+}
+interface TestColSpec {
+  name: string;
+  function1: { body: TestProperty[] };
+}
+interface TestCall {
+  _type: string;
+  function: string;
+  parameters: unknown[];
+}
+
+/**
+ * The ingest query, on the data set's batch metadata,
+ * `#I{ingestion::CARBON_DIOXIDE_EMISSIONS.CARBON_DIOXIDE_EMISSIONS|metadata}#`:
+ * its status and its id projected, with no post-filter
+ */
+const METADATA_QUERY = ((): {
+  parameters: object[];
+  body: object[];
+} => {
+  const query = JSON.parse(
+    JSON.stringify(
+      TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithPostFilter,
+    ),
+  ) as { parameters: object[]; body: TestCall[] };
+  const from = guaranteeNonNullable(query.body[0]);
+  const filter = from.parameters[0] as TestCall;
+  const project = filter.parameters[0] as TestCall;
+  const [accessor, columns] = project.parameters as [
+    { value: object },
+    { value: { colSpecs: TestColSpec[] } },
+  ];
+  accessor.value = {
+    path: ['ingestion::CARBON_DIOXIDE_EMISSIONS', 'CARBON_DIOXIDE_EMISSIONS'],
+    metadata: true,
+    accessorQualifier: 'metadata',
+  };
+  columns.value.colSpecs = (
+    [
+      ['Status', 'batch_status'],
+      ['Batch', 'table_batch_id'],
+    ] as const
+  ).map(([name, property], index) => {
+    const spec = guaranteeNonNullable(columns.value.colSpecs[index]);
+    return {
+      ...spec,
+      name,
+      function1: {
+        ...spec.function1,
+        body: [{ ...guaranteeNonNullable(spec.function1.body[0]), property }],
+      },
+    };
+  });
+  // no post-filter: the project goes straight to the runtime
+  from.parameters[0] = project;
+  return query;
+})();
 
 describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
   test('renders Source, Runtime labels and properties header', async () => {
@@ -204,6 +270,51 @@ describe(integrationTest('AccessorQueryBuilder setup panel'), () => {
     expect(getByText(setupPanel, 'Source')).not.toBeNull();
     expect(getByText(setupPanel, 'Dataset')).not.toBeNull();
     expect(getByText(setupPanel, 'Runtime')).not.toBeNull();
+  });
+
+  test("names a source of an ingest data set's batch metadata so, in the explorer and the Dataset picked, its path with the qualifier", async () => {
+    const { renderResult, queryBuilderState } =
+      await TEST__setUpAccessorQueryBuilder(TEST_DATA__QueryBuilder_Accessors);
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(METADATA_QUERY.parameters, METADATA_QUERY.body),
+      );
+    });
+
+    const accessor = guaranteeType(
+      queryBuilderState.sourceAccessor,
+      IngestionAccessor,
+    );
+    expect(accessor.qualifier).toBe(IngestAccessorQualifier.METADATA);
+    // the source named with what it reads, its columns the batch metadata's
+    const explorerPanel = await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+    );
+    await findByText(
+      explorerPanel,
+      'CARBON_DIOXIDE_EMISSIONS (batch metadata)',
+    );
+    // the explorer names `batch_status` in words
+    await findByText(explorerPanel, 'Batch status');
+    // the Dataset picked says so too
+    const setupPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_SETUP,
+    );
+    await findByText(setupPanel, 'CARBON_DIOXIDE_EMISSIONS (batch metadata)');
+    // its path as the Legend language writes it
+    const tooltipIcon = await waitFor(
+      () =>
+        renderResult.getAllByTestId(
+          QUERY_BUILDER_TEST_ID.QUERY_BUILDER_TOOLTIP_ICON,
+        )[0],
+    );
+    fireEvent.mouseOver(guaranteeNonNullable(tooltipIcon));
+    const tooltip = await waitFor(() => renderResult.getByRole('tooltip'));
+    await findByText(
+      tooltip,
+      'ingestion::CARBON_DIOXIDE_EMISSIONS.CARBON_DIOXIDE_EMISSIONS|metadata',
+    );
   });
 
   test('initializes from database accessor lambda and renders setup correctly', async () => {

@@ -779,7 +779,7 @@ export const V1_buildIngestMetadataRelationType = (
     graph,
   );
 
-const V1_buildIngestAccessorQualifier = (
+export const V1_buildIngestAccessorQualifier = (
   qualifier: V1_IngestAccessorQualifier,
 ): IngestAccessorQualifier => {
   switch (qualifier) {
