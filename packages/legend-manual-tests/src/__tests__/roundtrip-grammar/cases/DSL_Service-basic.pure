@@ -336,6 +336,7 @@ Mapping my::map
 (
   *my::Person: Pure
   {
+    ~src my::Person
     givenNames: 'name'
   }
 )
