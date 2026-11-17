@@ -201,6 +201,8 @@ import {
 } from '@finos/legend-extension-dsl-data-product';
 import type { LegendStudioApplicationStore } from '../../../../stores/LegendStudioBaseStore.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
+import type { CubeDefinitionFunctionLoader } from '@finos/legend-cube-builder/definition-flow';
+import { createGraphFunctionLoader } from '../../../../stores/editor/utils/CubeDefinitionFunctionUtils.js';
 import { RelationElementSampleValuesEditor } from '../data-editor/RelationElementSampleValuesEditor.js';
 import type {
   AccessPointGroupMeta,
@@ -3043,6 +3045,7 @@ const getDataProductViewerState = (
   graphManagerState: GraphManagerState,
   applicationStore: LegendStudioApplicationStore,
   depotServerClient: DepotServerClient,
+  loadFunctions: CubeDefinitionFunctionLoader,
 ) => {
   const graphManager = guaranteeType(
     graphManagerState.graphManager,
@@ -3095,6 +3098,9 @@ const getDataProductViewerState = (
             }).content
           : undefined;
       },
+      // the functions it calls, from the graph too, the dependencies'
+      // included: each call opens into a container of its body's steps
+      loadFunctions,
     },
   );
   dataProductViewerState.init();
@@ -3316,6 +3322,7 @@ export const DataProductEditor = observer(() => {
                 editorStore.graphManagerState,
                 editorStore.applicationStore,
                 editorStore.depotServerClient,
+                createGraphFunctionLoader(editorStore),
               ),
             );
           }
@@ -3323,6 +3330,7 @@ export const DataProductEditor = observer(() => {
         { delay: 1000 },
       ),
     [
+      editorStore,
       editorStore.applicationStore,
       editorStore.graphManagerState,
       editorStore.depotServerClient,
@@ -3356,6 +3364,7 @@ export const DataProductEditor = observer(() => {
                           editorStore.graphManagerState,
                           editorStore.applicationStore,
                           editorStore.depotServerClient,
+                          createGraphFunctionLoader(editorStore),
                         ),
                       );
                     }

@@ -16,6 +16,7 @@
 
 import { test, expect, jest } from '@jest/globals';
 import {
+  act,
   findByDisplayValue,
   findByPlaceholderText,
   findByRole,
@@ -51,6 +52,12 @@ import { LegendStudioPluginManager } from '../../../../../application/LegendStud
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { AP_EMPTY_DESC_WARNING } from '../DataProductEditor.js';
+import { LEGEND_CUBE_TEST_ID } from '@finos/legend-cube-builder/definition-flow';
+import {
+  TEST__CUBE_DEFINITION_FUNCTION_DEPENDENCY,
+  TEST__setUpEditorWithCubeDefinitionFunctions,
+  TEST_DATA__CubeDefinitionFunctions,
+} from '../../../__test-utils__/CubeDefinitionFunctionTestUtils.js';
 
 const TEST_DATA__FUNCTION_ACCESS_POINT_WITH_PARAMETER = (() => {
   const entities = JSON.parse(
@@ -486,6 +493,82 @@ test(integrationTest('Preview data product'), async () => {
     timeout: 3000,
   });
 });
+
+test(
+  integrationTest(
+    "Preview draws an access point's calls of user-defined functions as containers, the functions read from the graph, a dependency's saying its project",
+  ),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult =
+      await TEST__setUpEditorWithCubeDefinitionFunctions(MOCK__editorStore);
+    await TEST__openElementFromExplorerTree(
+      TEST_DATA__CubeDefinitionFunctions.dataProduct,
+      renderResult,
+    );
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    fireEvent.click(
+      await findByRole(editorGroup, 'button', { name: 'Preview' }),
+    );
+    await findByText(editorGroup, 'open_orders');
+    // the preview is built again a second after it shows: open the
+    // definitions of the one that stays
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+    });
+
+    /** An access point's definition, opened, then its flow's opened call */
+    const openDefinitionFlow = async (
+      index: number,
+    ): Promise<{ definition: HTMLElement; frame: HTMLElement }> => {
+      await act(async () => {
+        fireEvent.click(
+          guaranteeNonNullable(
+            getAllByText(editorGroup, 'View definition')[index],
+          ),
+        );
+      });
+      const definition =
+        await within(editorGroup).findByLabelText('Definition');
+      const flow = await within(definition).findByTestId(
+        LEGEND_CUBE_TEST_ID.DEFINITION_FLOW,
+      );
+      // its body's data set and filter in the container, a step after it
+      await waitFor(() =>
+        expect(
+          within(flow).getAllByTestId(LEGEND_CUBE_TEST_ID.CANVAS_NODE),
+        ).toHaveLength(3),
+      );
+      return {
+        definition,
+        frame: within(flow).getByTestId(LEGEND_CUBE_TEST_ID.CANVAS_CONTAINER),
+      };
+    };
+
+    // activeOrders(), the project's own: no project said
+    const own = await openDefinitionFlow(0);
+    expect(own.frame.textContent).toContain('activeOrders()');
+    expect(
+      within(own.frame).queryByTitle(
+        `From ${TEST__CUBE_DEFINITION_FUNCTION_DEPENDENCY}`,
+      ),
+    ).toBeNull();
+    await act(async () => {
+      fireEvent.click(getByText(editorGroup, 'Hide definition'));
+    });
+
+    // onlyOpen(…), the dependency's, with its project
+    const fromDependency = await openDefinitionFlow(1);
+    expect(fromDependency.frame.textContent).toContain('onlyOpen()');
+    expect(
+      within(fromDependency.frame).getByTitle(
+        `From ${TEST__CUBE_DEFINITION_FUNCTION_DEPENDENCY}`,
+      ).textContent,
+    ).toBe(TEST_DATA__CubeDefinitionFunctions.dependency.artifactId);
+  },
+);
 
 test(
   integrationTest('Editing operational metadata - update frequency'),
