@@ -51,4 +51,37 @@ export const CUBE_DEFINITION_FLOW_LABEL = {
   PARAMETER_OPTIONAL: 'optional',
   /** After a parameter's type in words, when it takes any number of values */
   PARAMETER_LIST: 'a list',
+  /** Under a call drawn as one box: what is known of its columns */
+  CALL_COLUMNS_DECLARED: (count: number): string =>
+    `${count} columns, as declared`,
+  CALL_COLUMNS_NOT_DECLARED: 'columns not declared',
+  CALL_NOT_FOUND: 'not found',
+  /** In the tooltip of a call drawn as one box: why it isn't opened */
+  CALL_CLOSED_NOT_FOUND:
+    "Cube didn't find this function in the project or its dependencies, so its steps can't be shown.",
+  CALL_CLOSED_AMBIGUOUS:
+    "Two functions of this name take as many values, and Cube doesn't tell them apart yet.",
+  CALL_CLOSED_STATEMENTS:
+    'Its body has statements other than lets, so Cube shows it as one step.',
+  CALL_CLOSED_NOT_DRAWABLE: (message: string | undefined): string =>
+    `Cube can't draw its body yet${message ? `: ${message}` : '.'}`,
+  CALL_CLOSED_SHARED_INPUT:
+    "Its body reads the rows it takes more than once, which Cube's flow can't draw.",
+  CALL_CLOSED_CAPTURE:
+    "A value it is given reads a name its body uses for something else, so Cube can't put it in.",
+  CALL_CLOSED_RECURSION: 'It calls itself, so it is shown once.',
+  CALL_CLOSED_DEPTH: 'It is called too deep inside other functions to open.',
+  /** In a call's tooltip: the project it comes from */
+  CALL_FROM: (origin: string): string => `From ${origin}`,
+  /** In a step's tooltip: a user-defined function its expression calls */
+  CALLS_FUNCTION: (name: string, signature: string, origin?: string): string =>
+    `Calls ${name}: ${signature}${origin ? `, from ${origin}` : ''}`,
+  /** A call's buttons */
+  FOLD_CALL: 'Fold the function to one box',
+  OPEN_CALL: 'Open the function',
+  SHOW_FUNCTION: (name: string): string => `Show the Pure of ${name}`,
+  /** How many steps a call holds */
+  STEP_COUNT: (count: number): string =>
+    `${count} ${count === 1 ? 'step' : 'steps'}`,
+  FOLDED: (steps: string): string => `${steps}, folded`,
 };
