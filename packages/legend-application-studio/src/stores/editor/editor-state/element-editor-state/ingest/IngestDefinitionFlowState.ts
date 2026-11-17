@@ -17,6 +17,7 @@
 import type * as CubeDefinitionFlowEntry from '@finos/legend-cube-builder/definition-flow';
 import type { CubeDefinitionReading } from '@finos/legend-cube-builder/definition-flow';
 import {
+  extractAnnotatedElementDocumentation,
   getIngestDatasetWriteMode,
   getIngestWriteModeColumns,
   getMultiplicityPrettyDescription,
@@ -32,11 +33,13 @@ import {
   type IngestWriteMode,
   type MatViewDataSet,
   type RawLambda,
+  type RelationColumn,
 } from '@finos/legend-graph';
 import {
   ActionState,
   assertErrorThrown,
   guaranteeType,
+  isNonEmptyString,
   LogEvent,
   type GeneratorFn,
   type PlainObject,
@@ -116,7 +119,7 @@ export interface IngestDataSetColumnRow {
   /** How many values it holds, as View SQL's schema says it: `[1] - Required` */
   readonly multiplicity: string;
   readonly isPrimaryKey: boolean;
-  /** What the definition says it holds, if it says */
+  /** What the definition says it holds, if it says: its description, else its doc */
   readonly description: string | undefined;
   /** The write mode that adds it, for a column the definition doesn't declare */
   readonly addedBy: IngestWriteMode | undefined;
@@ -133,6 +136,18 @@ export interface IngestDataSetColumns {
   /** What its columns leave out, or why it has none */
   readonly notes: readonly string[];
 }
+
+/**
+ * What the definition says a column holds: its description, else its doc,
+ * the `doc.doc` tagged value a definition documents its columns with, as the
+ * data product viewer reads a column's
+ */
+const getIngestColumnDescription = (
+  column: RelationColumn,
+): string | undefined =>
+  [column.description, extractAnnotatedElementDocumentation(column)]
+    .map((text) => text?.trim())
+    .find(isNonEmptyString);
 
 /**
  * The data set's columns, as its table shows them: those it declares, then
@@ -169,7 +184,7 @@ export const getIngestDataSetColumns = (
         typePath: unresolvedType ?? column.genericType.value.rawType.path,
         multiplicity: getMultiplicityPrettyDescription(column.multiplicity),
         isPrimaryKey: dataset.primaryKey.includes(column.name),
-        description: column.description,
+        description: getIngestColumnDescription(column),
         addedBy: undefined,
       };
     },

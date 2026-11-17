@@ -29,11 +29,14 @@ export const INGEST_ACCESSOR = 'I';
 /** How it marks an accessor to a relational store's table: `#>{…}#` */
 export const RELATION_STORE_ACCESSOR = '>';
 
-/** A column of an ingest's data set, e.g. `LEGAL_NAME: Varchar(200)[0..1]` */
+/**
+ * A column of an ingest's data set, e.g. `LEGAL_NAME: Varchar(200)[0..1]`,
+ * documented as a definition documents it: its `doc`, a `doc.doc` tagged value
+ */
 export const ingestColumn = (
   name: string,
   type: string,
-  options: { size?: number; required?: boolean; description?: string } = {},
+  options: { size?: number; required?: boolean; doc?: string } = {},
 ): Record<string, unknown> => ({
   name,
   genericType: {
@@ -46,9 +49,16 @@ export const ingestColumn = (
         : [{ _type: 'integer', value: options.size }],
   },
   multiplicity: { lowerBound: options.required ? 1 : 0, upperBound: 1 },
-  ...(options.description === undefined
+  ...(options.doc === undefined
     ? {}
-    : { description: options.description }),
+    : {
+        taggedValues: [
+          {
+            tag: { profile: 'meta::pure::profiles::doc', value: 'doc' },
+            value: options.doc,
+          },
+        ],
+      }),
 });
 
 /** A data set of an ingest, keyed by its `ID` column unless its settings say otherwise */
