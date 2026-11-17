@@ -1,0 +1,527 @@
+{
+  "ingestDefinition": "shop::ingest::OrdersIngest",
+  "ingestDefinitionContent": {
+    "_type": "ingestDefinition",
+    "name": "OrdersIngest",
+    "package": "shop::ingest",
+    "datasets": [
+      {
+        "name": "ORDERS",
+        "primaryKey": ["ORDER_ID"],
+        "source": {
+          "_type": "ingestSource",
+          "schema": {
+            "_type": "schema",
+            "columns": [
+              {
+                "name": "ORDER_ID",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "meta::pure::precisePrimitives::Varchar"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": [
+                    {
+                      "_type": "integer",
+                      "value": 32
+                    }
+                  ]
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              },
+              {
+                "name": "CUSTOMER_ID",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "meta::pure::precisePrimitives::Varchar"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": [
+                    {
+                      "_type": "integer",
+                      "value": 32
+                    }
+                  ]
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              },
+              {
+                "name": "REGION",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "meta::pure::precisePrimitives::Varchar"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": [
+                    {
+                      "_type": "integer",
+                      "value": 8
+                    }
+                  ]
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              },
+              {
+                "name": "STATUS",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "meta::pure::precisePrimitives::Varchar"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": [
+                    {
+                      "_type": "integer",
+                      "value": 16
+                    }
+                  ]
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              },
+              {
+                "name": "ORDER_DATE",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "StrictDate"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": []
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              },
+              {
+                "name": "AMOUNT",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "Decimal"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": []
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "CUSTOMERS",
+        "primaryKey": ["CUSTOMER_ID"],
+        "source": {
+          "_type": "ingestSource",
+          "schema": {
+            "_type": "schema",
+            "columns": [
+              {
+                "name": "CUSTOMER_ID",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "meta::pure::precisePrimitives::Varchar"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": [
+                    {
+                      "_type": "integer",
+                      "value": 32
+                    }
+                  ]
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              },
+              {
+                "name": "CUSTOMER_NAME",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "meta::pure::precisePrimitives::Varchar"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": [
+                    {
+                      "_type": "integer",
+                      "value": 128
+                    }
+                  ]
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              },
+              {
+                "name": "SEGMENT",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "meta::pure::precisePrimitives::Varchar"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": [
+                    {
+                      "_type": "integer",
+                      "value": 16
+                    }
+                  ]
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              },
+              {
+                "name": "VALID_FROM",
+                "genericType": {
+                  "rawType": {
+                    "_type": "packageableType",
+                    "fullPath": "StrictDate"
+                  },
+                  "typeArguments": [],
+                  "multiplicityArguments": [],
+                  "typeVariableValues": []
+                },
+                "multiplicity": {
+                  "lowerBound": 1,
+                  "upperBound": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "functions": [
+    {
+      "path": "shop::orders::activeOrders__Relation_1_",
+      "content": {
+        "_type": "function",
+        "body": [
+          {
+            "_type": "func",
+            "function": "filter",
+            "parameters": [
+              {
+                "_type": "classInstance",
+                "type": "I",
+                "value": {
+                  "metadata": false,
+                  "path": ["shop::ingest::OrdersIngest", "ORDERS"]
+                }
+              },
+              {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "func",
+                    "function": "equal",
+                    "parameters": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "o"
+                          }
+                        ],
+                        "property": "STATUS"
+                      },
+                      {
+                        "_type": "string",
+                        "value": "ACTIVE"
+                      }
+                    ]
+                  }
+                ],
+                "parameters": [
+                  {
+                    "_type": "var",
+                    "name": "o"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "name": "activeOrders__Relation_1_",
+        "package": "shop::orders",
+        "parameters": [],
+        "postConstraints": [],
+        "preConstraints": [],
+        "returnGenericType": {
+          "multiplicityArguments": [],
+          "rawType": {
+            "_type": "packageableType",
+            "fullPath": "Relation"
+          },
+          "typeArguments": [
+            {
+              "multiplicityArguments": [],
+              "rawType": {
+                "_type": "relationType",
+                "columns": [
+                  {
+                    "genericType": {
+                      "multiplicityArguments": [],
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "String"
+                      },
+                      "typeArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 0,
+                      "upperBound": 1
+                    },
+                    "name": "ORDER_ID"
+                  },
+                  {
+                    "genericType": {
+                      "multiplicityArguments": [],
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "String"
+                      },
+                      "typeArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 0,
+                      "upperBound": 1
+                    },
+                    "name": "CUSTOMER_ID"
+                  },
+                  {
+                    "genericType": {
+                      "multiplicityArguments": [],
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "String"
+                      },
+                      "typeArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 0,
+                      "upperBound": 1
+                    },
+                    "name": "REGION"
+                  },
+                  {
+                    "genericType": {
+                      "multiplicityArguments": [],
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "String"
+                      },
+                      "typeArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 0,
+                      "upperBound": 1
+                    },
+                    "name": "STATUS"
+                  },
+                  {
+                    "genericType": {
+                      "multiplicityArguments": [],
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "StrictDate"
+                      },
+                      "typeArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 0,
+                      "upperBound": 1
+                    },
+                    "name": "ORDER_DATE"
+                  },
+                  {
+                    "genericType": {
+                      "multiplicityArguments": [],
+                      "rawType": {
+                        "_type": "packageableType",
+                        "fullPath": "Decimal"
+                      },
+                      "typeArguments": [],
+                      "typeVariableValues": []
+                    },
+                    "multiplicity": {
+                      "lowerBound": 0,
+                      "upperBound": 1
+                    },
+                    "name": "AMOUNT"
+                  }
+                ]
+              },
+              "typeArguments": [],
+              "typeVariableValues": []
+            }
+          ],
+          "typeVariableValues": []
+        },
+        "returnMultiplicity": {
+          "lowerBound": 1,
+          "upperBound": 1
+        },
+        "stereotypes": [],
+        "taggedValues": [],
+        "tests": []
+      }
+    }
+  ],
+  "functionPure": "function shop::orders::activeOrders(): Relation<(ORDER_ID:String, CUSTOMER_ID:String, REGION:String, STATUS:String, ORDER_DATE:StrictDate, AMOUNT:Decimal)>[1]\n{\n  #I{shop::ingest::OrdersIngest.ORDERS}#->filter(\n    o|$o.STATUS == 'ACTIVE'\n  )\n}",
+  "accessPoints": {
+    "active_orders_by_region": {
+      "_type": "lambda",
+      "body": [
+        {
+          "_type": "func",
+          "function": "groupBy",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "shop::orders::activeOrders",
+              "parameters": []
+            },
+            {
+              "_type": "classInstance",
+              "type": "colSpecArray",
+              "value": {
+                "colSpecs": [
+                  {
+                    "name": "REGION"
+                  }
+                ]
+              }
+            },
+            {
+              "_type": "classInstance",
+              "type": "colSpecArray",
+              "value": {
+                "colSpecs": [
+                  {
+                    "function1": {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "property",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "o"
+                            }
+                          ],
+                          "property": "AMOUNT"
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "o"
+                        }
+                      ]
+                    },
+                    "function2": {
+                      "_type": "lambda",
+                      "body": [
+                        {
+                          "_type": "func",
+                          "function": "sum",
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "a"
+                            }
+                          ]
+                        }
+                      ],
+                      "parameters": [
+                        {
+                          "_type": "var",
+                          "name": "a"
+                        }
+                      ]
+                    },
+                    "name": "TOTAL_AMOUNT"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "parameters": []
+    },
+    "archived_orders": {
+      "_type": "lambda",
+      "body": [
+        {
+          "_type": "func",
+          "function": "select",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "shop::legacy::archivedOrders",
+              "parameters": []
+            },
+            {
+              "_type": "classInstance",
+              "type": "colSpecArray",
+              "value": {
+                "colSpecs": [
+                  {
+                    "name": "ORDER_ID"
+                  },
+                  {
+                    "name": "AMOUNT"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "parameters": []
+    }
+  }
+}

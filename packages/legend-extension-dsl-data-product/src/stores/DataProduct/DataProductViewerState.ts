@@ -102,6 +102,7 @@ import type { DataProductDataAccessState } from './DataProductDataAccessState.js
 import type {
   DataProductDefinitionFlowEntry,
   DataProductIngestDefinitionLoader,
+  DataProductFunctionLoader,
 } from './DataProductDefinitionFlow.js';
 import { DataAccessState } from '@finos/legend-query-builder';
 import {
@@ -174,6 +175,11 @@ export class DataProductViewerState extends BaseViewerState<
   readonly fetchDataProductQuality?:
     | (() => Promise<DataProductQualityResponse>)
     | undefined;
+  /**
+   * The user-defined functions an access point's definition calls, which its
+   * flow opens into containers; without it, a call is refused
+   */
+  readonly loadFunctions?: DataProductFunctionLoader | undefined;
   dataProductDataAccessState: DataProductDataAccessState | undefined;
   readonly qualityState: DataProductQualityState;
 
@@ -229,6 +235,7 @@ export class DataProductViewerState extends BaseViewerState<
       fetchDataProductQuality?:
         | (() => Promise<DataProductQualityResponse>)
         | undefined;
+      loadFunctions?: DataProductFunctionLoader | undefined;
     },
     registryServerClient?: RegistryServerClient | undefined,
   ) {
@@ -287,6 +294,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.loadIngestDefinition = actions.loadIngestDefinition;
     this.fetchDataProductQuality = actions.fetchDataProductQuality;
     this.qualityState = new DataProductQualityState(this);
+    this.loadFunctions = actions.loadFunctions;
   }
 
   /**
