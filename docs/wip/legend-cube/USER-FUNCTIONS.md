@@ -161,6 +161,17 @@ Marketplace on the mock (shots `today-*`):
 - **Legacy JSON:** `/entities` returns content as published, which may use legacy fields (`returnType`, a parameter's
   `class`). The engine upgrades them on read, and so does legend-graph's deserializer, which the prototype reads
   through.
+- **Studio, as built in F5** (`createGraphFunctionLoader`, `stores/editor/utils/CubeDefinitionFunctionUtils.ts`):
+  - It reads the project's own functions, each dependency's and the generated ones, by model, so a dependency's
+    function says its project as `group:artifact:version`, as Depot's loader does. The core and system models are
+    skipped: Cube never asks for `meta::` names.
+  - It waits until the graph is fully built in form mode. Text mode's light graph holds functions with no parameters
+    and no body, and leaving text mode rebuilds the graph while the editor already shows. The graph is read after the
+    wait, as each build replaces it.
+  - The preview passes it as the viewer's `loadFunctions`. The Overview loads each view's functions once Cube's code
+    is in, again each time it shows (a function may have changed in another tab), keyed to the specification it read.
+  - Not in the Overview yet: the `</>` that shows a function's Pure, and the line saying a closed box leaves the steps
+    after it unchecked. The preview has both, from the viewer.
 
 ### 3.1 Could the artifact or Depot hand the functions over?
 
