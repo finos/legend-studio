@@ -58,8 +58,8 @@ you click another data set, so you can compare them.
 1. The classification of its data, and where the data must stay: here, in the US.
 2. **Schema** and **Metadata**.
 3. **Its columns**: their names, their types, how many values each holds, and whether it is in the data set's key. A
-   column's description shows under its name. The columns its write mode adds, such as a batch milestoned data set's
-   **LAKE_IN_ID** and **LAKE_OUT_ID**, come last, greyed out.
+   column's documentation, its `doc.doc` tagged value, shows under its name. The columns its write mode adds, such as a
+   batch milestoned data set's **LAKE_IN_ID** and **LAKE_OUT_ID**, come last, greyed out.
 
 [![A data set's metadata, its parts numbered](./images/ingest-definition-metadata.png)](./images/ingest-definition-metadata.png)
 

@@ -57,7 +57,7 @@ const getTradesIngest = async (): Promise<Entity> => ({
         [
           ingestColumn('ID', 'Int', {
             required: true,
-            description: 'The trade, as its desk books it',
+            doc: 'The trade, as its desk books it',
           }),
           ingestColumn('DESK', 'Varchar', { size: 20 }),
           ingestColumn('QUANTITY', 'Int'),
@@ -167,7 +167,7 @@ test("an ingest definition opens on its Overview: its settings, then its views' 
     .getByRole('button', { name: 'TRADES', exact: true })
     .click();
 
-  // the data set's Schema: its columns, read-only, a description under its name
+  // the data set's Schema: its columns, read-only, a column's doc under its name
   const trades = getPanel(editor, 'TRADES');
   await expect(getColumnRows(trades, 'TRADES')).toHaveCount(3);
   await expect(trades.getByLabel('Columns of TRADES')).toContainText(
