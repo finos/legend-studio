@@ -35,7 +35,7 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 import type { DataSpaceOption } from '@finos/legend-extension-dsl-data-space/application-query';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import { type LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
@@ -101,6 +101,8 @@ export class DataProductSelectorState {
     | undefined;
   readonly applicationStore: LegendQueryApplicationStore;
   disableDataProducts = false;
+  /** The load in flight, which every caller shares until it settles */
+  private productsLoad: Promise<void> | undefined;
 
   constructor(
     depotServerClient: DepotServerClient,
@@ -112,6 +114,7 @@ export class DataProductSelectorState {
       dataProducts: observable,
       loadProductsState: observable,
       loadProducts: flow,
+      fetchProducts: flow,
       setLegacyDataProducts: action,
       setDataProducts: action,
       clearProducts: action,
@@ -147,7 +150,22 @@ export class DataProductSelectorState {
     return Boolean(this.legacyDataProducts) && Boolean(this.dataProducts);
   }
 
+  /**
+   * Loads the data spaces and data products. Several flows ask for them while
+   * a query loads, e.g. the creator store's initialize() and the builder's
+   * loadEntities(), before the first load has settled: they all wait on the
+   * same load instead of each fetching them again.
+   */
   *loadProducts(): GeneratorFn<void> {
+    if (!this.productsLoad) {
+      this.productsLoad = flowResult(this.fetchProducts()).finally(() => {
+        this.productsLoad = undefined;
+      });
+    }
+    yield this.productsLoad;
+  }
+
+  *fetchProducts(): GeneratorFn<void> {
     this.loadProductsState.inProgress();
     try {
       const accessToken = this.applicationStore.getAccessToken();

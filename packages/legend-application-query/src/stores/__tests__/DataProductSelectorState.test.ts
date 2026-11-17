@@ -370,6 +370,45 @@ describe(unitTest('DataProductSelectorState'), () => {
     expect(selectorState.dataProducts).toBeUndefined();
   });
 
+  test(
+    unitTest('loadProducts called again while loading waits on the same fetch'),
+    async () => {
+      const getEntitiesByClassifier = (
+        jest.fn() as AnyMockFn
+      ).mockResolvedValue([
+        TEST_DATA__storedDataSpaceEntity(
+          'org.finos',
+          'model-a',
+          '1.0.0',
+          'model::DataSpaceA',
+        ),
+      ]);
+      const getEntitiesSummaryByClassifier = (
+        jest.fn() as AnyMockFn
+      ).mockResolvedValue([]);
+      depotClient = buildMockDepotServerClient({
+        getEntitiesByClassifier,
+        getEntitiesSummaryByClassifier,
+      });
+      selectorState = new DataProductSelectorState(depotClient, appStore);
+
+      // e.g. the creator store's initialize() and the builder's loadEntities()
+      const first = flowResult(selectorState.loadProducts());
+      const second = flowResult(selectorState.loadProducts());
+      await Promise.all([first, second]);
+
+      expect(getEntitiesByClassifier).toHaveBeenCalledTimes(1);
+      expect(getEntitiesSummaryByClassifier).toHaveBeenCalledTimes(1);
+      // the second caller sees what the shared fetch loaded
+      expect(selectorState.legacyDataProducts).toHaveLength(1);
+      expect(selectorState.isCompletelyLoaded).toBe(true);
+
+      // once settled, loading again fetches again, e.g. to refresh
+      await flowResult(selectorState.loadProducts());
+      expect(getEntitiesByClassifier).toHaveBeenCalledTimes(2);
+    },
+  );
+
   // -----------------------------------------------------------------------
   // dataProductOptions
   // -----------------------------------------------------------------------

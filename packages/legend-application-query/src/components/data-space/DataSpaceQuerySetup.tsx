@@ -127,9 +127,11 @@ const DataProductQuerySetupSetupPanelContent = observer(
     useEffect(() => dataSpaceSearchRef.current?.focus());
 
     useEffect(() => {
-      flowResult(queryBuilderState.productSelectorState.loadProducts()).catch(
-        applicationStore.alertUnhandledError,
-      );
+      if (!queryBuilderState.productSelectorState.isCompletelyLoaded) {
+        flowResult(queryBuilderState.productSelectorState.loadProducts()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
     }, [queryBuilderState, applicationStore]);
 
     return (
