@@ -27,6 +27,7 @@ import { LineageModel, type IngestDefinition } from '@finos/legend-graph';
 import {
   DocumentationEntry,
   guaranteeNonNullable,
+  type LogService,
   type PlainObject,
 } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
@@ -1409,22 +1410,22 @@ describe('The Definition tab of a definition whose views call user-defined funct
       'A view whose functions fail to load says it has no flow yet, as before Studio read them, and logs why',
     ),
     async () => {
-      const { editorStore, editorGroup } = await setUpWithFunctions((store) => {
-        jest.spyOn(store.applicationStore.logService, 'warn');
+      let warn: jest.SpiedFunction<LogService['warn']> | undefined;
+      const { editorGroup } = await setUpWithFunctions((store) => {
+        warn = jest.spyOn(store.applicationStore.logService, 'warn');
         jest
           .spyOn(store.graphManagerState.graphManager, 'elementToEntity')
           .mockImplementation(() => {
             throw new Error('No protocol for this function');
           });
       });
-      const warn = jest.mocked(editorStore.applicationStore.logService.warn);
       const panel = getViewPanel(editorGroup, 'ACTIVE_BY_REGION');
       await within(panel).findByText(/^No flow for this view yet:/u);
       expect(
         within(panel).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
       ).toBeNull();
       await waitFor(() =>
-        expect(warn).toHaveBeenCalledWith(
+        expect(guaranteeNonNullable(warn)).toHaveBeenCalledWith(
           expect.anything(),
           expect.stringContaining(
             "Unable to load the functions of materialized view 'ACTIVE_BY_REGION'",
