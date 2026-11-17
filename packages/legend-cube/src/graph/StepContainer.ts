@@ -32,7 +32,7 @@ export interface StepContainer {
   readonly folded: boolean;
   /**
    * The container it is drawn inside, e.g. the call of a user-defined
-   * function whose body calls another (PLAN §11.32): only a
+   * function whose body calls another (PLAN §11.33): only a
    * definition's flow nests containers; a cube's own never do
    */
   readonly parentId?: string | undefined;
@@ -100,7 +100,7 @@ export const isConnectedStepSet = (
 ): boolean => getStepBlocks(query, steps).length === 1;
 
 /**
- * Containers drawn inside others (PLAN §11.32): the innermost
+ * Containers drawn inside others (PLAN §11.33): the innermost
  * takes a step two list, and a container is drawn when its steps and the
  * steps of the containers inside it are one block; one with a parent not
  * drawn isn't drawn. In the order saved.

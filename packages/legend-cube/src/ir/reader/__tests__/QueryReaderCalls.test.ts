@@ -39,7 +39,7 @@ import {
   type CubeQueryReadOptions,
 } from '../QueryReader.js';
 
-// A call the host reads as one step (PLAN §11.32): e.g. a user-defined
+// A call the host reads as one step (PLAN §11.33): e.g. a user-defined
 // function a definition's flow can't open, drawn as one box, whose relations
 // are its inputs
 
