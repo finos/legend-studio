@@ -5556,6 +5556,17 @@ describe('DataProductViewer', () => {
           'Function shop::orders::activeOrders',
         );
         expect(jsonToGrammarModel).toHaveBeenCalledTimes(1);
+        // the function's element, through the graph manager's protocol
+        expect(jsonToGrammarModel.mock.calls[0]?.[0]).toMatchObject({
+          _type: 'data',
+          elements: [
+            {
+              _type: 'function',
+              package: 'shop::orders',
+              name: 'activeOrders__Relation_1_',
+            },
+          ],
+        });
         expect(
           panel.querySelector('.data-product__viewer__code-box'),
         ).not.toBeNull();
