@@ -48,6 +48,7 @@ import { generatePathForDataProductSearchResult } from '../../utils/SearchUtils.
 import { logClickingDataProductCard } from '../../utils/LogUtils.js';
 import { LakehouseProductCard } from '../../components/LakehouseProductCard/LakehouseProductCard.js';
 import type { HomePageBannerConfig } from '../../application/LegendMarketplaceApplicationPlugin.js';
+import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 
 const TRENDING_DATA_PRODUCTS = 4;
 
@@ -63,8 +64,10 @@ export const MarketplaceLakehouseHome = observer(() => {
     Record<string, ProductCardState[]>
   >({});
   const [loading, setLoading] = useState(false);
-  const [dismissedBannerIds, setDismissedBannerIds] = useState<Set<string>>(
-    new Set(),
+  const [dismissedBannerIds, setDismissedBannerIds] = useState<string[]>(() =>
+    LegendMarketplaceUserDataHelper.homePage_getDismissedBannerIds(
+      applicationStore.userDataService,
+    ),
   );
 
   const bannerConfigs: HomePageBannerConfig[] = useMemo(
@@ -81,11 +84,16 @@ export const MarketplaceLakehouseHome = observer(() => {
   );
 
   const visibleBanners = bannerConfigs.filter(
-    (banner) => !dismissedBannerIds.has(banner.id),
+    (banner) => !dismissedBannerIds.includes(banner.id),
   );
 
   const dismissBanner = (bannerId: string): void => {
-    setDismissedBannerIds((prev) => new Set([...prev, bannerId]));
+    setDismissedBannerIds(
+      LegendMarketplaceUserDataHelper.homePage_addDismissedBannerId(
+        applicationStore.userDataService,
+        bannerId,
+      ),
+    );
     LegendMarketplaceTelemetryHelper.logEvent_DismissHomePageBanner(
       applicationStore.telemetryService,
       bannerId,

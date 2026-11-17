@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { expect, jest, test } from '@jest/globals';
+import { beforeEach, expect, jest, test } from '@jest/globals';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
@@ -22,6 +22,7 @@ import {
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { TestLegendMarketplaceApplicationPlugin } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import type { HomePageBannerConfig } from '../../application/LegendMarketplaceApplicationPlugin.js';
+import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 import { createSpy } from '@finos/legend-shared/test';
 import type { TrendingDataProductEntry } from '@finos/legend-server-marketplace';
 
@@ -30,6 +31,11 @@ jest.mock('react-oidc-context', () => {
     MOCK__reactOIDCContext: unknown;
   }>('@finos/legend-shared/test');
   return MOCK__reactOIDCContext;
+});
+
+// Closed banners are kept in local storage, which outlives a single test.
+beforeEach(() => {
+  window.localStorage.clear();
 });
 
 const setupTestComponent = async () => {
@@ -167,16 +173,37 @@ test('does not render banners when no plugins provide banner configs', async () 
   expect(screen.queryByTitle('Dismiss banner')).toBeNull();
 });
 
+const TEST_BANNER: HomePageBannerConfig = {
+  id: 'test-banner',
+  content: <span>Test banner content</span>,
+};
+
 class TestBannerPlugin extends TestLegendMarketplaceApplicationPlugin {
+  readonly banners: HomePageBannerConfig[];
+
+  constructor(banners: HomePageBannerConfig[] = [TEST_BANNER]) {
+    super();
+    this.banners = banners;
+  }
+
   override getExtraHomePageBannerConfigs(): HomePageBannerConfig[] {
-    return [
-      {
-        id: 'test-banner',
-        content: <span>Test banner content</span>,
-      },
-    ];
+    return this.banners;
   }
 }
+
+/**
+ * Renders the home page with the given banners and waits for it, so that a banner
+ * missing afterwards is hidden rather than not rendered yet.
+ */
+const setUpHomePageWithBanners = async (banners?: HomePageBannerConfig[]) => {
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
+    extraPlugins: [new TestBannerPlugin(banners)],
+  });
+  const { renderResult } =
+    await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
+  await screen.findByPlaceholderText('Which data can I help you find?');
+  return { MOCK__baseStore, renderResult };
+};
 
 test('renders banner from plugin and dismisses on close click', async () => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
@@ -196,6 +223,39 @@ test('renders banner from plugin and dismisses on close click', async () => {
     expect(screen.queryByText('Test banner content')).toBeNull();
     expect(screen.queryByTitle('Dismiss banner')).toBeNull();
   });
+});
+
+test('keeps a closed banner closed when the home page is loaded again', async () => {
+  const { MOCK__baseStore, renderResult } = await setUpHomePageWithBanners();
+  fireEvent.click(screen.getByTitle('Dismiss banner'));
+  await waitFor(() =>
+    expect(screen.queryByText('Test banner content')).toBeNull(),
+  );
+  expect(
+    LegendMarketplaceUserDataHelper.homePage_getDismissedBannerIds(
+      MOCK__baseStore.applicationStore.userDataService,
+    ),
+  ).toEqual(['test-banner']);
+  renderResult.unmount();
+
+  // a new store reads what the browser kept, as it does after a reload
+  await setUpHomePageWithBanners();
+  expect(screen.queryByText('Test banner content')).toBeNull();
+  expect(screen.queryByTitle('Dismiss banner')).toBeNull();
+});
+
+test('shows a banner with a new id after an earlier banner was closed', async () => {
+  const { renderResult } = await setUpHomePageWithBanners();
+  fireEvent.click(screen.getByTitle('Dismiss banner'));
+  renderResult.unmount();
+
+  await setUpHomePageWithBanners([
+    TEST_BANNER,
+    { id: 'test-banner-v2', content: <span>Updated test banner content</span> },
+  ]);
+  expect(screen.queryByText('Test banner content')).toBeNull();
+  expect(screen.getByText('Updated test banner content')).toBeDefined();
+  expect(screen.getAllByTitle('Dismiss banner')).toHaveLength(1);
 });
 
 const makeTrendingEntry = (

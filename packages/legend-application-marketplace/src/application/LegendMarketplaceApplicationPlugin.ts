@@ -36,7 +36,10 @@ export interface AdditionalMarketplacePageConfig {
 }
 
 export interface HomePageBannerConfig {
-  /** Unique identifier for this banner, used for dismiss tracking */
+  /**
+   * Unique, stable identifier for this banner. The host remembers the banners a
+   * user closed by this id, so give the banner a new id to show it to everyone again.
+   */
   id: string;
   /** Inner content of the banner rendered by the plugin */
   content: React.ReactNode;
@@ -136,6 +139,10 @@ export abstract class LegendMarketplaceApplicationPlugin
   /**
    * Returns banner configurations to display at the top of the marketplace home page.
    * Each banner is rendered in a dismissible container managed by the host.
+   *
+   * A banner the user closes stays closed in that browser on later visits: the host
+   * remembers its `id`. Keep a banner's `id` the same for as long as it should stay
+   * closed, and use a new `id` to show changed content again.
    */
   getExtraHomePageBannerConfigs?(
     marketplaceBaseStore: LegendMarketplaceBaseStore,
