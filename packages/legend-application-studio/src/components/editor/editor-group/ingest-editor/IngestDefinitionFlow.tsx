@@ -875,7 +875,8 @@ export const IngestDefinitionFlow = observer(
   (props: { editorState: IngestDefinitionEditorState }) => {
     const { editorState } = props;
     const flowState = editorState.definitionFlowState;
-    const { selectedView, shownDataSet, specification, dataSets } = flowState;
+    const { selectedView, shownDataSet, specification, dataSets, entry } =
+      flowState;
     const { applicationStore } = editorState.editorStore;
     const hasViews = flowState.materializedViews.length > 0;
     useEffect(() => {
@@ -885,6 +886,15 @@ export const IngestDefinitionFlow = observer(
         );
       }
     }, [flowState, applicationStore, hasViews]);
+    // the functions the views call, once Cube's code is in: again each time
+    // the Overview shows, or its views change
+    useEffect(() => {
+      if (hasViews && entry && specification) {
+        flowResult(flowState.loadViewFunctions()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      }
+    }, [flowState, applicationStore, hasViews, entry, specification]);
     return (
       <div className="ingest-definition-overview">
         {specification && (

@@ -27,6 +27,7 @@ import { LineageModel, type IngestDefinition } from '@finos/legend-graph';
 import {
   DocumentationEntry,
   guaranteeNonNullable,
+  type LogService,
   type PlainObject,
 } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
@@ -43,6 +44,11 @@ import type { EditorStore } from '../../../../../stores/editor/EditorStore.js';
 import { IngestDefinitionEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import { IngestDefinitionFlowState } from '../../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionFlowState.js';
 import TEST_DATA from './TEST_DATA__IngestDefinitionFlow.json' with { type: 'json' };
+import {
+  TEST__CUBE_DEFINITION_FUNCTION_DEPENDENCY,
+  TEST__setUpEditorWithCubeDefinitionFunctions,
+  TEST_DATA__CubeDefinitionFunctions,
+} from '../../../__test-utils__/CubeDefinitionFunctionTestUtils.js';
 
 // the Pure of the whole definition, or of one view, shows what it is given
 jest.mock('@finos/legend-lego/code-editor', () => ({
@@ -1323,6 +1329,141 @@ describe("The Definition tab of a definition with a view of a data set's batch m
       expect(views).toContain('POSITIONS_BY_LEGAL_ENTITY,');
       expect(views).toContain('EOD_POSITIONS_BATCHES (batch metadata)');
       expect(views).toContain('POSITIONS_WITH_BATCH (rows and batch metadata)');
+    },
+  );
+});
+
+describe('The Definition tab of a definition whose views call user-defined functions', () => {
+  const ORDERS_INGEST_PATH =
+    TEST_DATA__CubeDefinitionFunctions.ingestDefinition;
+
+  /** The definition, its views calling a function of the project and one of a dependency */
+  const setUpWithFunctions = async (
+    beforeOpen?: (editorStore: EditorStore) => void,
+  ): Promise<{ editorStore: EditorStore; editorGroup: HTMLElement }> => {
+    const editorStore = TEST__provideMockedEditorStore();
+    const renderResult =
+      await TEST__setUpEditorWithCubeDefinitionFunctions(editorStore);
+    jest
+      .spyOn(editorStore.graphManagerState.graphManager, 'entitiesToPureCode')
+      .mockResolvedValue(`###Ingest IngestDefinition ${ORDERS_INGEST_PATH} {}`);
+    await act(async () => {
+      beforeOpen?.(editorStore);
+      await TEST__openElementFromExplorerTree(ORDERS_INGEST_PATH, renderResult);
+    });
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+    return { editorStore, editorGroup };
+  };
+
+  /** The frame of the opened call drawn in the view's flow */
+  const getCallFrame = (panel: HTMLElement): HTMLElement =>
+    within(panel).getByTestId(LEGEND_CUBE_TEST_ID.CANVAS_CONTAINER);
+
+  test(
+    integrationTest(
+      "Opens a call of the project's own function into a container of its body's steps, the function read from the graph, and one of a dependency's, saying its project",
+    ),
+    async () => {
+      const { editorGroup } = await setUpWithFunctions();
+
+      // activeOrders(): its body's data set and filter in the container,
+      // the view's group after it
+      const panel = getViewPanel(editorGroup, 'ACTIVE_BY_REGION');
+      await findFlowNodes(panel, 3);
+      const frame = getCallFrame(panel);
+      expect(frame.textContent).toContain('activeOrders()');
+      // the project's own: no project said
+      expect(
+        within(frame).queryByTitle(
+          `From ${TEST__CUBE_DEFINITION_FUNCTION_DEPENDENCY}`,
+        ),
+      ).toBeNull();
+      // its body's data set typed by the definition: every step checked
+      expect(within(panel).queryByText(/aren't known/u)).toBeNull();
+      await waitFor(() =>
+        expect(getViewRows(editorGroup)).toEqual([
+          'ACTIVE_BY_REGION | 3 steps',
+          'OPEN_ORDERS | 3 steps',
+          'ORDERS | 6 columns',
+        ]),
+      );
+
+      // onlyOpen(…), the dependency's, takes the data set read before it
+      await pick(editorGroup, 'OPEN_ORDERS');
+      const openPanel = getViewPanel(editorGroup, 'OPEN_ORDERS');
+      await findFlowNodes(openPanel, 3);
+      const openFrame = getCallFrame(openPanel);
+      expect(openFrame.textContent).toContain('onlyOpen()');
+      expect(
+        within(openFrame).getByTitle(
+          `From ${TEST__CUBE_DEFINITION_FUNCTION_DEPENDENCY}`,
+        ).textContent,
+      ).toBe(TEST_DATA__CubeDefinitionFunctions.dependency.artifactId);
+      expect(within(openPanel).queryByText(/aren't known/u)).toBeNull();
+    },
+  );
+
+  test(
+    integrationTest(
+      'A view whose functions fail to load says it has no flow yet, as before Studio read them, and logs why',
+    ),
+    async () => {
+      let warn: jest.SpiedFunction<LogService['warn']> | undefined;
+      const { editorGroup } = await setUpWithFunctions((store) => {
+        warn = jest.spyOn(store.applicationStore.logService, 'warn');
+        jest
+          .spyOn(store.graphManagerState.graphManager, 'elementToEntity')
+          .mockImplementation(() => {
+            throw new Error('No protocol for this function');
+          });
+      });
+      const panel = getViewPanel(editorGroup, 'ACTIVE_BY_REGION');
+      await within(panel).findByText(/^No flow for this view yet:/u);
+      expect(
+        within(panel).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
+      ).toBeNull();
+      await waitFor(() =>
+        expect(guaranteeNonNullable(warn)).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.stringContaining(
+            "Unable to load the functions of materialized view 'ACTIVE_BY_REGION'",
+          ),
+        ),
+      );
+    },
+  );
+
+  test(
+    integrationTest(
+      "Doesn't read the functions while the graph is being rebuilt, as when Studio leaves text mode, but once it is built",
+    ),
+    async () => {
+      const { editorStore, editorGroup } = await setUpWithFunctions((store) =>
+        runInAction(() => {
+          store.graphState.isUpdatingGraph = true;
+        }),
+      );
+      const elementToEntity = jest.spyOn(
+        editorStore.graphManagerState.graphManager,
+        'elementToEntity',
+      );
+      const panel = getViewPanel(editorGroup, 'ACTIVE_BY_REGION');
+      await within(panel).findByText('Drawing the flow…');
+      expect(
+        within(panel).queryByTestId(LEGEND_CUBE_TEST_ID.DEFINITION_FLOW),
+      ).toBeNull();
+      expect(elementToEntity).not.toHaveBeenCalled();
+
+      await act(async () => {
+        runInAction(() => {
+          editorStore.graphState.isUpdatingGraph = false;
+        });
+      });
+      await findFlowNodes(panel, 3);
+      expect(getCallFrame(panel).textContent).toContain('activeOrders()');
+      expect(elementToEntity).toHaveBeenCalled();
     },
   );
 });

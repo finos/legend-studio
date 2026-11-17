@@ -15,7 +15,10 @@
  */
 
 import type * as CubeDefinitionFlowEntry from '@finos/legend-cube-builder/definition-flow';
-import type { CubeDefinitionReading } from '@finos/legend-cube-builder/definition-flow';
+import type {
+  CubeDefinitionFunctions,
+  CubeDefinitionReading,
+} from '@finos/legend-cube-builder/definition-flow';
 import {
   extractAnnotatedElementDocumentation,
   getIngestDatasetWriteMode,
@@ -48,12 +51,15 @@ import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import type { IngestDefinitionEditorState } from './IngestDefinitionEditorState.js';
 import { getIngestWriteModeLabel } from './IngestDefinitionSpecificationHelper.js';
+import { createGraphFunctionLoader } from '../../../utils/CubeDefinitionFunctionUtils.js';
 
 // An ingest definition's Overview, read-only: the definition's own settings,
 // then its materialized views and its other data sets. Each view shows as
 // Legend Cube draws it, its function read into steps in the browser, with no
-// engine call, its data sets typed by the ingest definitions of the graph;
-// each data set shows its columns. Cube's code loads the first time a view
+// engine call, its data sets typed by the ingest definitions of the graph,
+// the calls of user-defined functions opened into containers of their
+// bodies' steps, the functions read from the graph; each data set shows its
+// columns. Cube's code loads the first time a view
 // shows, so neither Studio's own load nor an ingest definition without views
 // pays for it. Everything shown is read from the definition's specification
 // (`IngestDefinitionEditorState.specification`), built from its content by
@@ -95,6 +101,14 @@ export enum INGEST_DEFINITION_FLOW_FAILURE {
   READ = 'read',
   /** The canvas failed while drawing the flow */
   DRAW = 'draw',
+}
+
+/** The functions the views' functions call, as Cube loaded them from the graph */
+interface IngestMaterializedViewFunctions {
+  /** The specification whose views call them */
+  readonly specification: IngestDefinitionSpecification;
+  /** By the view's name; none for a view whose functions failed to load */
+  readonly byView: ReadonlyMap<string, CubeDefinitionFunctions | undefined>;
 }
 
 /**
@@ -250,6 +264,8 @@ export class IngestDefinitionFlowState {
   /** Why Cube's definition flow didn't load, if it didn't */
   entryError: Error | undefined;
   readonly loadEntryState = ActionState.create();
+  /** The functions the views' functions call, once loaded (`loadViewFunctions`) */
+  viewFunctions: IngestMaterializedViewFunctions | undefined;
 
   constructor(editorState: IngestDefinitionEditorState) {
     makeObservable(this, {
@@ -261,6 +277,7 @@ export class IngestDefinitionFlowState {
       viewTab: observable,
       entry: observable.ref,
       entryError: observable.ref,
+      viewFunctions: observable.ref,
       specification: computed,
       materializedViews: computed,
       selectedView: computed,
@@ -278,6 +295,7 @@ export class IngestDefinitionFlowState {
       setViewTab: action,
       resetEntry: action,
       loadEntry: flow,
+      loadViewFunctions: flow,
     });
     this.editorState = editorState;
   }
@@ -391,15 +409,21 @@ export class IngestDefinitionFlowState {
 
   /**
    * Each view's function, by the view's name, read by Cube into the steps
-   * of its flow; `undefined` until Cube's code loads. Its data sets are
-   * typed by the ingest definitions of the graph, as the workspace holds
-   * them; one Cube can't type is drawn by its name.
+   * of its flow; `undefined` until Cube's code and the functions the views
+   * call load. Its data sets are typed by the ingest definitions of the
+   * graph, as the workspace holds them; one Cube can't type is drawn by its
+   * name. Each call of a user-defined function opens into a container of
+   * its body's steps; one Cube can't open is drawn as one box.
    */
   get readings():
     | ReadonlyMap<string, IngestMaterializedViewReading>
     | undefined {
-    const entry = this.entry;
-    if (!entry) {
+    const { entry, viewFunctions } = this;
+    if (
+      !entry ||
+      !viewFunctions ||
+      viewFunctions.specification !== this.specification
+    ) {
       return undefined;
     }
     const { graphManager, graph } =
@@ -418,7 +442,10 @@ export class IngestDefinitionFlowState {
                 graphManager.serializeRawValueSpecification(
                   getMaterializedViewFunction(view),
                 ),
-                { getIngestDefinition },
+                {
+                  getIngestDefinition,
+                  functions: viewFunctions.byView.get(view.name),
+                },
               ),
             ];
           } catch (error) {
@@ -487,6 +514,54 @@ export class IngestDefinitionFlowState {
       this.entryError = error;
       this.logFlowFailure(INGEST_DEFINITION_FLOW_FAILURE.LOAD, error);
       this.loadEntryState.fail();
+    }
+  }
+
+  /**
+   * Loads, from the graph, the user-defined functions each view's function
+   * calls, the dependencies' included, as deep as Cube opens calls: again
+   * each time the Overview shows, as a function may have
+   * changed in the meantime. The graph is read once it is fully built, never
+   * text mode's light graph, whose functions have no body.
+   */
+  *loadViewFunctions(): GeneratorFn<void> {
+    const { entry, specification } = this;
+    if (!entry || !specification) {
+      return;
+    }
+    const { editorStore } = this.editorState;
+    const { graphManager } = editorStore.graphManagerState;
+    const load = createGraphFunctionLoader(editorStore);
+    const loaded = (yield Promise.all(
+      this.materializedViews.map(
+        async (
+          view,
+        ): Promise<[string, CubeDefinitionFunctions | undefined]> => {
+          try {
+            return [
+              view.name,
+              await entry.loadCubeDefinitionFunctions(
+                graphManager.serializeRawValueSpecification(
+                  getMaterializedViewFunction(view),
+                ),
+                load,
+              ),
+            ];
+          } catch (error) {
+            assertErrorThrown(error);
+            // its calls are drawn as Cube reads them without functions
+            editorStore.applicationStore.logService.warn(
+              LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERIC_FAILURE),
+              `Unable to load the functions of materialized view '${view.name}' of ingest definition '${this.editorState.ingest.path}': ${error.message}`,
+            );
+            return [view.name, undefined];
+          }
+        },
+      ),
+    )) as [string, CubeDefinitionFunctions | undefined][];
+    // a newer specification loads its own
+    if (specification === this.specification) {
+      this.viewFunctions = { specification, byView: new Map(loaded) };
     }
   }
 
