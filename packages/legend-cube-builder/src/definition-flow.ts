@@ -29,9 +29,22 @@ export {
   readCubeDefinition,
   type CubeDefinitionDataSet,
   type CubeDefinitionFlowReading,
+  CUBE_DEFINITION_CALL_OPEN_STEPS,
+  countCubeDefinitionCallSteps,
+  getCubeDefinitionCallsFoldedAtFirst,
+  type CubeDefinitionFunctionContainer,
+  type CubeDefinitionScalarFunction,
   type CubeDefinitionParameter,
   type CubeDefinitionReading,
   type CubeDefinitionReadOptions,
   type CubeDefinitionRefusal,
   type CubeDefinitionStep,
 } from './graph-manager/CubeDefinitionReader.js';
+// user-defined functions, opened into containers (PLAN §11.33)
+export {
+  CubeDefinitionFunctionClosedReason,
+  CubeDefinitionFunctions,
+  loadCubeDefinitionFunctions,
+  type CubeDefinitionFunctionElement,
+  type CubeDefinitionFunctionLoader,
+} from './graph-manager/CubeDefinitionFunctions.js';

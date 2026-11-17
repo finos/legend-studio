@@ -6115,12 +6115,13 @@ pushed. Evidence: `../legend-studio-cube-functions-evidence/`.
   dependencies); Studio reads its graph.
 - In the editor, the call is one step whose inside is a locked drawing. The Pure and the spec keep the call.
 
-**Steps (USER-FUNCTIONS.md §11, one PR each):**
+**Steps (USER-FUNCTIONS.md §11, one PR each, into finos `cube-functions-dev`, the user's choice on 2026-11-14; it
+goes to master once the steps are in):**
 
 | Step | What                                                                        | Status |
 | ---- | --------------------------------------------------------------------------- | ------ |
 | F1   | Core: a call read as one step with inputs; containers that nest (#5910)     | 🚧     |
-| F2   | The flow's reader opens calls: loader, rules, boxes, scalar calls           | ⏳     |
+| F2   | The flow's reader opens calls: loader, rules, boxes, scalar calls (#5911)   | 🚧     |
 | F3   | The flow draws them: frames, nesting, folding, boxes, the ƒ badge           | ⏳     |
 | F4   | Marketplace's viewer: the Depot loader, the read order, the function's Pure | ⏳     |
 | F5   | Studio: the preview and the ingest Overview, from the graph                 | ⏳     |
