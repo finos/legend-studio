@@ -23,6 +23,7 @@ import {
 import type { CubeDefinitionRefusal } from '@finos/legend-cube-builder/definition-flow';
 import { uniq } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
+import { flowResult } from 'mobx';
 import { Component, type ReactNode } from 'react';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
 import {
@@ -309,8 +310,34 @@ export const DataProductAccessPointDefinitionFlow = observer(
     const unknownDataSets = uniq(
       reading.unknownDataSets.map((each) => each.dataSet),
     );
+    // a function drawn as one box whose columns aren't known: the steps after
+    // it aren't checked (PLAN §11.33)
+    const uncheckedCalls = reading.functionCalls.filter(
+      (call) =>
+        !call.opened &&
+        call.declaredColumns === undefined &&
+        reading.query.nodes.some(
+          (node) =>
+            reading.uncheckedStepIds.includes(node.id) &&
+            reading.query
+              .getInputIds(node.id)
+              .some((input) => call.stepIds.includes(input ?? '')),
+        ),
+    );
     return (
       <>
+        {uncheckedCalls.length > 0 && (
+          <div
+            className="data-product__viewer__definition__note data-product__viewer__definition__note--warning"
+            role="note"
+          >
+            {`${listNames(uncheckedCalls.map((call) => `${call.shortName}()`))} ${
+              uncheckedCalls.length === 1 ? 'is' : 'are'
+            } shown as one step, with no columns known, so the steps after ${
+              uncheckedCalls.length === 1 ? 'it' : 'them'
+            } aren't checked.`}
+          </div>
+        )}
         {unknownDataSets.length > 0 && (
           <div
             className="data-product__viewer__definition__note data-product__viewer__definition__note--warning"
@@ -343,6 +370,12 @@ export const DataProductAccessPointDefinitionFlow = observer(
           <div className="data-product__viewer__definition-flow">
             <entry.CubeDefinitionFlow
               flow={reading}
+              onShowFunction={(call) => {
+                flowResult(accessPointState.showFunction(call)).catch(
+                  accessPointState.apgState.applicationStore
+                    .alertUnhandledError,
+                );
+              }}
               colorMode={
                 layoutService.TEMPORARY__isLightColorThemeEnabled
                   ? 'light'

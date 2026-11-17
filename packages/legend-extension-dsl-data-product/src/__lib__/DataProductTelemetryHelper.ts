@@ -319,7 +319,10 @@ export class DataProductTelemetryHelper {
   /**
    * An access point's definition, read by Legend Cube, opened as its flow:
    * how many steps it has, the data sets whose columns couldn't be loaded,
-   * and how long it took from opening the definition
+   * how long it took from opening the definition, and the calls of
+   * user-defined functions in it (PLAN §11.33): how many Cube opened into
+   * containers, how many it drew as one box, by why, how many steps call
+   * one in an expression, and whether the functions couldn't be loaded
    */
   static logEvent_ShowAccessPointDefinitionFlow(
     telemetryService: TelemetryService,
@@ -328,6 +331,10 @@ export class DataProductTelemetryHelper {
       steps: number;
       unknownDataSets: string[];
       durationMs: number;
+      functionCallsOpened: number;
+      functionCallsClosed: Record<string, number>;
+      scalarFunctionSteps: number;
+      functionsUnloaded: boolean;
     },
   ): void {
     this.updateEventId();
