@@ -155,3 +155,89 @@ test(
     ]);
   },
 );
+
+/** A function element returning a relation, whose body reads one ingest data set */
+const functionReading = (
+  pkg: string,
+  name: string,
+  parameterTypes: string[],
+  dataSet: string,
+): PlainObject => {
+  const suffix = `_${parameterTypes.map((type) => `${type}_1_`).join('_')}_Relation_1_`;
+  return {
+    path: `${pkg}::${name}${suffix}`,
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+    content: {
+      _type: 'function',
+      package: pkg,
+      name: `${name}${suffix}`,
+      parameters: parameterTypes.map((type, index) => ({
+        _type: 'var',
+        name: `p${index}`,
+        genericType: { rawType: { _type: 'packageableType', fullPath: type } },
+        multiplicity: { lowerBound: 1, upperBound: 1 },
+      })),
+      returnGenericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'meta::pure::metamodel::relation::Relation',
+        },
+        typeArguments: [
+          {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'meta::pure::metamodel::type::Any',
+            },
+          },
+        ],
+      },
+      returnMultiplicity: { lowerBound: 1, upperBound: 1 },
+      body: [accessor(['demo::TradesIngest', dataSet])],
+      preConstraints: [],
+      postConstraints: [],
+      stereotypes: [],
+      taggedValues: [],
+      tests: [],
+    },
+  };
+};
+
+test(
+  unitTest(
+    'The ingest data sets a called function reads: the function of that exact name, taking as many values',
+  ),
+  async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(graphManagerState, [
+      // a longer name that starts like the one called, listed first
+      functionReading('demo', 'orders_above', ['Float'], 'ABOVE'),
+      functionReading('demo', 'orders', [], 'ORDERS'),
+      // overloads: one taking a value, one taking none
+      functionReading('demo', 'byDesk', ['String'], 'ONE_DESK'),
+      functionReading('demo', 'byDesk', [], 'ALL_DESKS'),
+    ] as never[]);
+    const { graphManager, graph } = graphManagerState;
+    const read = (call: PlainObject): string[] =>
+      graphManager
+        .getIngestDatasetsReadByRawLambda(new RawLambda([], [call]), graph)
+        .map((reference) => reference.datasetName);
+    expect(
+      read({ _type: 'func', function: 'demo::orders', parameters: [] }),
+    ).toEqual(['ORDERS']);
+    expect(
+      read({
+        _type: 'func',
+        function: 'demo::byDesk',
+        parameters: [{ _type: 'string', value: 'EMEA' }],
+      }),
+    ).toEqual(['ONE_DESK']);
+    expect(
+      read({ _type: 'func', function: 'demo::byDesk', parameters: [] }),
+    ).toEqual(['ALL_DESKS']);
+    // a function the graph doesn't have is followed nowhere
+    expect(
+      read({ _type: 'func', function: 'demo::order', parameters: [] }),
+    ).toEqual([]);
+  },
+);
