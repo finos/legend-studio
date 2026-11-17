@@ -16,17 +16,39 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { runCubeStoreContract } from '../__test-utils__/CubeStoreContract.js';
-import { InMemoryCubeStore } from '../__test-utils__/InMemoryCubeStore.js';
 import {
+  InMemoryCubeStore,
+  TEST_CUBE_DEPLOYMENT,
+} from '../__test-utils__/InMemoryCubeStore.js';
+import {
+  CubeDeploymentOwnership,
   CubeDraft,
   CubeStoreError,
   CubeStoreErrorKind,
 } from '../graph-manager/CubeStore.js';
 
-runCubeStoreContract('in memory', () => {
+runCubeStoreContract('in memory, without deployments checked', () => {
   const store = new InMemoryCubeStore('alice');
-  return { store, user: 'alice', otherUser: store.asUser('bob') };
+  return {
+    store,
+    user: 'alice',
+    otherUser: store.asUser('bob'),
+    deployment: TEST_CUBE_DEPLOYMENT,
+  };
 });
+
+runCubeStoreContract('in memory, with deployments checked', () => {
+  const store = new InMemoryCubeStore('alice');
+  store.setDeploymentMembers(TEST_CUBE_DEPLOYMENT, ['alice']);
+  return {
+    store,
+    user: 'alice',
+    otherUser: store.asUser('bob'),
+    deployment: TEST_CUBE_DEPLOYMENT,
+  };
+});
+
+const owned = new CubeDeploymentOwnership(TEST_CUBE_DEPLOYMENT);
 
 const draft = (name: string): CubeDraft =>
   new CubeDraft(name, 1, `{"formatVersion":1,"name":"${name}"}`, []);
@@ -34,7 +56,7 @@ const draft = (name: string): CubeDraft =>
 describe('The in-memory Cube store', () => {
   test("Refuses with the engine's messages", async () => {
     const store = new InMemoryCubeStore('alice');
-    const created = await store.createCube(draft('A'));
+    const created = await store.createCube(draft('A'), owned);
     await store.saveCube(created.id, 1, draft('B'));
     await expect(store.saveCube(created.id, 1, draft('C'))).rejects.toThrow(
       `Cannot change version 1 of cube 'cube-1': its current version is 2.`,
@@ -42,7 +64,7 @@ describe('The in-memory Cube store', () => {
     await expect(
       store.asUser('bob').saveCube(created.id, 2, draft('C')),
     ).rejects.toThrow(
-      'Only current owners can change this cube. Current owners are alice.',
+      "Only this cube's creator, alice, can change it: this engine can't check who belongs to deployment 1234, which owns it.",
     );
     await expect(store.getCube('nope')).rejects.toThrow(
       `Can't find cube 'nope'`,
@@ -53,21 +75,50 @@ describe('The in-memory Cube store', () => {
     ]);
   });
 
-  test('Lists the latest saved first, by owner, at most the limit', async () => {
+  test('Checks deployments once told their members, as an engine with a verifier', async () => {
     const store = new InMemoryCubeStore('alice');
-    await store.createCube(draft('First'));
-    await store.asUser('bob').createCube(draft('Second'));
-    await store.createCube(draft('Third'));
+    store.setDeploymentMembers(TEST_CUBE_DEPLOYMENT, ['alice', 'bob']);
+    await expect(
+      store.asUser('carol').createCube(draft('A'), owned),
+    ).rejects.toThrow(
+      "A cube can only be given to a deployment you are a member of, and you aren't a member of deployment 1234.",
+    );
+    const created = await store.createCube(draft('A'), owned);
+    // any member saves it, not only its creator
+    expect(
+      (await store.asUser('bob').saveCube(created.id, 1, draft('B'))).updatedBy,
+    ).toBe('bob');
+    await expect(
+      store.asUser('carol').deleteCube(created.id, 2),
+    ).rejects.toThrow(
+      'Only members of deployment 1234, which owns this cube, can change it.',
+    );
+  });
+
+  test('Lists the latest saved first, by deployment or creator, at most the limit', async () => {
+    const store = new InMemoryCubeStore('alice');
+    await store.createCube(draft('First'), owned);
+    await store
+      .asUser('bob')
+      .createCube(draft('Second'), new CubeDeploymentOwnership('Rates.EU'));
+    await store.createCube(draft('Third'), owned);
     expect((await store.searchCubes({})).map((cube) => cube.name)).toEqual([
       'Third',
       'Second',
       'First',
     ]);
     expect(
-      (await store.searchCubes({ owner: 'bob' })).map((cube) => cube.name),
+      (await store.searchCubes({ deployment: 'Rates.EU' })).map(
+        (cube) => cube.name,
+      ),
     ).toEqual(['Second']);
     expect(
-      (await store.searchCubes({ searchTerm: 'BOB' })).map((cube) => cube.name),
+      (await store.searchCubes({ creator: 'alice' })).map((cube) => cube.name),
+    ).toEqual(['Third', 'First']);
+    expect(
+      (await store.searchCubes({ searchTerm: 'rates.' })).map(
+        (cube) => cube.name,
+      ),
     ).toEqual(['Second']);
     expect(await store.searchCubes({ limit: 1 })).toHaveLength(1);
   });
@@ -89,7 +140,7 @@ describe('The in-memory Cube store', () => {
 
     store.hold();
     let answered = false;
-    const pending = store.createCube(draft('Held')).then(() => {
+    const pending = store.createCube(draft('Held'), owned).then(() => {
       answered = true;
     });
     await Promise.resolve();

@@ -40,15 +40,16 @@ import {
 import {
   CUBE_PERSISTENCE_PENDING_LABEL,
   EMPTY_CUBE_SAVE_TITLE,
+  getCubeDeploymentError,
   getCubeNameError,
   getInvalidCubeSaveTitle,
   NO_CUBE_STORE_TITLE,
-  NOT_OWNER_SAVE_TITLE,
   PENDING_SAVE_TITLE,
   UNSAVED_CHANGES_MESSAGE,
 } from '../__lib__/LegendCubePersistenceLabels.js';
 import { getCubeSourceRefs } from '../graph-manager/CubeSourceRefs.js';
 import {
+  CubeDeploymentOwnership,
   CubeDraft,
   type CubeStore,
   type SavedCube,
@@ -104,13 +105,18 @@ export interface CubeConfirmation {
   readonly action: () => void;
 }
 
-/** The Save dialog: a name, for a new cube or a copy (Save as); a failed save says why there */
+/**
+ * The Save dialog: a name and the deployment that will own the cube, for a
+ * new cube or a copy (Save as); a failed save says why there
+ */
 export class CubeSaveDialogState {
   readonly persistence: CubePersistenceState;
 
   isOpen = false;
   /** A new cube, whatever is shown: Save as, or the first save */
   name = '';
+  /** The identifier of the deployment that will own it */
+  deployment = '';
   /** Why the last save failed: a conflict or a refusal offers Save as here */
   error: string | undefined;
 
@@ -118,11 +124,14 @@ export class CubeSaveDialogState {
     makeObservable(this, {
       isOpen: observable,
       name: observable,
+      deployment: observable,
       error: observable,
       nameError: computed,
+      deploymentError: computed,
       open: action,
       close: action,
       setName: action,
+      setDeployment: action,
     });
     this.persistence = persistence;
   }
@@ -131,9 +140,19 @@ export class CubeSaveDialogState {
     return getCubeNameError(this.name);
   }
 
+  get deploymentError(): string | undefined {
+    return getCubeDeploymentError(this.deployment);
+  }
+
+  /** Named as the cube is; owned as the saved cube shown is, else by the deployment the page saved to last */
   open(error?: string): void {
     const { document } = this.persistence.editorState;
-    this.name = document.name ?? this.persistence.savedCube?.name ?? '';
+    const { savedCube, lastDeployment } = this.persistence;
+    this.name = document.name ?? savedCube?.name ?? '';
+    this.deployment =
+      savedCube?.ownership instanceof CubeDeploymentOwnership
+        ? savedCube.ownership.identifier
+        : (lastDeployment ?? '');
     this.error = error;
     this.isOpen = true;
   }
@@ -147,21 +166,32 @@ export class CubeSaveDialogState {
     this.name = name;
   }
 
-  /** Saves a new cube under the name; stays open, saying why, when the store refuses */
+  setDeployment(deployment: string): void {
+    this.deployment = deployment;
+  }
+
+  /** Saves a new cube under the name, owned by the deployment; stays open, saying why, when the store refuses */
   async confirm(): Promise<void> {
-    if (this.nameError || this.persistence.isPending) {
+    if (this.nameError || this.deploymentError || this.persistence.isPending) {
       return;
     }
-    await flowResult(this.persistence.createCube(this.name.trim()));
+    await flowResult(
+      this.persistence.createCube(this.name.trim(), this.deployment.trim()),
+    );
   }
 }
 
-/** The Load dialog: the store's search over id, name and owners (spec §14.4), and Delete on each cube the viewer owns */
+/**
+ * The Load dialog: the store's search over id, name and the owning
+ * deployment (spec §14.4), and Delete on each cube, which the store allows
+ * or refuses
+ */
 export class CubeLoadDialogState {
   readonly persistence: CubePersistenceState;
 
   isOpen = false;
   searchText = '';
+  /** Only the cubes the viewer created */
   onlyMine = false;
   results: readonly SavedCubeSummary[] | undefined;
   isSearching = false;
@@ -249,7 +279,7 @@ export class CubeLoadDialogState {
     try {
       const results = (yield store.searchCubes({
         searchTerm: this.searchText.trim() || undefined,
-        owner: this.onlyMine ? currentUser : undefined,
+        creator: this.onlyMine ? currentUser : undefined,
         limit: LOAD_DIALOG_LIMIT,
       })) as readonly SavedCubeSummary[];
       if (request === this.searchRequest) {
@@ -301,6 +331,8 @@ export class CubePersistenceState {
   /** Why the cube the page's address names couldn't be opened, shown in the graph area (QUESTIONS.md U9 (b)) */
   loadError: string | undefined;
   confirmation: CubeConfirmation | undefined;
+  /** The deployment the page last saved a new cube to, which the Save dialog offers next */
+  lastDeployment: string | undefined;
 
   constructor(editorState: CubeEditorState) {
     makeObservable<CubePersistenceState, 'known' | 'remember'>(this, {
@@ -310,6 +342,7 @@ export class CubePersistenceState {
       isOpeningFromAddress: observable,
       loadError: observable,
       confirmation: observable.ref,
+      lastDeployment: observable,
       saved: computed,
       savedCube: computed,
       halves: computed,
@@ -317,7 +350,6 @@ export class CubePersistenceState {
       isPresentationModified: computed,
       isModified: computed,
       titleDescription: computed,
-      isOwner: computed,
       isPending: computed,
       saveAsDisabledReason: computed,
       saveDisabledReason: computed,
@@ -353,7 +385,7 @@ export class CubePersistenceState {
     return this.editorState.host.store;
   }
 
-  /** The viewer, as the host knows them; undefined leaves ownership to the store */
+  /** The viewer, as the host knows them, whose cubes the Load dialog can list */
   get currentUser(): string | undefined {
     return (
       this.editorState.host.applicationStore.identityService.currentUser ||
@@ -406,7 +438,7 @@ export class CubePersistenceState {
     );
   }
 
-  /** What hovering the cube's name says (spec §17.10): its name, id, version and owners, and what is unsaved */
+  /** What hovering the cube's name says (spec §17.10): its name, id, version and owner, and what is unsaved */
   get titleDescription(): string {
     const cube = this.savedCube;
     const lines = [
@@ -415,7 +447,7 @@ export class CubePersistenceState {
         ? [
             `Id: ${cube.id}`,
             `Version: ${cube.version}`,
-            `Owners: ${cube.owners.join(', ')}`,
+            `Owner: ${cube.ownership.label}`,
           ]
         : ['Not saved yet']),
     ];
@@ -427,13 +459,6 @@ export class CubePersistenceState {
       lines.push(`Unsaved changes to ${unsaved.join(' and ')}`);
     }
     return lines.join('\n');
-  }
-
-  /** The viewer may change the saved cube shown; true when the host doesn't know the viewer */
-  get isOwner(): boolean {
-    const cube = this.savedCube;
-    const user = this.currentUser;
-    return Boolean(cube) && (!user || Boolean(cube?.owners.includes(user)));
   }
 
   get isPending(): boolean {
@@ -486,19 +511,18 @@ export class CubePersistenceState {
     );
   }
 
-  /** As Save as, on a cube the viewer may save over */
+  /** As Save as */
   get isSaveBlockedOnlyByProblems(): boolean {
-    return (
-      this.isSaveAsBlockedOnlyByProblems && (!this.savedCube || this.isOwner)
-    );
+    return this.isSaveAsBlockedOnlyByProblems;
   }
 
-  /** Why Save can't be used: as Save as, and a saved cube must be the viewer's */
+  /**
+   * Why Save can't be used: as Save as. Whether the viewer may save over a
+   * saved cube is the store's to say, as only it knows the deployment's
+   * members: a refusal opens the Save dialog, to save a copy instead
+   */
   get saveDisabledReason(): string | undefined {
-    return (
-      this.saveAsDisabledReason ??
-      (this.savedCube && !this.isOwner ? NOT_OWNER_SAVE_TITLE : undefined)
-    );
+    return this.saveAsDisabledReason;
   }
 
   get loadDisabledReason(): string | undefined {
@@ -516,9 +540,6 @@ export class CubePersistenceState {
     }
     if (!this.savedCube) {
       return 'This cube has not been saved.';
-    }
-    if (!this.isOwner) {
-      return "Only this cube's owners can delete it.";
     }
     return this.isPending ? PENDING_SAVE_TITLE : undefined;
   }
@@ -611,7 +632,7 @@ export class CubePersistenceState {
     }
   }
 
-  /** Save as: a new cube, the viewer its owner */
+  /** Save as: a new cube, owned by the deployment the viewer gives */
   saveAs(): void {
     if (this.saveAsDisabledReason === undefined) {
       this.saveDialog.open();
@@ -630,7 +651,7 @@ export class CubePersistenceState {
 
   /**
    * Saves the saved cube shown over the version the page knows; a version
-   * saved since, or a cube the viewer doesn't own, opens the Save dialog
+   * saved since, or a cube the viewer may not change, opens the Save dialog
    * saying why, to save a copy instead. Edits made meanwhile stay modified.
    */
   *saveCube(): GeneratorFn<void> {
@@ -663,8 +684,8 @@ export class CubePersistenceState {
     }
   }
 
-  /** Saves the cube as a new one under the name, which the cube takes; answers whether it was saved */
-  *createCube(name: string): GeneratorFn<boolean> {
+  /** Saves the cube as a new one under the name, which the cube takes, owned by the deployment; answers whether it was saved */
+  *createCube(name: string, deployment: string): GeneratorFn<boolean> {
     const store = this.store;
     if (!store || this.saveAsDisabledReason !== undefined) {
       return false;
@@ -678,9 +699,11 @@ export class CubePersistenceState {
     try {
       const cube = (yield store.createCube(
         this.buildDraft(document, name),
+        new CubeDeploymentOwnership(deployment),
       )) as SavedCube;
       this.remember(cube, document);
       this.currentId = cube.id;
+      this.lastDeployment = deployment;
       this.saveDialog.close();
       this.editorState.host.applicationStore.notificationService.notifySuccess(
         `Saved ${cube.name}`,

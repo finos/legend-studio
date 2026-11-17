@@ -232,7 +232,9 @@ The engine tests in `src/__tests__/` import `V1_*` classes there, as an exceptio
 - **The engine's store, by hand (`cube-local`):** `src/__tests__/CubeStore.cube-local-test.ts` runs the contract
   against an engine with the Cube store on `localhost:6301`, e.g. one built from legend-engine's Cube store with a
   Mongo (PLAN §11.13, M8.3): `TEST_GROUP=cube-local yarn workspace @finos/legend-cube-builder test CubeStore`. Locally
-  every caller is `anonymous`, so the owners case runs on the in-memory store only. CI's engine image has neither the
+  every caller is `anonymous` and the engine has no ownership verifier, so the case of another user runs on the
+  in-memory store only, with deployments unchecked (only the creator changes a cube) and checked
+  (`setDeploymentMembers`). CI's engine image has neither the
   store nor a Mongo.
 - **Legend Analytics' address.** `LegendAnalyticsWebApplication.test.tsx` opens `/analytics/cube/<id>` and
   `?queryId=<id>` on the real store, which the test environment can't reach: the page shows "Error loading query!" and

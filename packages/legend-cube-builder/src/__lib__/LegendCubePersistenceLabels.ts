@@ -36,8 +36,6 @@ export enum CUBE_PERSISTENCE_PENDING_LABEL {
 export const NO_CUBE_STORE_TITLE =
   "This Legend deployment has no Cube store, so cubes can't be saved or loaded here; use Export and Import";
 export const EMPTY_CUBE_SAVE_TITLE = 'Add a table first.';
-export const NOT_OWNER_SAVE_TITLE =
-  "Only this cube's owners can save it: use Save as to save a copy of your own.";
 export const PENDING_SAVE_TITLE =
   'Wait for the cube to finish saving or loading.';
 export const getInvalidCubeSaveTitle = (problem: string): string =>
@@ -52,7 +50,15 @@ export enum CUBE_PERSISTENCE_SHORTCUT_LABEL {
   PASTE = 'Alt+V',
 }
 
-/** The longest name the store keeps */
+/** The Save dialog's warning while Legend Cube is in beta */
+export const CUBE_SAVE_BETA_WARNING =
+  "Legend Cube is in beta: the shape of a saved cube isn't backward compatible yet, so a cube saved now may not open in a later version of Cube.";
+
+/** What the Save dialog says of the deployment it asks for */
+export const CUBE_DEPLOYMENT_DESCRIPTION =
+  'The deployment that will own the cube, by its identifier, as a service is owned: only its members can save over the cube or delete it.';
+
+/** The longest name, or deployment identifier, the store keeps */
 export const MAX_CUBE_NAME_LENGTH = 255;
 
 export const getCubeNameError = (name: string): string | undefined =>
@@ -60,4 +66,13 @@ export const getCubeNameError = (name: string): string | undefined =>
     ? 'Name the cube.'
     : name.trim().length > MAX_CUBE_NAME_LENGTH
       ? `A name has at most ${MAX_CUBE_NAME_LENGTH} characters.`
+      : undefined;
+
+export const getCubeDeploymentError = (
+  identifier: string,
+): string | undefined =>
+  !identifier.trim()
+    ? 'Give the deployment that will own the cube.'
+    : identifier.trim().length > MAX_CUBE_NAME_LENGTH
+      ? `A deployment identifier has at most ${MAX_CUBE_NAME_LENGTH} characters.`
       : undefined;

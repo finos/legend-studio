@@ -207,3 +207,31 @@ as two new ones; the old hashes remain only in the local backup branch `backup/c
     from `?queryId=` (moved into the path, `x=1` kept), New clearing the address, Undo and Redo moving it back and forth,
     no console errors. Tip: `yarn build:sass` overwrites the Analytics deployment's `lib/tailwind.css` with a raw copy;
     run its `build:tailwindcss` after it.
+- **M8.13** (2026-11-09). The user asked that the Cube store own a cube as a Service is, by a deployment with an
+  identifier rather than a list of users; that a cube have revisions, as a query does; that Studio follow; and that
+  saving warn that saved cubes aren't backward compatible while Cube is in beta. Asked: with no ownership verifier
+  installed, who may change a cube (the creator, recommended and chosen), and whether the page gets a history
+  dialog now (no: the client and the API only).
+  - Engine: `ownership: {_type: 'deploymentOwnership', identifier}` replaces `owners` (`CubeOwnership`,
+    `CubeDeploymentOwnership`); `CubeOwnershipVerifier`, loaded with `ServiceLoader`, says who belongs to a
+    deployment, and without one only the creator changes a cube; a change reads the cube and checks the caller,
+    then updates it filtered on the version read; `GET cube/{id}/history` lists the versions, the latest first,
+    without content; the search's `owner` became `deployment`, and its term matches the deployment's identifier.
+    23 Cube store tests (a verifier's members deciding, the creator without one, the history, the ownership's
+    validation and its stored shape); the module's 150 tests pass on JDK 17 against 5.0.6, with
+    `TestQueryStoreManager.testGetQueriesWithSortBy`, an upstream flake, left out; 0 checkstyle violations.
+  - Studio: `CubeOwnership` and `CubeDeploymentOwnership` in the port, `createCube(draft, ownership)`,
+    `getCubeHistory` and `getCubeVersion`, `deployment` and `creator` in a search; the V1 client reads and writes the
+    ownership with its `_type`, and refuses an answer without one it knows. The Save dialog asks for the owner
+    deployment (the open cube's for Save as, else the one the page saved to last) and shows the beta warning. Save
+    and Delete are no longer disabled for another user's cube, since only the store knows a deployment's members: a
+    refused save opens the Save dialog to save a copy. "Only mine" became "Created by me". The in-memory store
+    refuses as the engine does, and checks deployments once a test sets their members; the contract runs on it both
+    ways.
+- **M8.14** (2026-11-16). The user asked that both branches be rebased with master. `cube-dev` had been merged into
+  master (#5861, 2026-11-10), so the Studio branch's five commits (M8.13's included) were replayed with
+  `git rebase --onto upstream/master upstream/cube-dev` onto master `3530a77f2`, and #5679 was retargeted from
+  `cube-dev` to master. One conflict: master exports `readCubeIngestDataSets` from `CubeProtocolJson.js`, so the
+  builder's index keeps only M8's `buildCubeStore` in the engine builder's list. The engine branch, M8.13's commit
+  added, rebased onto master `b1f08381bab` without conflicts; on JDK 17 against the released 5.3.1 modules its 150
+  tests and checkstyle pass.

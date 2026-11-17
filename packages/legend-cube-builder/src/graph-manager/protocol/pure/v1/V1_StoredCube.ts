@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-import { SerializationFactory } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  SerializationFactory,
+  usingConstantValueSchema,
+} from '@finos/legend-shared';
 import {
   createModelSchema,
+  custom,
   list,
   object,
   optional,
   primitive,
+  SKIP,
 } from 'serializr';
 
 // The engine Cube store's JSON (`pure/v1/query/cube`, PLAN §11.13), as the
@@ -43,6 +49,36 @@ export class V1_CubeSourceRef {
   );
 }
 
+export enum V1_CubeOwnershipType {
+  DEPLOYMENT = 'deploymentOwnership',
+}
+
+/** Who owns a saved cube, written as a Service's ownership is */
+export abstract class V1_CubeOwnership {}
+
+export class V1_CubeDeploymentOwnership extends V1_CubeOwnership {
+  identifier!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_CubeDeploymentOwnership, {
+      _type: usingConstantValueSchema(V1_CubeOwnershipType.DEPLOYMENT),
+      identifier: primitive(),
+    }),
+  );
+}
+
+/** An ownership of a kind this page doesn't know is left out, and the cube read as having none */
+const V1_cubeOwnershipSchema = custom(
+  (ownership: V1_CubeOwnership | undefined) =>
+    ownership instanceof V1_CubeDeploymentOwnership
+      ? V1_CubeDeploymentOwnership.serialization.toJson(ownership)
+      : SKIP,
+  (json: PlainObject<V1_CubeOwnership> | null | undefined) =>
+    json?._type === V1_CubeOwnershipType.DEPLOYMENT
+      ? V1_CubeDeploymentOwnership.serialization.fromJson(json)
+      : undefined,
+);
+
 export class V1_StoredCubeAudit {
   createdBy?: string | undefined;
   createdAt?: number | undefined;
@@ -62,14 +98,14 @@ export class V1_StoredCubeAudit {
 
 /**
  * A saved cube: what the store answers (search results have no `content`),
- * and what a create or a save sends (no `id`, `owners`, `audit`; a save adds
- * the `version` it read)
+ * and what a create or a save sends (no `id` or `audit`; a create adds the
+ * `ownership`, and a save the `version` it read)
  */
 export class V1_StoredCube {
   id?: string | undefined;
   version?: number | undefined;
   name!: string;
-  owners?: string[] | undefined;
+  ownership?: V1_CubeOwnership | undefined;
   tags?: string[] | undefined;
   formatVersion!: number;
   content?: string | undefined;
@@ -82,7 +118,7 @@ export class V1_StoredCube {
       id: optional(primitive()),
       version: optional(primitive()),
       name: primitive(),
-      owners: optional(list(primitive())),
+      ownership: V1_cubeOwnershipSchema,
       tags: optional(list(primitive())),
       formatVersion: primitive(),
       content: optional(primitive()),
@@ -96,13 +132,15 @@ export class V1_StoredCube {
 
 export class V1_CubeSearchSpecification {
   searchTerm?: string | undefined;
-  owner?: string | undefined;
+  deployment?: string | undefined;
+  creator?: string | undefined;
   limit?: number | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(V1_CubeSearchSpecification, {
       searchTerm: optional(primitive()),
-      owner: optional(primitive()),
+      deployment: optional(primitive()),
+      creator: optional(primitive()),
       limit: optional(primitive()),
     }),
   );

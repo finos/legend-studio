@@ -50,4 +50,5 @@ export enum LEGEND_CUBE_TEST_ID {
   CUBE_TITLE = 'legend-cube__cube-title',
   LOAD_ERROR = 'legend-cube__load-error',
   LOAD_DIALOG_ROW = 'legend-cube__load-dialog-row',
+  SAVE_BETA_WARNING = 'legend-cube__save-beta-warning',
 }

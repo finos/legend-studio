@@ -94,8 +94,10 @@ with the functions below instead.
   no unsaved changes; Export, Import, Copy and Paste remain. The engine's store needs a Mongo and three Vault keys
   beside the Data Cube store's, in `query.mongo.database`: `query.mongo.collection.cube`,
   `query.mongo.collection.cubeVersion` and `query.mongo.collection.cubeEvent`. An engine without the store, or
-  without its Mongo, makes every call fail with the engine's message. Ownership is checked against the application
-  store's current user, and the store checks it again.
+  without its Mongo, makes every call fail with the engine's message. A cube is owned by a deployment, as a service
+  is: the Save dialog asks for its identifier, and warns that saved cubes aren't backward compatible while Cube is in
+  beta. Only the store decides who may change a cube: the deployment's members, which a `CubeOwnershipVerifier`
+  installed in the engine tells it, or, with none installed, only the cube's creator.
 
 Legend Analytics mounts the page at its root with no flag: deploying the application is the opt-in. Only `engine`
 is required in its config; each source below needs its servers.

@@ -38,15 +38,41 @@ export class CubeSourceRef {
   }
 }
 
-/** A saved cube, as a search lists it: everything but its spec */
+/**
+ * Who owns a saved cube, as a Service's ownership: for now a deployment.
+ * The store decides who may change the cube; the page can't tell.
+ */
+export abstract class CubeOwnership {
+  /** How the page names the owner, e.g. `Deployment 1234` */
+  abstract get label(): string;
+}
+
+/**
+ * A cube owned by a deployment: its members may change it. An engine that
+ * can't check deployments lets only the cube's creator change it.
+ */
+export class CubeDeploymentOwnership extends CubeOwnership {
+  readonly identifier: string;
+
+  constructor(identifier: string) {
+    super();
+    this.identifier = identifier;
+  }
+
+  get label(): string {
+    return `Deployment ${this.identifier}`;
+  }
+}
+
+/** A saved cube, as a search or a history lists it: everything but its spec */
 export class SavedCubeSummary {
   /** Made by the store, never reused */
   readonly id: string;
   /** 1 when created, one more on each save; a save sends the version it read */
   readonly version: number;
   readonly name: string;
-  /** Who may change it, the creator first */
-  readonly owners: readonly string[];
+  /** The deployment that owns it */
+  readonly ownership: CubeOwnership;
   readonly tags: readonly string[];
   readonly formatVersion: number;
   readonly sourceRefs: readonly CubeSourceRef[];
@@ -61,7 +87,7 @@ export class SavedCubeSummary {
     id: string;
     version: number;
     name: string;
-    owners: readonly string[];
+    ownership: CubeOwnership;
     tags: readonly string[];
     formatVersion: number;
     sourceRefs: readonly CubeSourceRef[];
@@ -73,7 +99,7 @@ export class SavedCubeSummary {
     this.id = fields.id;
     this.version = fields.version;
     this.name = fields.name;
-    this.owners = fields.owners;
+    this.ownership = fields.ownership;
     this.tags = fields.tags;
     this.formatVersion = fields.formatVersion;
     this.sourceRefs = fields.sourceRefs;
@@ -84,7 +110,7 @@ export class SavedCubeSummary {
   }
 }
 
-/** A saved cube with its spec, as opened or saved */
+/** A saved cube with its spec, as opened or saved, or one of its versions */
 export class SavedCube extends SavedCubeSummary {
   /** The spec's JSON (PLAN §10.3), exactly as saved */
   readonly content: string;
@@ -121,10 +147,12 @@ export class CubeDraft {
 
 /** A search of the store; what is given narrows it */
 export interface CubeSearch {
-  /** The id exactly, or part of the name or of an owner, in any case */
+  /** The id exactly, or part of the name or of the owning deployment's identifier, in any case */
   readonly searchTerm?: string | undefined;
-  /** Cubes this user owns */
-  readonly owner?: string | undefined;
+  /** Cubes this deployment owns, by its identifier */
+  readonly deployment?: string | undefined;
+  /** Cubes this user created */
+  readonly creator?: string | undefined;
   /** At most 100, the store's cap */
   readonly limit?: number | undefined;
 }
@@ -132,7 +160,11 @@ export interface CubeSearch {
 export enum CubeStoreErrorKind {
   /** The cube was saved elsewhere since it was read */
   CONFLICT = 'conflict',
-  /** The caller isn't one of its owners, or isn't signed in */
+  /**
+   * The caller may not change it, or give a cube to that deployment: they
+   * aren't a member of the deployment (or, when the store can't check
+   * deployments, the cube's creator), or aren't signed in
+   */
   FORBIDDEN = 'forbidden',
   /** No such cube, or it was deleted */
   NOT_FOUND = 'notFound',
@@ -154,16 +186,21 @@ export class CubeStoreError extends Error {
 
 /**
  * Saved cubes. Every change sends the version it read, and the store refuses
- * a cube saved since (`CONFLICT`) rather than overwrite it; only owners change
- * a cube (`FORBIDDEN`). Failures are `CubeStoreError`s.
+ * a cube saved since (`CONFLICT`) rather than overwrite it; only members of
+ * the deployment that owns a cube change it (`FORBIDDEN`). Every save is a
+ * new version, and every version is kept. Failures are `CubeStoreError`s.
  */
 export interface CubeStore {
-  /** A new cube at version 1, the caller its first owner */
-  createCube(draft: CubeDraft): Promise<SavedCube>;
+  /** A new cube at version 1, owned by a deployment the caller is a member of */
+  createCube(draft: CubeDraft, ownership: CubeOwnership): Promise<SavedCube>;
   /** Saves over the version read, and answers the next version */
   saveCube(id: string, version: number, draft: CubeDraft): Promise<SavedCube>;
   /** The latest version; opening it is recorded */
   getCube(id: string): Promise<SavedCube>;
+  /** Every version saved of a cube, the latest first, without their spec */
+  getCubeHistory(id: string): Promise<readonly SavedCubeSummary[]>;
+  /** One version saved of a cube, with its spec */
+  getCubeVersion(id: string, version: number): Promise<SavedCube>;
   /** Cubes not deleted, the latest saved first, without their spec */
   searchCubes(search: CubeSearch): Promise<readonly SavedCubeSummary[]>;
   /** Deletes softly: the cube is no longer read, searched or saved */

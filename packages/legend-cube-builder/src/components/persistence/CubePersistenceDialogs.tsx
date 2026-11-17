@@ -26,7 +26,9 @@ import {
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 import {
+  CUBE_DEPLOYMENT_DESCRIPTION,
   CUBE_PERSISTENCE_PENDING_LABEL,
+  CUBE_SAVE_BETA_WARNING,
   MAX_CUBE_NAME_LENGTH,
 } from '../../__lib__/LegendCubePersistenceLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
@@ -61,8 +63,10 @@ const describeLastSave = (cube: SavedCubeSummary): string =>
     .join(', ');
 
 /**
- * Save and Save as: the cube's name. A save the store refused says why here,
- * e.g. a version saved elsewhere since, and saving a copy is the way on.
+ * Save and Save as: the cube's name and the deployment that will own it,
+ * with a warning that saved cubes aren't backward compatible while Cube is
+ * in beta. A save the store refused says why here, e.g. a version saved
+ * elsewhere since, and saving a copy is the way on.
  */
 export const CubeSaveDialog = observer(
   (props: { editorState: CubeEditorState }) => {
@@ -72,6 +76,7 @@ export const CubeSaveDialog = observer(
     const darkMode = useDarkMode(editorState);
     const isSaving =
       persistence.pending === CUBE_PERSISTENCE_PENDING_LABEL.SAVING;
+    const invalid = dialog.nameError ?? dialog.deploymentError;
     const save = (): void => {
       dialog
         .confirm()
@@ -121,10 +126,34 @@ export const CubeSaveDialog = observer(
                   {dialog.nameError}
                 </div>
               )}
+              <label className="flex flex-col gap-1 text-base">
+                Owner deployment
+                <input
+                  className={INPUT_CLASS_NAME}
+                  placeholder="Deployment identifier"
+                  maxLength={MAX_CUBE_NAME_LENGTH + 10}
+                  spellCheck={false}
+                  value={dialog.deployment}
+                  onChange={(event) => dialog.setDeployment(event.target.value)}
+                />
+              </label>
+              {dialog.deploymentError !== undefined &&
+                dialog.deployment !== '' && (
+                  <div className="text-base text-[var(--color-status-error)]">
+                    {dialog.deploymentError}
+                  </div>
+                )}
               <div className="text-base text-[var(--color-text-secondary)]">
-                You will be its owner: only owners can save over it or delete
-                it.
+                {CUBE_DEPLOYMENT_DESCRIPTION}
               </div>
+              <div
+                className="rounded-sm border border-[var(--color-status-warn)] px-2 py-1 text-base text-[var(--color-status-warn)]"
+                data-testid={LEGEND_CUBE_TEST_ID.SAVE_BETA_WARNING}
+              >
+                {CUBE_SAVE_BETA_WARNING}
+              </div>
+              {/* Enter saves, as the button does */}
+              <button type="submit" hidden={true} />
             </form>
           </ModalBody>
           <ModalFooter>
@@ -132,8 +161,8 @@ export const CubeSaveDialog = observer(
               darkMode={darkMode}
               formatText={false}
               text={isSaving ? 'Saving…' : 'Save'}
-              {...(dialog.nameError ? { title: dialog.nameError } : {})}
-              disabled={dialog.nameError !== undefined || isSaving}
+              {...(invalid ? { title: invalid } : {})}
+              disabled={invalid !== undefined || isSaving}
               onClick={save}
             />
             <ModalFooterButton
@@ -151,8 +180,9 @@ export const CubeSaveDialog = observer(
 );
 
 /**
- * Load: the store's cubes, searched by id, name or owner (spec §14.4), the
- * latest saved first; Open on a row, and Delete on the viewer's own
+ * Load: the store's cubes, searched by id, name or owning deployment (spec
+ * §14.4), the latest saved first; Open and Delete on a row, the store
+ * deciding whether the viewer may delete it
  */
 export const CubeLoadDialog = observer(
   (props: { editorState: CubeEditorState }) => {
@@ -177,7 +207,7 @@ export const CubeLoadDialog = observer(
                 <input
                   className={INPUT_CLASS_NAME}
                   aria-label="Search cubes"
-                  placeholder="Search by id, name or owner"
+                  placeholder="Search by id, name or deployment"
                   autoFocus={true}
                   spellCheck={false}
                   value={dialog.searchText}
@@ -192,7 +222,7 @@ export const CubeLoadDialog = observer(
                         dialog.setOnlyMine(event.target.checked)
                       }
                     />
-                    Only mine
+                    Created by me
                   </label>
                 )}
               </div>
@@ -217,7 +247,6 @@ export const CubeLoadDialog = observer(
                   </div>
                 )}
                 {dialog.results?.map((cube) => {
-                  const owned = !user || cube.owners.includes(user);
                   return (
                     <div
                       key={cube.id}
@@ -236,7 +265,7 @@ export const CubeLoadDialog = observer(
                           )}
                         </span>
                         <span className="truncate text-sm text-[var(--color-text-secondary)]">
-                          {`Owners: ${cube.owners.join(', ')} · ${describeLastSave(cube)} · version ${cube.version}`}
+                          {`Owner: ${cube.ownership.label} · ${describeLastSave(cube)} · version ${cube.version}`}
                         </span>
                         <span className="truncate font-mono text-sm text-[var(--color-text-secondary)]">
                           {cube.id}
@@ -250,15 +279,13 @@ export const CubeLoadDialog = observer(
                       >
                         Open
                       </CubeButton>
-                      {owned && (
-                        <CubeButton
-                          title={`Delete "${cube.name}"`}
-                          disabled={persistence.isPending}
-                          onClick={() => persistence.deleteCube(cube)}
-                        >
-                          Delete
-                        </CubeButton>
-                      )}
+                      <CubeButton
+                        title={`Delete "${cube.name}"`}
+                        disabled={persistence.isPending}
+                        onClick={() => persistence.deleteCube(cube)}
+                      >
+                        Delete
+                      </CubeButton>
                     </div>
                   );
                 })}

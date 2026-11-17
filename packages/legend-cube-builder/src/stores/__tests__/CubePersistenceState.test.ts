@@ -34,7 +34,10 @@ import {
 } from '@finos/legend-cube';
 import { flowResult, when } from 'mobx';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
-import { InMemoryCubeStore } from '../../__test-utils__/InMemoryCubeStore.js';
+import {
+  InMemoryCubeStore,
+  TEST_CUBE_DEPLOYMENT,
+} from '../../__test-utils__/InMemoryCubeStore.js';
 import {
   CUSTOMERS_COLUMNS,
   NORTHWIND_RUNTIME,
@@ -46,10 +49,10 @@ import { READ_ONLY_CUBE_TITLE } from '../../__lib__/LegendCubeLabels.js';
 import {
   EMPTY_CUBE_SAVE_TITLE,
   NO_CUBE_STORE_TITLE,
-  NOT_OWNER_SAVE_TITLE,
   UNSAVED_CHANGES_MESSAGE,
 } from '../../__lib__/LegendCubePersistenceLabels.js';
 import {
+  CubeDeploymentOwnership,
   CubeDraft,
   CubeStoreErrorKind,
 } from '../../graph-manager/CubeStore.js';
@@ -119,6 +122,7 @@ const saveInStore = async (
   (
     await store.createCube(
       new CubeDraft(name, 1, serializeCubeSpec(document), []),
+      new CubeDeploymentOwnership(TEST_CUBE_DEPLOYMENT),
     )
   ).id;
 
@@ -142,9 +146,13 @@ describe('The modified state (spec §17.10)', () => {
     persistence.save();
     expect(persistence.saveDialog.isOpen).toBe(true);
     persistence.saveDialog.setName('  French orders  ');
+    persistence.saveDialog.setDeployment(` ${TEST_CUBE_DEPLOYMENT} `);
     await persistence.saveDialog.confirm();
     expect(persistence.saveDialog.isOpen).toBe(false);
     expect(persistence.savedCube?.name).toBe('French orders');
+    expect(persistence.savedCube?.ownership).toEqual(
+      new CubeDeploymentOwnership(TEST_CUBE_DEPLOYMENT),
+    );
     expect(editorState.document.name).toBe('French orders');
     expect(persistence.isModified).toBe(false);
   });
@@ -220,15 +228,17 @@ describe('Save and Save as (spec §14.4)', () => {
     // nothing was overwritten
     expect((await store.getCube(id)).name).toBe('Theirs');
 
+    // the copy is owned as the cube was
+    expect(persistence.saveDialog.deployment).toBe(TEST_CUBE_DEPLOYMENT);
     persistence.saveDialog.setName('Mine');
     await persistence.saveDialog.confirm();
     expect(persistence.currentId).not.toBe(id);
     expect(persistence.savedCube?.name).toBe('Mine');
-    expect(persistence.savedCube?.owners).toEqual(['alice']);
+    expect(persistence.savedCube?.createdBy).toBe('alice');
     expect(persistence.isModified).toBe(false);
   });
 
-  test("Saves another user's cube only as a copy", async () => {
+  test('Leaves it to the store whether the viewer may save over a cube: a refusal offers a copy', async () => {
     const { editorState, store } = createPage();
     const id = await saveInStore(
       store.asUser('bob'),
@@ -237,20 +247,58 @@ describe('Save and Save as (spec §14.4)', () => {
     );
     const { persistence } = editorState;
     await flowResult(persistence.openCube(id));
-    expect(persistence.isOwner).toBe(false);
-    expect(persistence.saveDisabledReason).toBe(NOT_OWNER_SAVE_TITLE);
-    expect(persistence.saveAsDisabledReason).toBeUndefined();
-    expect(persistence.deleteDisabledReason).toBe(
-      "Only this cube's owners can delete it.",
-    );
+    // only the store knows the deployment's members
+    expect(persistence.saveDisabledReason).toBeUndefined();
+    expect(persistence.deleteDisabledReason).toBeUndefined();
+    editorState.setShowGraph(false);
     persistence.save();
-    expect(store.calls).not.toContain(`save ${id}@1`);
-    persistence.saveAs();
+    await when(() => !persistence.isPending);
+    expect(store.calls).toContain(`save ${id}@1`);
+    expect(persistence.saveDialog.isOpen).toBe(true);
+    expect(persistence.saveDialog.error).toBe(
+      "Only this cube's creator, bob, can change it: this engine can't check who belongs to deployment 1234, which owns it.",
+    );
     expect(persistence.saveDialog.name).toBe('Bob orders');
+    expect(persistence.saveDialog.deployment).toBe(TEST_CUBE_DEPLOYMENT);
     persistence.saveDialog.setName('My copy');
     await persistence.saveDialog.confirm();
-    expect(persistence.savedCube?.owners).toEqual(['alice']);
+    expect(persistence.savedCube?.name).toBe('My copy');
+    expect(persistence.savedCube?.createdBy).toBe('alice');
     expect((await store.getCube(id)).name).toBe('Bob orders');
+  });
+
+  test('Asks for the deployment that will own a new cube, offering the one the page saved to last', async () => {
+    const { editorState, store } = createPage(ordersDocument());
+    const { persistence } = editorState;
+    store.setDeploymentMembers(TEST_CUBE_DEPLOYMENT, ['alice']);
+    persistence.save();
+    persistence.saveDialog.setName('Orders');
+    expect(persistence.saveDialog.deployment).toBe('');
+    expect(persistence.saveDialog.deploymentError).toBe(
+      'Give the deployment that will own the cube.',
+    );
+    await persistence.saveDialog.confirm();
+    expect(store.calls).toEqual([]);
+
+    // the store refuses a deployment the viewer isn't a member of
+    persistence.saveDialog.setDeployment('5678');
+    await persistence.saveDialog.confirm();
+    expect(persistence.saveDialog.isOpen).toBe(true);
+    expect(persistence.saveDialog.error).toBe(
+      "A cube can only be given to a deployment you are a member of, and you aren't a member of deployment 5678.",
+    );
+    persistence.saveDialog.setDeployment(TEST_CUBE_DEPLOYMENT);
+    await persistence.saveDialog.confirm();
+    expect(persistence.saveDialog.isOpen).toBe(false);
+    expect(persistence.savedCube?.ownership.label).toBe('Deployment 1234');
+    expect(persistence.titleDescription).toContain('Owner: Deployment 1234');
+
+    // the next new cube is offered the same deployment
+    editorState.startNewCube();
+    editorState.applyDocument(ordersDocument());
+    persistence.save();
+    expect(persistence.saveDialog.deployment).toBe(TEST_CUBE_DEPLOYMENT);
+    persistence.saveDialog.close();
   });
 
   test('Is disabled without a store, for an empty, invalid or read-only cube', () => {
@@ -284,6 +332,7 @@ describe('Save and Save as (spec §14.4)', () => {
     await persistence.saveDialog.confirm();
     expect(store.calls).toEqual([]);
     persistence.saveDialog.setName('Orders');
+    persistence.saveDialog.setDeployment(TEST_CUBE_DEPLOYMENT);
     store.failNext(
       CubeStoreErrorKind.UNAVAILABLE,
       'Cube store MongoDB database has not been configured properly',
@@ -324,6 +373,7 @@ describe('Load (spec §14.4, QUESTIONS.md U9)', () => {
     const broken = (
       await store.createCube(
         new CubeDraft('Broken', 1, '{"formatVersion":1,"query":{}}', []),
+        new CubeDeploymentOwnership(TEST_CUBE_DEPLOYMENT),
       )
     ).id;
     persistence.openLoadDialog();
@@ -339,7 +389,7 @@ describe('Load (spec §14.4, QUESTIONS.md U9)', () => {
     expect(noStore.loadError).toBe(NO_CUBE_STORE_TITLE);
   });
 
-  test("Searches the store as the viewer types, and lists only the viewer's cubes when asked", async () => {
+  test('Searches the store as the viewer types, and lists only the cubes the viewer created when asked', async () => {
     const { editorState, store } = createPage();
     await saveInStore(store, ordersDocument(), 'French orders');
     await saveInStore(store.asUser('bob'), ordersDocument(), 'Bob trades');
@@ -518,6 +568,7 @@ describe('Shortcuts (spec §17.12)', () => {
         false,
       );
       editorState.persistence.saveDialog.setName('Customers');
+      editorState.persistence.saveDialog.setDeployment(TEST_CUBE_DEPLOYMENT);
       await editorState.persistence.saveDialog.confirm();
       expect(store.calls).toEqual(['create Customers']);
 
@@ -592,17 +643,18 @@ describe("Save while the node editor's edits may fix the cube", () => {
     const valid = createPage(ordersDocument()).editorState.persistence;
     expect(valid.isSaveBlockedOnlyByProblems).toBe(false);
 
-    // someone else's cube: Save as only
+    // someone else's cube: as Save as, whatever the store will say
     const { editorState, store } = createPage();
     const id = (
       await store
         .asUser('bob')
         .createCube(
           new CubeDraft('Bob', 1, serializeCubeSpec(invalidDocument()), []),
+          new CubeDeploymentOwnership(TEST_CUBE_DEPLOYMENT),
         )
     ).id;
     await flowResult(editorState.persistence.openCube(id));
     expect(editorState.persistence.isSaveAsBlockedOnlyByProblems).toBe(true);
-    expect(editorState.persistence.isSaveBlockedOnlyByProblems).toBe(false);
+    expect(editorState.persistence.isSaveBlockedOnlyByProblems).toBe(true);
   });
 });

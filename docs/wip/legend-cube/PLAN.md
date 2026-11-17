@@ -4780,11 +4780,13 @@ This subsection overrides the sections it names until they are updated (see "Sup
 ### 11.13 M8: Persistence
 
 M8 saves cubes on a server. A **Cube store** in legend-engine's `legend-engine-application-query`, beside the Data
-Cube store (D1, §10.5, §10.6), keeps each cube's spec (§10.3) as a string, with its owners and every saved version;
+Cube store (D1, §10.5, §10.6), keeps each cube's spec (§10.3) as a string, with the deployment that owns it and every
+saved version;
 the page gets Save, Save as, Load, Delete, New, Copy and Paste, the modified-state asterisk, confirmation before
 unsaved changes are lost, and an address per saved cube. The engine part is built on the branch `cube-store` of the
 user's legend-engine fork, from finos master, and lands in finos/legend-engine#5355. The Studio part is built on the
-branch `cube-m8`, from `cube-dev` (`4a0bfe3e0`), and lands in #5679 into `cube-dev`. Its status is in
+branch `cube-m8`, from `cube-dev` (`4a0bfe3e0`), and lands in #5679, into master since `cube-dev` was merged into
+master (#5861; the PR first targeted `cube-dev`). Its status is in
 [PROGRESS-M8.md](PROGRESS-M8.md). Requirements: the probes under `m8-requirements/` in the local evidence folder, run
 on this computer's engine: ✅ where a probe ran, 📄 where read in code, 💭 where reasoned.
 
@@ -4793,6 +4795,33 @@ finos master, unchanged; the Studio branch onto `cube-dev` `8e9e12fb4`, after Le
 Legend Analytics took Query's part (the host's store, the address); the buttons joined `cube-dev`'s 'Cube ▾' menu;
 the saved cube follows Redo too; and a host with no store, as Studio's, tracks nothing. Below, the text says where
 the rebase changed what M8 first built.
+
+**Rebased on 2026-11-16 onto master** (user: be rebased with master): `cube-dev` had been merged into master
+(#5861), so M8's commits were replayed onto master and the PR now targets master. The engine branch was rebased
+onto finos master too.
+
+**Changed on 2026-11-09** (user: a cube is owned as a Service is, by a deployment with an identifier, not by a
+list of users; a cube has revisions, as a query does; and saving warns that saved cubes aren't backward compatible
+while Cube is in beta):
+
+- **Ownership:** a cube has `ownership: {_type: 'deploymentOwnership', identifier}`, written as a Service's is, and
+  no `owners`. Only the deployment's members change it, or give a cube to it (403). The engine can't tell who
+  belongs to a deployment, so the store asks a `CubeOwnershipVerifier` (as Service's `OwnershipValidator`), which a
+  deployment of the engine installs with `ServiceLoader`; more than one is an error. **Without one** (the
+  open-source engine, development), only a cube's creator changes it (user's choice, 2026-11-09): saving works, and
+  nothing is open to everyone. A change reads the cube, checks the caller, then updates it filtered on the version
+  read, so an ownership changed meanwhile, which makes a new version, refuses it (409).
+- **Revisions:** every save was already kept in `cubeVersion`, and `GET cube/{id}/version/{n}` read one. The store
+  now lists them too, as Query's `{queryId}/history` does: `GET cube/{id}/history`, the latest first, without their
+  content. Studio's `CubeStore` has `getCubeHistory` and `getCubeVersion`; the page has no history screen yet
+  (user's choice).
+- **The page:** the Save dialog asks for the owner deployment (the open cube's for Save as, else the one the page
+  saved to last) and warns that a cube saved now may not open in a later version of Cube. The page can't know a
+  deployment's members, so Save and Delete are no longer disabled for another user's cube: the store decides, and
+  a refused save opens the Save dialog to save a copy, as a conflict does. The Load dialog's "Only mine" became
+  "Created by me" (a search by creator), and its search box matches the deployment's identifier.
+
+The bullets below say how it works now.
 
 This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
 
@@ -4810,8 +4839,9 @@ This subsection overrides the sections it names until they are updated (see "Sup
    app uses only the engine's. For development and the demo, a second engine, run from the `cube-store` branch on
    `:6301` against an in-memory Mongo, takes the deployment's engine query server URL (Analytics' `engine.queryUrl`);
    the IntelliJ engine on `:6300` is left as it is.
-4. **Scope:** Save, Save as, Load and Delete. Owners are shown, on hover, not edited; tags aren't edited; there is no
-   history screen. The store keeps every saved version, so one can come later.
+4. **Scope:** Save, Save as, Load and Delete. The owner is shown, on hover, and given on a first save or Save as,
+   not changed; tags aren't edited; there is no history screen. The store keeps and lists every saved version, so
+   one can come later.
 
 **Decided without asking** (each has a precedent or a probe; for review):
 
@@ -4821,18 +4851,20 @@ This subsection overrides the sections it names until they are updated (see "Sup
     reused, which is how `BaseStoredVersionedAssetDao` corrupts a history 📄.
   - `GET cube/{id}` answers the latest version, 404 when there is none or it is deleted. It sets `lastOpenAt` in the
     same atomic `findOneAndUpdate`, with `$set`, never by rewriting the document (§10.5).
-  - `GET cube/{id}/version/{version}` answers a saved version, for a history screen later.
+  - `GET cube/{id}/history` lists every saved version, the latest first, without their content (2026-11-09), and
+    `GET cube/{id}/version/{version}` answers one, with it.
   - `PUT cube/{id}` saves new content (Save): the body carries the **version the client read**; the version goes up
     by one. Another version is a **409**, with the current version in the message.
-  - `PATCH cube/{id}` changes `name`, `owners` or `tags` (validated: any other field, an empty owner list or a blank
-    entry is a 400), with the same version check. JAX-RS 2.0.1 has no `@PATCH` ✅, so the module adds one
-    (`@HttpMethod("PATCH")`). Studio doesn't call it in M8.
+  - `PATCH cube/{id}` changes `name`, `ownership` or `tags` (validated: any other field, an ownership that isn't a
+    deployment's or a blank entry is a 400), with the same version check. Jakarta REST, since the engine's Java 17
+    move, has `@PATCH`; M8 first added its own, as JAX-RS 2.0.1 had none ✅. Studio doesn't call it in M8.
   - `DELETE cube/{id}?version=&permanent=` deletes softly by default: the cube is marked deleted and no longer read,
     searched or saved. `permanent=true` removes it and its versions, a soft-deleted one too.
   - `POST cube/search` answers summaries, never the content, of cubes not deleted: `searchTerm` matches the id
-    exactly, the name and the owners in any case (spec §14.4's `[id, name, ...owners]`); `owner`, `creator`, `tags`
-    (all of them, `$all`) and `sourceRef` narrow it; at most 100, the latest saved first.
-- **The documents:** `{id, version, name, owners[], tags[], formatVersion, content, sourceRefs[], audit: {createdBy,
+    exactly, the name and the owning deployment's identifier in any case (spec §14.4's `[id, name, ...owners]`);
+    `deployment`, `creator`, `tags` (all of them, `$all`) and `sourceRef` narrow it; at most 100, the latest saved
+    first.
+- **The documents:** `{id, version, name, ownership: {_type, identifier}, tags[], formatVersion, content, sourceRefs[], audit: {createdBy,
 createdAt, updatedBy, updatedAt}, lastOpenAt, deleted?: {by, at}}`, times as epoch milliseconds, as the Data Cube
   store writes them. `content` is the spec's JSON as a string, so no key of the user's reaches Mongo (§10.3, spec
   §14.3).
@@ -4842,17 +4874,21 @@ createdAt, updatedBy, updatedAt}, lastOpenAt, deleted?: {by, at}}`, times as epo
   events, as `dataCubeEvent`). The indexes are made when the store is first used. `ApplicationQuery` builds its
   store managers itself ✅, so `Server.java` changes in one word only: its CORS filter allowed `GET`, `PUT`, `POST`,
   `DELETE` and `OPTIONS`, so a browser's `PATCH` failed its preflight; it now allows `PATCH` ✅ (found in M8.3).
-- **Atomic saves:** a save is one `findOneAndUpdate` filtered on the id, the version read, not deleted and the caller
-  among the owners, with `$set` and `$inc` on the version; when it matches nothing, a read says why: 404, 403 or 409.
+- **Atomic saves:** a save reads the cube and checks the caller (404, 403, 409), then is one `findOneAndUpdate`
+  filtered on the id, the version read and not deleted, with `$set` and `$inc` on the version; when that matches
+  nothing, the cube changed meanwhile, and a read says how: 404 or 409.
   The new version is then added to `cubeVersion`, whose unique index refuses a version twice. Mongo here has no
   transactions, so a crash between the two leaves the history a version short, never the latest lost.
-- **Owners only** change a cube: PUT, PATCH and DELETE need the caller among its owners, else 403
-  `Only current owners can change this cube. Current owners are <list>.` (spec §14.3, with 403 rather than its 401).
-  Anyone can read and search, as in Query's and Data Cube's stores. The creator is the first owner. A request with no
-  user can't change anything.
+- **The owning deployment's members only** change a cube: PUT, PATCH and DELETE need the caller a member, else 403
+  `Only members of deployment <id>, which owns this cube, can change it.`, and a create or a PATCH gives a cube only
+  to a deployment the caller is a member of (spec §14.3, with 403 rather than its 401). Without a verifier, only the
+  creator: `Only this cube's creator, <user>, can change it: this engine can't check who belongs to deployment
+<id>, which owns it.` Anyone can read and search, as in Query's and Data Cube's stores. A request with no user
+  can't change anything.
 - **Validation** (400): a name, trimmed, of 1 to 255 characters; `formatVersion` a whole number of at least 1;
   `content` a JSON object of at most 1 MiB (UTF-8, §10.3's cap) whose own `formatVersion` is the document's; at most
-  100 owners and 100 tags, each 1 to 255 characters; at most 200 `sourceRefs`, each with a `type` and a `path`.
+  a deployment identifier, trimmed, of 1 to 255 characters; at most 100 tags, each 1 to 255 characters; at most 200
+  `sourceRefs`, each with a `type` and a `path`.
 - **Errors** are `{"message": …}` written by Jackson. `ApplicationQueryException.toResponse()` writes its message
   unescaped ✅ (a name with `"` would break the JSON), and is fixed in the same PR.
 - **`sourceRefs`**, one per source node, deduplicated, written by the builder (it knows the model kinds): a table
@@ -4863,8 +4899,9 @@ createdAt, updatedBy, updatedAt}, lastOpenAt, deleted?: {by, at}}`, times as epo
 - **Studio's client** lives in Cube's own `v1/` seam (D8, §8.7), not in legend-graph: `V1_LegendCubeStore` calls
   `${queryBaseUrl ?? baseUrl}/pure/v1/query/cube…` through `V1_EngineServerClient`'s public `get`, `post`, `put` and
   `delete`, as its `_dataCube` methods do, and reads answers into `serializr` classes (`V1_StoredCube`, …), then into
-  the port's classes. The port, `CubeStore` (`graph-manager/CubeStore.ts`), has what M8 uses: create, save, get,
-  search and delete; its errors say conflict, forbidden, not found, invalid or unavailable. An engine without the
+  the port's classes. The port, `CubeStore` (`graph-manager/CubeStore.ts`), has what M8 uses: create (with a
+  `CubeDeploymentOwnership`), save, get, search and delete, and the history and a version; its errors say conflict,
+  forbidden, not found, invalid or unavailable. An engine without the
   store (a 404 on `cube/search`) or without Mongo (its 500) is _unavailable_, with the engine's message. Its client
   registers with Dev Settings' `CubeEngineClientSettings` (§11.16), so a changed engine URL moves the store with it,
   unless it is on the query server.
@@ -4880,25 +4917,26 @@ createdAt, updatedBy, updatedAt}, lastOpenAt, deleted?: {by, at}}`, times as epo
   top-level keys) and the presentation (`meta`); either sets the asterisk, and the hover says which. A new cube is
   modified once it has a node. Undoing back to the saved cube clears it. Typing a source again can change its snapshot,
   and then the cube is modified, since Save would write the new one.
-- **The name's hover** shows the name, the id, the version and the owners, or "Not saved yet".
+- **The name's hover** shows the name, the id, the version and the owner (`Deployment <id>`), or "Not saved yet".
 - **Save gating** (§14.4, "server Save gating is decided in M8", §10.3): Save and Save as need a store, a cube that
   isn't read-only, at least one node, every node valid in the local analysis and no engine check pending (a waiting
-  Extend or Filter by Expression is invalid there, `ERR_TYPING`); Save also needs the viewer among the owners of a
-  saved cube (else only Save as). The viewer is the host's current user, which the application reads from the engine
-  (`anonymous` locally); a host that doesn't know its user leaves ownership to the store. Host issues (an engine that
+  Extend or Filter by Expression is invalid there, `ERR_TYPING`). Whether the viewer may save over a saved cube is
+  the store's to say, as only it knows a deployment's members (2026-11-09). Host issues (an engine that
   can't type a source now) don't block it. Export stays allowed for an invalid cube (Appendix A). Each disabled
   item says why, naming the first step with a problem as Execute does.
 - **Save and Save as:** Save on a new cube opens the Save dialog (its name); on a saved one it saves at once. Save as
-  always opens it, with the name, and makes a new cube with the viewer as its owner. The name typed becomes the
+  always opens it, with the name and the owner deployment, and warns that saved cubes aren't backward compatible
+  while Cube is in beta; it makes a new cube owned by that deployment. The name typed becomes the
   cube's (one undo step). A 409, or a 403, opens the Save dialog with the store's message (`Cannot change version 1 of
 cube '…': its current version is 2.`) to save a copy instead; nothing is overwritten. A save the store refuses
   otherwise keeps the dialog open, saying why. Edits made while a save runs stay modified.
 - **Load:** a dialog with a search box (the store's search, 300 ms after the last keystroke, at most 100) over id,
-  name and owners, and "Only mine"; each row shows the name, the owners, who saved it last and when, the version and
+  name and the owning deployment, and "Created by me"; each row shows the name, the owner, who saved it last and
+  when, the version and
   the id. Opening one never runs it and opens no editor (U9 (a)); the store's name wins over the spec's, which a
   rename elsewhere may have left. An address that names a cube loads it behind a "loading cube" overlay; a cube that
   can't be loaded shows "Error loading query!" with the server's message in the graph area, the address kept (U9 (b)).
-- **Delete:** from the Load dialog's rows and from the 'Cube' menu for the open cube, owners only, after a
+- **Delete:** from the Load dialog's rows and from the 'Cube' menu for the open cube, as the store allows, after a
   confirmation; soft only (permanent deletion stays the API's). Deleting the open cube keeps its content as an
   unsaved cube.
 - **New, Copy and Paste** (§14.4): New empties the page, and does nothing on an empty cube (`cube-dev`'s New). Copy

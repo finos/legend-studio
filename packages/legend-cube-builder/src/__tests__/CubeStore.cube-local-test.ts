@@ -23,8 +23,9 @@ import { V1_LegendCubeStore } from '../graph-manager/protocol/pure/v1/V1_LegendC
 // The engine's Cube store (PLAN §11.13), run by hand against an engine that
 // has one: the development store on :6301 (an engine built from
 // legend-engine's Cube store branch, against an in-memory Mongo; PLAN §11.13,
-// M8.3). Locally every caller is `anonymous`, so the owners case is left to
-// the in-memory store's run. Another engine with the store: change the URL.
+// M8.3). Locally every caller is `anonymous`, and the engine has no ownership
+// verifier, so the case of another user is left to the in-memory store's
+// runs. Another engine with the store: change the URL.
 //   TEST_GROUP=cube-local yarn workspace @finos/legend-cube-builder test CubeStore
 
 const STORE_ENGINE_URL = 'http://localhost:6301/api';
@@ -81,4 +82,5 @@ const createStore = (): V1_LegendCubeStore => {
 runCubeStoreContract(`the engine's, on ${STORE_ENGINE_URL}`, () => ({
   store: createStore(),
   user: 'anonymous',
+  deployment: '1234',
 }));

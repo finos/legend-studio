@@ -115,7 +115,7 @@ const CubeGraphHeader = observer(
         <div className="flex min-h-8 shrink-0 flex-wrap items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2 py-1">
           <span
             className="flex min-w-24 flex-1 overflow-hidden"
-            // with a store, the saved cube's id, version and owners (spec §17.10)
+            // with a store, the saved cube's id, version and owner (spec §17.10)
             {...(persistence.store
               ? { title: persistence.titleDescription }
               : {})}

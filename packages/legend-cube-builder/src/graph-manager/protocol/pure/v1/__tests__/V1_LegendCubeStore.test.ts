@@ -17,6 +17,7 @@
 import { describe, expect, jest, test } from '@jest/globals';
 import { NetworkClientError, TracerService } from '@finos/legend-shared';
 import {
+  CubeDeploymentOwnership,
   CubeDraft,
   CubeSourceRef,
   CubeStoreError,
@@ -42,7 +43,7 @@ const STORED = {
   id: '5d057208-dd12-4bd8-b32a-9e08d3ce2c3b',
   lastOpenAt: 1791898779126,
   name: 'Orders "FR"',
-  owners: ['anonymous', 'bob'],
+  ownership: { _type: 'deploymentOwnership', identifier: '1234' },
   sourceRefs: [
     {
       element: 'S.T',
@@ -136,7 +137,6 @@ describe("The engine's Cube store", () => {
     expect(cube.id).toBe(STORED.id);
     expect(cube.version).toBe(3);
     expect(cube.name).toBe('Orders "FR"');
-    expect(cube.owners).toEqual(['anonymous', 'bob']);
     expect(cube.content).toBe(STORED.content);
     expect(cube.createdBy).toBe('anonymous');
     expect(cube.updatedBy).toBe('bob');
@@ -145,9 +145,27 @@ describe("The engine's Cube store", () => {
       new CubeSourceRef('table', 'my::Db', 'S.T', 'org.finos:northwind'),
     ]);
     expect(cube.sourceRefs[0]).toBeInstanceOf(CubeSourceRef);
+    expect(cube.ownership).toEqual(new CubeDeploymentOwnership('1234'));
+    expect(cube.ownership).toBeInstanceOf(CubeDeploymentOwnership);
+    expect(cube.ownership.label).toBe('Deployment 1234');
   });
 
-  test('Creates without an id or owners, saves with the version read, deletes at it', async () => {
+  test('Refuses an answer without an ownership it knows', async () => {
+    const store = createStore();
+    const get = jest.spyOn(store.client, 'get');
+    for (const ownership of [
+      undefined,
+      { _type: 'userListOwnership', users: ['bob'] },
+      { identifier: '1234' },
+    ]) {
+      get.mockResolvedValueOnce({ ...STORED, ownership } as never);
+      await expect(store.getCube(STORED.id)).rejects.toThrow(
+        'The Cube store answered a cube without its owner',
+      );
+    }
+  });
+
+  test('Creates with the deployment that owns the cube, saves with the version read, deletes at it', async () => {
     const store = createStore();
     const post = jest
       .spyOn(store.client, 'post')
@@ -159,11 +177,12 @@ describe("The engine's Cube store", () => {
       .spyOn(store.client, 'delete')
       .mockResolvedValue(undefined as never);
 
-    await store.createCube(draft);
+    await store.createCube(draft, new CubeDeploymentOwnership('1234'));
     expect(post.mock.calls[0]?.[0]).toBe(
       'http://engine/api/pure/v1/query/cube',
     );
     expect(post.mock.calls[0]?.[1]).toEqual({
+      ownership: { _type: 'deploymentOwnership', identifier: '1234' },
       name: 'Orders',
       formatVersion: 1,
       content: '{"formatVersion":1}',
@@ -197,15 +216,62 @@ describe("The engine's Cube store", () => {
     expect(del.mock.calls[0]?.[4]).toEqual({ version: 3 });
   });
 
-  test('Lists summaries, without a spec', async () => {
+  test('Lists summaries, without a spec, searched by term, deployment and creator', async () => {
     const store = createStore();
     const { content: _content, ...summary } = STORED;
-    jest.spyOn(store.client, 'post').mockResolvedValue([summary] as never);
-    const found = await store.searchCubes({});
+    const post = jest
+      .spyOn(store.client, 'post')
+      .mockResolvedValue([summary] as never);
+    const found = await store.searchCubes({
+      searchTerm: 'orders',
+      deployment: '1234',
+      creator: 'bob',
+      limit: 10,
+    });
+    expect(post.mock.calls[0]?.[0]).toBe(
+      'http://engine/api/pure/v1/query/cube/search',
+    );
+    expect(post.mock.calls[0]?.[1]).toEqual({
+      searchTerm: 'orders',
+      deployment: '1234',
+      creator: 'bob',
+      limit: 10,
+    });
     expect(found).toHaveLength(1);
     expect(found[0]).toBeInstanceOf(SavedCubeSummary);
     expect(found[0]).not.toBeInstanceOf(SavedCube);
     expect(found[0]?.name).toBe('Orders "FR"');
+  });
+
+  test("Reads a cube's history, the latest first, and any one version", async () => {
+    const store = createStore();
+    const { content: _content, ...summary } = STORED;
+    const get = jest
+      .spyOn(store.client, 'get')
+      .mockResolvedValueOnce([
+        summary,
+        { ...summary, version: 2 },
+        { ...summary, version: 1 },
+      ] as never)
+      .mockResolvedValueOnce({ ...STORED, version: 1 } as never);
+    const history = await store.getCubeHistory('a/b');
+    expect(get.mock.calls[0]?.[0]).toBe(
+      'http://engine/api/pure/v1/query/cube/a%2Fb/history',
+    );
+    expect(history.map((cube) => cube.version)).toEqual([3, 2, 1]);
+    expect(history.every((cube) => !(cube instanceof SavedCube))).toBe(true);
+    const first = await store.getCubeVersion('a/b', 1);
+    expect(get.mock.calls[1]?.[0]).toBe(
+      'http://engine/api/pure/v1/query/cube/a%2Fb/version/1',
+    );
+    expect(first).toBeInstanceOf(SavedCube);
+    expect(first.version).toBe(1);
+    expect(first.content).toBe(STORED.content);
+
+    get.mockResolvedValueOnce({ message: 'not a list' } as never);
+    await expect(store.getCubeHistory('a')).rejects.toThrow(
+      'The Cube store answered a history with no list',
+    );
   });
 
   test('Says what failed, from the status and the store’s message', () => {
@@ -227,9 +293,18 @@ describe("The engine's Cube store", () => {
       CubeStoreErrorKind.CONFLICT,
       "Cannot change version 1 of cube 'a': its current version is 2.",
     ]);
-    expect(kindOf(clientError(403, message('Only current owners…')))).toEqual([
+    expect(
+      kindOf(
+        clientError(
+          403,
+          message(
+            'Only members of deployment 1234, which owns this cube, can change it.',
+          ),
+        ),
+      ),
+    ).toEqual([
       CubeStoreErrorKind.FORBIDDEN,
-      'Only current owners…',
+      'Only members of deployment 1234, which owns this cube, can change it.',
     ]);
     expect(kindOf(clientError(401, message('Sign in')))).toEqual([
       CubeStoreErrorKind.FORBIDDEN,

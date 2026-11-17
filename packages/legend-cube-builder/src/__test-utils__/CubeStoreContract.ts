@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  CubeDeploymentOwnership,
   CubeDraft,
   CubeSourceRef,
   type CubeStore,
@@ -32,8 +33,10 @@ export interface CubeStoreContractSubject {
   readonly store: CubeStore;
   /** The caller's user name */
   readonly user: string;
-  /** Another caller on the same cubes; none when the store has one user (e.g. a local engine, `anonymous`) */
+  /** Another caller on the same cubes, who isn't a member of `deployment`; none when the store has one user (e.g. a local engine, `anonymous`) */
   readonly otherUser?: CubeStore | undefined;
+  /** A deployment the caller may give cubes to */
+  readonly deployment: string;
 }
 
 /** A spec whose keys and nulls a store must keep as they are */
@@ -66,27 +69,48 @@ export const runCubeStoreContract = (
     const unique = (name: string): string =>
       `${name} ${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
-    test('Creates a cube at version 1, owned by its creator, and opens it exactly as saved', async () => {
-      const { store, user } = makeSubject();
+    test('Creates a cube at version 1, owned by the deployment given, and opens it exactly as saved', async () => {
+      const { store, user, deployment } = makeSubject();
       const name = unique('French orders');
-      const created = await store.createCube(draftNamed(name));
+      const created = await store.createCube(
+        draftNamed(name),
+        new CubeDeploymentOwnership(` ${deployment} `),
+      );
       expect(created.version).toBe(1);
       expect(created.name).toBe(name);
-      expect(created.owners).toEqual([user]);
+      expect(created.ownership).toEqual(
+        new CubeDeploymentOwnership(deployment),
+      );
       expect(created.createdBy).toBe(user);
       expect(created.content).toBe(contentNamed(name));
       const opened = await store.getCube(created.id);
       expect(opened.id).toBe(created.id);
       expect(opened.content).toBe(contentNamed(name));
       expect(opened.formatVersion).toBe(1);
+      expect(opened.ownership).toEqual(new CubeDeploymentOwnership(deployment));
       expect(opened.sourceRefs).toEqual([
         new CubeSourceRef('table', 'my::Database', 'NORTHWIND.ORDERS'),
       ]);
     });
 
-    test('Saves over the version read, and refuses a save over an older one', async () => {
+    test('Refuses a cube owned by no deployment', async () => {
       const { store } = makeSubject();
-      const created = await store.createCube(draftNamed(unique('Orders')));
+      expect(
+        await refusal(
+          store.createCube(
+            draftNamed(unique('Orders')),
+            new CubeDeploymentOwnership(' '),
+          ),
+        ),
+      ).toBe(CubeStoreErrorKind.INVALID);
+    });
+
+    test('Saves over the version read, and refuses a save over an older one', async () => {
+      const { store, deployment } = makeSubject();
+      const created = await store.createCube(
+        draftNamed(unique('Orders')),
+        new CubeDeploymentOwnership(deployment),
+      );
       const saved = await store.saveCube(
         created.id,
         1,
@@ -105,10 +129,41 @@ export const runCubeStoreContract = (
       );
     });
 
-    test('Finds cubes by part of the name in any case, or by id, without their spec', async () => {
-      const { store } = makeSubject();
+    test('Keeps every version: the history lists them the latest first, and each opens as saved', async () => {
+      const { store, user, deployment } = makeSubject();
+      const name = unique('Revised');
+      const created = await store.createCube(
+        draftNamed(name),
+        new CubeDeploymentOwnership(deployment),
+      );
+      await store.saveCube(created.id, 1, draftNamed(`${name} 2`));
+      await store.saveCube(created.id, 2, draftNamed(`${name} 3`));
+      const history = await store.getCubeHistory(created.id);
+      expect(history.map((cube) => [cube.version, cube.name])).toEqual([
+        [3, `${name} 3`],
+        [2, `${name} 2`],
+        [1, name],
+      ]);
+      expect(history.every((cube) => !(cube instanceof SavedCube))).toBe(true);
+      expect(history.map((cube) => cube.updatedBy)).toEqual([user, user, user]);
+      const first = await store.getCubeVersion(created.id, 1);
+      expect(first.version).toBe(1);
+      expect(first.content).toBe(contentNamed(name));
+      expect(await refusal(store.getCubeVersion(created.id, 4))).toBe(
+        CubeStoreErrorKind.NOT_FOUND,
+      );
+      expect(await refusal(store.getCubeHistory('no-such-cube'))).toBe(
+        CubeStoreErrorKind.NOT_FOUND,
+      );
+    });
+
+    test('Finds cubes by part of the name in any case, by id, by deployment or by creator, without their spec', async () => {
+      const { store, user, deployment } = makeSubject();
       const name = unique('Quarterly TRADES');
-      const created = await store.createCube(draftNamed(name));
+      const created = await store.createCube(
+        draftNamed(name),
+        new CubeDeploymentOwnership(deployment),
+      );
       const byName = await store.searchCubes({
         searchTerm: name.toLowerCase(),
       });
@@ -117,12 +172,30 @@ export const runCubeStoreContract = (
       expect(byName[0]?.name).toBe(name);
       const byId = await store.searchCubes({ searchTerm: created.id });
       expect(byId.map((cube) => cube.id)).toEqual([created.id]);
+      // the latest saved first: the store may hold the deployment's other cubes
+      const byDeployment = await store.searchCubes({ deployment });
+      expect(byDeployment[0]?.id).toBe(created.id);
+      const byDeploymentTerm = await store.searchCubes({
+        searchTerm: deployment,
+      });
+      expect(byDeploymentTerm[0]?.id).toBe(created.id);
+      expect(
+        await store.searchCubes({ deployment: `${deployment}-other` }),
+      ).toEqual([]);
+      const byCreator = await store.searchCubes({
+        creator: user,
+        searchTerm: name,
+      });
+      expect(byCreator.map((cube) => cube.id)).toEqual([created.id]);
     });
 
     test('Deletes a cube at the version read: it can no longer be opened, found or saved', async () => {
-      const { store } = makeSubject();
+      const { store, deployment } = makeSubject();
       const name = unique('Temporary');
-      const created = await store.createCube(draftNamed(name));
+      const created = await store.createCube(
+        draftNamed(name),
+        new CubeDeploymentOwnership(deployment),
+      );
       expect(await refusal(store.deleteCube(created.id, 2))).toBe(
         CubeStoreErrorKind.CONFLICT,
       );
@@ -146,12 +219,15 @@ export const runCubeStoreContract = (
       );
     });
 
-    test('Lets only the owners change a cube', async () => {
-      const { store, otherUser } = makeSubject();
+    test('Lets no one else change a cube: neither a non-member of its deployment, nor anyone but its creator where deployments are not checked', async () => {
+      const { store, otherUser, deployment } = makeSubject();
       if (!otherUser) {
         return;
       }
-      const created = await store.createCube(draftNamed(unique('Mine')));
+      const created = await store.createCube(
+        draftNamed(unique('Mine')),
+        new CubeDeploymentOwnership(deployment),
+      );
       expect(
         await refusal(otherUser.saveCube(created.id, 1, draftNamed('Theirs'))),
       ).toBe(CubeStoreErrorKind.FORBIDDEN);

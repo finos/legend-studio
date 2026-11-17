@@ -30,13 +30,20 @@ import {
   TEST__renderInCubeApplication,
 } from '../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
-import { InMemoryCubeStore } from '../../__test-utils__/InMemoryCubeStore.js';
 import {
+  InMemoryCubeStore,
+  TEST_CUBE_DEPLOYMENT,
+} from '../../__test-utils__/InMemoryCubeStore.js';
+import {
+  CUBE_SAVE_BETA_WARNING,
   LOAD_ERROR_TITLE,
   UNSAVED_CHANGES_MESSAGE,
 } from '../../__lib__/LegendCubePersistenceLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
-import { CubeDraft } from '../../graph-manager/CubeStore.js';
+import {
+  CubeDeploymentOwnership,
+  CubeDraft,
+} from '../../graph-manager/CubeStore.js';
 import { CUBE_NORTHWIND_MODEL } from '../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeEditor } from '../CubeEditor.js';
@@ -105,6 +112,7 @@ const saveInStore = async (
   (
     await store.createCube(
       new CubeDraft(name, 1, serializeCubeSpec(ordersDocument(name)), []),
+      new CubeDeploymentOwnership(TEST_CUBE_DEPLOYMENT),
     )
   ).id;
 
@@ -113,7 +121,7 @@ beforeEach(() => {
 });
 
 describe("The cube's name and its unsaved changes (spec §17.10)", () => {
-  test('Shows an asterisk until the cube is saved, and its id, version and owners on hover', async () => {
+  test('Shows an asterisk until the cube is saved, and its id, version and owner on hover', async () => {
     const { store, onSavedCubeChange } = await renderPage({
       document: ordersDocument(),
     });
@@ -125,15 +133,31 @@ describe("The cube's name and its unsaved changes (spec §17.10)", () => {
     fireEvent.click(headerButton('Save'));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Save cube')).not.toBeNull();
+    // saved cubes aren't backward compatible while Cube is in beta
+    expect(
+      within(dialog).getByTestId(LEGEND_CUBE_TEST_ID.SAVE_BETA_WARNING)
+        .textContent,
+    ).toBe(CUBE_SAVE_BETA_WARNING);
     fireEvent.change(within(dialog).getByRole('textbox', { name: 'Name' }), {
       target: { value: 'French orders' },
     });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    const save = within(dialog).getByRole<HTMLButtonElement>('button', {
+      name: 'Save',
+    });
+    // the deployment that will own it is asked for
+    expect(save.disabled).toBe(true);
+    expect(save.title).toBe('Give the deployment that will own the cube.');
+    fireEvent.change(
+      within(dialog).getByRole('textbox', { name: 'Owner deployment' }),
+      { target: { value: TEST_CUBE_DEPLOYMENT } },
+    );
+    expect(save.disabled).toBe(false);
+    fireEvent.click(save);
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
     expect(title().textContent).toBe('French orders');
     expect(title().title).toBe(
-      'French orders\nId: cube-1\nVersion: 1\nOwners: alice',
+      'French orders\nId: cube-1\nVersion: 1\nOwner: Deployment 1234',
     );
     expect(store.calls).toEqual(['create French orders']);
     expect(onSavedCubeChange).toHaveBeenLastCalledWith('cube-1');
@@ -164,7 +188,7 @@ describe('Load (spec §14.4, QUESTIONS.md U9)', () => {
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.LOAD_ERROR)).toBeNull();
   });
 
-  test('Lists saved cubes, opens one, and deletes one after a confirmation', async () => {
+  test('Lists saved cubes, opens one, and deletes one after a confirmation, the store deciding who may', async () => {
     const store = new InMemoryCubeStore('alice');
     await saveInStore(store, 'French orders');
     await saveInStore(store.asUser('bob'), 'Bob trades');
@@ -180,9 +204,26 @@ describe('Load (spec §14.4, QUESTIONS.md U9)', () => {
       LEGEND_CUBE_TEST_ID.LOAD_DIALOG_ROW,
     ) as [HTMLElement, HTMLElement];
     expect(bobRow.textContent).toContain('Bob trades');
-    expect(bobRow.textContent).toContain('Owners: bob');
-    // only the viewer's own cubes can be deleted
-    expect(within(bobRow).queryByRole('button', { name: 'Delete' })).toBeNull();
+    expect(bobRow.textContent).toContain('Owner: Deployment 1234');
+    // the store refuses who may not delete a cube: here anyone but its creator
+    fireEvent.click(within(bobRow).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(
+      within(
+        guaranteeNonNullable(
+          (
+            await screen.findByText(
+              'Delete "Bob trades"? It will no longer be found or opened.',
+            )
+          ).closest('[role="dialog"]'),
+        ) as HTMLElement,
+      ).getByRole('button', { name: 'Delete' }),
+    );
+    expect((await within(dialog).findByRole('alert')).textContent).toBe(
+      "Only this cube's creator, bob, can change it: this engine can't check who belongs to deployment 1234, which owns it.",
+    );
+    expect(
+      within(dialog).getAllByTestId(LEGEND_CUBE_TEST_ID.LOAD_DIALOG_ROW),
+    ).toHaveLength(2);
 
     fireEvent.click(within(aliceRow).getByRole('button', { name: 'Delete' }));
     const confirm = await screen.findByText(
@@ -209,11 +250,11 @@ describe('Load (spec §14.4, QUESTIONS.md U9)', () => {
     await waitFor(() => expect(title().textContent).toBe('Bob trades'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(onSavedCubeChange).toHaveBeenLastCalledWith('cube-2');
-    // another user's cube: Save as only, and no Delete
-    expect(headerButton('Save').disabled).toBe(true);
-    expect(await TEST__isCubeMenuItemDisabled('Save')).toBe(true);
+    // only the store knows who may change another user's cube
+    expect(headerButton('Save').disabled).toBe(false);
+    expect(await TEST__isCubeMenuItemDisabled('Save')).toBe(false);
     expect(await TEST__isCubeMenuItemDisabled('Save as…')).toBe(false);
-    expect(await TEST__isCubeMenuItemDisabled('Delete…')).toBe(true);
+    expect(await TEST__isCubeMenuItemDisabled('Delete…')).toBe(false);
   });
 });
 

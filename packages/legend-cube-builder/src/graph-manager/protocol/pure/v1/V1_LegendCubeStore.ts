@@ -21,7 +21,9 @@ import {
   type TracerService,
 } from '@finos/legend-shared';
 import {
+  CubeDeploymentOwnership,
   type CubeDraft,
+  type CubeOwnership,
   type CubeSearch,
   CubeSourceRef,
   type CubeStore,
@@ -33,6 +35,8 @@ import {
 import type { CubeEngineClientSettings } from '../../../CubeEngineClientSettings.js';
 import type { V1_CubeEngineConfig } from './V1_LegendCubeEngine.js';
 import {
+  V1_CubeDeploymentOwnership,
+  type V1_CubeOwnership,
   V1_CubeSearchSpecification,
   V1_CubeSourceRef,
   V1_StoredCube,
@@ -64,7 +68,8 @@ export const V1_toCubeStoreError = (error: unknown): CubeStoreError => {
       case 403:
         return new CubeStoreError(
           CubeStoreErrorKind.FORBIDDEN,
-          message ?? 'Only the cube’s owners can change it',
+          message ??
+            'Only members of the deployment that owns the cube can change it',
         );
       case 404:
         // a 404 without the store's message is a route the engine doesn't have
@@ -107,6 +112,29 @@ const readSourceRefs = (
     (ref) => new CubeSourceRef(ref.type, ref.path, ref.element, ref.project),
   );
 
+const V1_buildCubeOwnership = (
+  ownership: V1_CubeOwnership | undefined,
+): CubeOwnership => {
+  if (ownership instanceof V1_CubeDeploymentOwnership) {
+    return new CubeDeploymentOwnership(ownership.identifier);
+  }
+  throw unreadable('owner');
+};
+
+const V1_transformCubeOwnership = (
+  ownership: CubeOwnership,
+): V1_CubeOwnership => {
+  if (ownership instanceof CubeDeploymentOwnership) {
+    const deployment = new V1_CubeDeploymentOwnership();
+    deployment.identifier = ownership.identifier;
+    return deployment;
+  }
+  throw new CubeStoreError(
+    CubeStoreErrorKind.INVALID,
+    `Can't save a cube owned by ${ownership.label}`,
+  );
+};
+
 /** The fields every answer has; a missing one is an unreadable answer */
 const readSummaryFields = (
   cube: V1_StoredCube,
@@ -121,7 +149,7 @@ const readSummaryFields = (
     id: cube.id,
     version: cube.version,
     name: cube.name,
-    owners: cube.owners ?? [],
+    ownership: V1_buildCubeOwnership(cube.ownership),
     tags: cube.tags ?? [],
     formatVersion: cube.formatVersion,
     sourceRefs: readSourceRefs(cube.sourceRefs),
@@ -149,13 +177,17 @@ export const V1_buildSavedCube = (
   return new SavedCube({ ...readSummaryFields(cube), content: cube.content });
 };
 
-/** What a create or a save sends: the draft, and the version read for a save */
+/** What a create or a save sends: the draft, with the ownership for a create, or the version read for a save */
 export const V1_serializeCubeDraft = (
   draft: CubeDraft,
-  version?: number,
+  change: { ownership: CubeOwnership } | { version: number },
 ): PlainObject<V1_StoredCube> => {
   const cube = new V1_StoredCube();
-  cube.version = version;
+  if ('ownership' in change) {
+    cube.ownership = V1_transformCubeOwnership(change.ownership);
+  } else {
+    cube.version = change.version;
+  }
   cube.name = draft.name;
   cube.formatVersion = draft.formatVersion;
   cube.content = draft.content;
@@ -168,6 +200,22 @@ export const V1_serializeCubeDraft = (
     return sourceRef;
   });
   return V1_StoredCube.serialization.toJson(cube);
+};
+
+/** A list of summaries, which a search or a history answers */
+const readSummaries = (
+  answer: unknown,
+  what: string,
+): readonly SavedCubeSummary[] => {
+  if (!Array.isArray(answer)) {
+    throw new CubeStoreError(
+      CubeStoreErrorKind.UNAVAILABLE,
+      `The Cube store answered a ${what} with no list`,
+    );
+  }
+  return answer.map((cube: PlainObject<V1_StoredCube>) =>
+    V1_buildSavedCubeSummary(cube),
+  );
 };
 
 export class V1_LegendCubeStore implements CubeStore {
@@ -197,10 +245,16 @@ export class V1_LegendCubeStore implements CubeStore {
     return `${this.storeUrl}/${encodeURIComponent(id)}`;
   }
 
-  async createCube(draft: CubeDraft): Promise<SavedCube> {
+  async createCube(
+    draft: CubeDraft,
+    ownership: CubeOwnership,
+  ): Promise<SavedCube> {
     try {
       return V1_buildSavedCube(
-        await this.client.post(this.storeUrl, V1_serializeCubeDraft(draft)),
+        await this.client.post(
+          this.storeUrl,
+          V1_serializeCubeDraft(draft, { ownership }),
+        ),
       );
     } catch (error) {
       throw V1_toCubeStoreError(error);
@@ -216,7 +270,7 @@ export class V1_LegendCubeStore implements CubeStore {
       return V1_buildSavedCube(
         await this.client.put(
           this.cubeUrl(id),
-          V1_serializeCubeDraft(draft, version),
+          V1_serializeCubeDraft(draft, { version }),
         ),
       );
     } catch (error) {
@@ -232,23 +286,45 @@ export class V1_LegendCubeStore implements CubeStore {
     }
   }
 
+  async getCubeHistory(id: string): Promise<readonly SavedCubeSummary[]> {
+    try {
+      return readSummaries(
+        await this.client.get<PlainObject<V1_StoredCube>[]>(
+          `${this.cubeUrl(id)}/history`,
+        ),
+        'history',
+      );
+    } catch (error) {
+      throw V1_toCubeStoreError(error);
+    }
+  }
+
+  async getCubeVersion(id: string, version: number): Promise<SavedCube> {
+    try {
+      return V1_buildSavedCube(
+        await this.client.get(
+          `${this.cubeUrl(id)}/version/${encodeURIComponent(version)}`,
+        ),
+      );
+    } catch (error) {
+      throw V1_toCubeStoreError(error);
+    }
+  }
+
   async searchCubes(search: CubeSearch): Promise<readonly SavedCubeSummary[]> {
     const specification = new V1_CubeSearchSpecification();
     specification.searchTerm = search.searchTerm;
-    specification.owner = search.owner;
+    specification.deployment = search.deployment;
+    specification.creator = search.creator;
     specification.limit = search.limit;
     try {
-      const answer = await this.client.post<PlainObject<V1_StoredCube>[]>(
-        `${this.storeUrl}/search`,
-        V1_CubeSearchSpecification.serialization.toJson(specification),
+      return readSummaries(
+        await this.client.post<PlainObject<V1_StoredCube>[]>(
+          `${this.storeUrl}/search`,
+          V1_CubeSearchSpecification.serialization.toJson(specification),
+        ),
+        'search',
       );
-      if (!Array.isArray(answer)) {
-        throw new CubeStoreError(
-          CubeStoreErrorKind.UNAVAILABLE,
-          'The Cube store answered a search with no list',
-        );
-      }
-      return answer.map(V1_buildSavedCubeSummary);
     } catch (error) {
       throw V1_toCubeStoreError(error);
     }

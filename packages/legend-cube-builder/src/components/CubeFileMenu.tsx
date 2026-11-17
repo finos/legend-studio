@@ -91,7 +91,7 @@ export const CubeFileMenu = observer(
               label: 'Save as…',
               title:
                 persistence.saveAsDisabledReason ??
-                'Save a copy of the cube under a new name, as its owner',
+                'Save a copy of the cube under a new name, owned by a deployment you give',
               disabled:
                 persistence.saveAsDisabledReason !== undefined &&
                 !(
