@@ -50,6 +50,42 @@ describe("A model's functions that return a relation", () => {
     ]);
   });
 
+  test('Calls a function by its whole name, underscores and all, however many values it takes', () => {
+    /** The model's function of that name, renamed: its signature kept */
+    const renamed = (name: string, to: string): PlainObject => {
+      const element = ELEMENTS.find((each) =>
+        String(each.name).startsWith(`${name}_`),
+      ) as PlainObject;
+      return { ...element, name: to + String(element.name).slice(name.length) };
+    };
+    // the engine names an element by its name and its signature, so an
+    // underscore in the name is no signature's
+    const elements = [
+      renamed('ordersAbove', 'orders_above'),
+      renamed('ordersOf', 'orders_of'),
+      renamed('allOrders', 'all_orders'),
+    ];
+    expect(
+      V1_buildCubeFunctionOutlines(elements).map((fn) => [
+        fn.path,
+        fn.signature,
+      ]),
+    ).toEqual([
+      [
+        'sales::orders_above',
+        'sales::orders_above_Float_1__String_$0_1$__Relation_1_',
+      ],
+      ['sales::orders_of', 'sales::orders_of_Integer_MANY__Relation_1_'],
+      ['sales::all_orders', 'sales::all_orders__Relation_1_'],
+    ]);
+    // a name the engine wrote without its signature is its own
+    expect(
+      V1_buildCubeFunctionOutlines([
+        { ...renamed('allOrders', 'all_orders'), name: 'all_orders' },
+      ]).map((fn) => fn.path),
+    ).toEqual(['sales::all_orders']);
+  });
+
   test('Gives its parameters and the columns it declares', () => {
     expect(byPath('sales::ordersAbove')).toEqual({
       path: 'sales::ordersAbove',
