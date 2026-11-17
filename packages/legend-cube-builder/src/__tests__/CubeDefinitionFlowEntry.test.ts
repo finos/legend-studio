@@ -83,14 +83,18 @@ describe('The definition flow entry', () => {
       'components/canvas/CubeDefinitionFlowParameters.tsx',
       'definition-flow.ts',
       'graph-manager/CubeDataProduct.ts',
+      'graph-manager/CubeDefinitionFunctions.ts',
       'graph-manager/CubeDefinitionReader.ts',
       'graph-manager/CubeIngest.ts',
       'graph-manager/CubeIngestCatalog.ts',
       'graph-manager/protocol/pure/CubeProtocolJson.ts',
       'graph-manager/protocol/pure/v1/V1_CubeExpression.ts',
+      'graph-manager/protocol/pure/v1/V1_CubeFunctionDefinition.ts',
       'graph-manager/protocol/pure/v1/V1_CubeIngestDefinition.ts',
       'graph-manager/protocol/pure/v1/V1_CubeLambdaReader.ts',
       'graph-manager/protocol/pure/v1/V1_CubeLambdaSerializer.ts',
+      // the columns a user-defined function declares (PLAN §11.33)
+      'graph-manager/protocol/pure/v1/V1_CubeRelationTypeAdapter.ts',
     ]);
   });
 
@@ -106,6 +110,8 @@ describe('The definition flow entry', () => {
       '@xyflow/react',
       '@xyflow/react/dist/style.css',
       'react',
+      // legend-graph's own, through the relation type adapter (PLAN §11.33)
+      'serializr',
     ]);
   });
 });

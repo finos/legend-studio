@@ -26,6 +26,8 @@ import {
   stringifyLosslessJSON,
 } from '@finos/legend-shared';
 import type { CubeIngestDataSet } from '../../CubeIngestCatalog.js';
+import type { CubeFunctionDefinition } from '../../CubeDefinitionFunctions.js';
+import { V1_readCubeFunctionDefinition } from './v1/V1_CubeFunctionDefinition.js';
 import {
   V1_getCubeIngestMetadataSchema,
   V1_readCubeIngestDataSets,
@@ -58,6 +60,18 @@ export const readCubeIngestDataSets = (
  */
 export const getCubeIngestMetadataSchema = (): Schema =>
   V1_getCubeIngestMetadataSchema();
+
+/**
+ * A user-defined function's element, its content (protocol JSON) as Depot or
+ * a graph gives it, read for a definition's flow to open its calls;
+ * `undefined` for content that isn't a function's (PLAN §11.33)
+ */
+export const readCubeFunctionDefinition = (
+  path: string,
+  content: PlainObject,
+  origin?: string,
+): CubeFunctionDefinition | undefined =>
+  V1_readCubeFunctionDefinition(path, content, origin);
 
 /**
  * The IR of a lambda's protocol JSON, Cube's or the engine's grammar's, for
