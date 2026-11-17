@@ -32,7 +32,6 @@ import { generateSearchResultsRouteForMode } from '../../__lib__/LegendMarketpla
 import {
   assertErrorThrown,
   isNonEmptyString,
-  isString,
   LogEvent,
 } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
@@ -49,20 +48,9 @@ import { generatePathForDataProductSearchResult } from '../../utils/SearchUtils.
 import { logClickingDataProductCard } from '../../utils/LogUtils.js';
 import { LakehouseProductCard } from '../../components/LakehouseProductCard/LakehouseProductCard.js';
 import type { HomePageBannerConfig } from '../../application/LegendMarketplaceApplicationPlugin.js';
+import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 
 const TRENDING_DATA_PRODUCTS = 4;
-
-/**
- * The ids of the home page banners the user closed, newest first. They are kept in
- * this browser so that a closed banner stays closed on later visits.
- */
-export const LEGEND_MARKETPLACE_SETTING_KEY_DISMISSED_HOME_PAGE_BANNER_IDS =
-  'marketplace.home-page.dismissedBannerIds';
-/**
- * How many closed banner ids to keep: past this, the oldest ones are dropped, so the
- * stored list can't grow without bound as banners come and go.
- */
-export const MAX_REMEMBERED_DISMISSED_HOME_PAGE_BANNER_IDS = 50;
 
 export const MarketplaceLakehouseHome = observer(() => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -76,12 +64,11 @@ export const MarketplaceLakehouseHome = observer(() => {
     Record<string, ProductCardState[]>
   >({});
   const [loading, setLoading] = useState(false);
-  const [dismissedBannerIds, setDismissedBannerIds] = useState<string[]>(() => {
-    const storedIds = applicationStore.settingService.getObjectValue(
-      LEGEND_MARKETPLACE_SETTING_KEY_DISMISSED_HOME_PAGE_BANNER_IDS,
-    );
-    return Array.isArray(storedIds) ? storedIds.filter(isString) : [];
-  });
+  const [dismissedBannerIds, setDismissedBannerIds] = useState<string[]>(() =>
+    LegendMarketplaceUserDataHelper.homePage_getDismissedBannerIds(
+      applicationStore.userDataService,
+    ),
+  );
 
   const bannerConfigs: HomePageBannerConfig[] = useMemo(
     () =>
@@ -101,14 +88,11 @@ export const MarketplaceLakehouseHome = observer(() => {
   );
 
   const dismissBanner = (bannerId: string): void => {
-    const updatedDismissedBannerIds = [
-      bannerId,
-      ...dismissedBannerIds.filter((id) => id !== bannerId),
-    ].slice(0, MAX_REMEMBERED_DISMISSED_HOME_PAGE_BANNER_IDS);
-    setDismissedBannerIds(updatedDismissedBannerIds);
-    applicationStore.settingService.persistValue(
-      LEGEND_MARKETPLACE_SETTING_KEY_DISMISSED_HOME_PAGE_BANNER_IDS,
-      updatedDismissedBannerIds,
+    setDismissedBannerIds(
+      LegendMarketplaceUserDataHelper.homePage_addDismissedBannerId(
+        applicationStore.userDataService,
+        bannerId,
+      ),
     );
     LegendMarketplaceTelemetryHelper.logEvent_DismissHomePageBanner(
       applicationStore.telemetryService,

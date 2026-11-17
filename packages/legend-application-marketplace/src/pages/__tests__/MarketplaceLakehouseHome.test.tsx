@@ -22,10 +22,7 @@ import {
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { TestLegendMarketplaceApplicationPlugin } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import type { HomePageBannerConfig } from '../../application/LegendMarketplaceApplicationPlugin.js';
-import {
-  LEGEND_MARKETPLACE_SETTING_KEY_DISMISSED_HOME_PAGE_BANNER_IDS,
-  MAX_REMEMBERED_DISMISSED_HOME_PAGE_BANNER_IDS,
-} from '../Lakehouse/MarketplaceLakehouseHome.js';
+import { LegendMarketplaceUserDataHelper } from '../../__lib__/LegendMarketplaceUserDataHelper.js';
 import { createSpy } from '@finos/legend-shared/test';
 import type { TrendingDataProductEntry } from '@finos/legend-server-marketplace';
 
@@ -198,19 +195,10 @@ class TestBannerPlugin extends TestLegendMarketplaceApplicationPlugin {
  * Renders the home page with the given banners and waits for it, so that a banner
  * missing afterwards is hidden rather than not rendered yet.
  */
-const setUpHomePageWithBanners = async (
-  banners?: HomePageBannerConfig[],
-  closedBannerIds?: unknown,
-) => {
+const setUpHomePageWithBanners = async (banners?: HomePageBannerConfig[]) => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
     extraPlugins: [new TestBannerPlugin(banners)],
   });
-  if (closedBannerIds !== undefined) {
-    MOCK__baseStore.applicationStore.settingService.persistValue(
-      LEGEND_MARKETPLACE_SETTING_KEY_DISMISSED_HOME_PAGE_BANNER_IDS,
-      closedBannerIds as object,
-    );
-  }
   const { renderResult } =
     await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
   await screen.findByPlaceholderText('Which data can I help you find?');
@@ -238,11 +226,16 @@ test('renders banner from plugin and dismisses on close click', async () => {
 });
 
 test('keeps a closed banner closed when the home page is loaded again', async () => {
-  const { renderResult } = await setUpHomePageWithBanners();
+  const { MOCK__baseStore, renderResult } = await setUpHomePageWithBanners();
   fireEvent.click(screen.getByTitle('Dismiss banner'));
   await waitFor(() =>
     expect(screen.queryByText('Test banner content')).toBeNull(),
   );
+  expect(
+    LegendMarketplaceUserDataHelper.homePage_getDismissedBannerIds(
+      MOCK__baseStore.applicationStore.userDataService,
+    ),
+  ).toEqual(['test-banner']);
   renderResult.unmount();
 
   // a new store reads what the browser kept, as it does after a reload
@@ -263,47 +256,6 @@ test('shows a banner with a new id after an earlier banner was closed', async ()
   expect(screen.queryByText('Test banner content')).toBeNull();
   expect(screen.getByText('Updated test banner content')).toBeDefined();
   expect(screen.getAllByTitle('Dismiss banner')).toHaveLength(1);
-});
-
-test('remembers closed banners newest first, up to a limit', async () => {
-  const earlierIds = Array.from(
-    { length: MAX_REMEMBERED_DISMISSED_HOME_PAGE_BANNER_IDS },
-    (_, index) => `earlier-banner-${index}`,
-  );
-  const { MOCK__baseStore } = await setUpHomePageWithBanners(
-    undefined,
-    earlierIds,
-  );
-  fireEvent.click(screen.getByTitle('Dismiss banner'));
-
-  expect(
-    MOCK__baseStore.applicationStore.settingService.getObjectValue(
-      LEGEND_MARKETPLACE_SETTING_KEY_DISMISSED_HOME_PAGE_BANNER_IDS,
-    ),
-  ).toEqual([
-    'test-banner',
-    ...earlierIds.slice(0, MAX_REMEMBERED_DISMISSED_HOME_PAGE_BANNER_IDS - 1),
-  ]);
-});
-
-test('shows the banners when the stored closed banners are not a list', async () => {
-  await setUpHomePageWithBanners(undefined, { id: 'test-banner' });
-  expect(screen.getByText('Test banner content')).toBeDefined();
-});
-
-test('drops stored closed banner ids that are not text', async () => {
-  const { MOCK__baseStore } = await setUpHomePageWithBanners(
-    [TEST_BANNER, { id: 'test-banner-v2', content: <span>Banner two</span> }],
-    [42, true, 'test-banner'],
-  );
-  expect(screen.queryByText('Test banner content')).toBeNull();
-
-  fireEvent.click(screen.getByTitle('Dismiss banner'));
-  expect(
-    MOCK__baseStore.applicationStore.settingService.getObjectValue(
-      LEGEND_MARKETPLACE_SETTING_KEY_DISMISSED_HOME_PAGE_BANNER_IDS,
-    ),
-  ).toEqual(['test-banner-v2', 'test-banner']);
 });
 
 const makeTrendingEntry = (
