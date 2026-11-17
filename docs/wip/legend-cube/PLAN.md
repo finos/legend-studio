@@ -6118,16 +6118,16 @@ pushed. Evidence: `../legend-studio-cube-functions-evidence/`.
 **Steps (USER-FUNCTIONS.md §11, one PR each, into finos `cube-functions-dev`, the user's choice on 2026-11-14; it
 goes to master once the steps are in):**
 
-| Step | What                                                                                | Status |
-| ---- | ----------------------------------------------------------------------------------- | ------ |
-| F1   | Core: a call read as one step with inputs; containers that nest (#5910, merged)     | ✅     |
-| F2   | The flow's reader opens calls: loader, rules, boxes, scalar calls (#5911, merged)   | ✅     |
-| F3   | The flow draws them: frames, nesting, folding, boxes, the ƒ badge (#5912, merged)   | ✅     |
-| F4   | Marketplace's viewer: the Depot loader, the read order, the function's Pure (#5913) | 🚧     |
-| F5   | Studio: the preview and the ingest Overview, from the graph                         | ⏳     |
-| F6   | Producer Info's view flows                                                          | ⏳     |
-| F7   | The editor: the call step, locked inside, folds saved, Import Pure                  | ⏳     |
-| F8   | Later: overloads by literal type; the artifact's fields                             | ⏳     |
+| Step | What                                                                                        | Status |
+| ---- | ------------------------------------------------------------------------------------------- | ------ |
+| F1   | Core: a call read as one step with inputs; containers that nest (#5910, merged)             | ✅     |
+| F2   | The flow's reader opens calls: loader, rules, boxes, scalar calls (#5911, merged)           | ✅     |
+| F3   | The flow draws them: frames, nesting, folding, boxes, the ƒ badge (#5912, merged)           | ✅     |
+| F4   | Marketplace's viewer: the Depot loader, the read order, the function's Pure (#5913, merged) | ✅     |
+| F5   | Studio: the preview and the ingest Overview, from the graph                                 | ⏳     |
+| F6   | Producer Info's view flows                                                                  | ⏳     |
+| F7   | The editor: the call step, locked inside, folds saved, Import Pure                          | ⏳     |
+| F8   | Later: overloads by literal type; the artifact's fields                                     | ⏳     |
 
 **Settled with the user (2026-11-14):** a function Cube can't open is one box, not a refusal; function containers
 nest, the user's own stay flat; in the editor a call is one step with a locked inside; no Copy Its Steps Out (people

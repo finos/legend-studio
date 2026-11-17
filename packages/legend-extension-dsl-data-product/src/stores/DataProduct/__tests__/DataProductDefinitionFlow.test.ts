@@ -15,6 +15,7 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
+import { CORE_PURE_PATH } from '@finos/legend-graph';
 import {
   DepotServerClient,
   MASTER_SNAPSHOT_ALIAS,
@@ -77,8 +78,6 @@ describe('Ingest definitions from Depot, for an access point definition flow', (
 });
 
 describe('Functions from Depot, for an access point definition flow (PLAN §11.33)', () => {
-  const FUNCTION_CLASSIFIER =
-    'meta::pure::metamodel::function::ConcreteFunctionDefinition';
   const PROJECT = {
     groupId: 'com.example.shop',
     artifactId: 'order-insights',
@@ -87,7 +86,7 @@ describe('Functions from Depot, for an access point definition flow (PLAN §11.3
   const stored = (path: string): Record<string, unknown> => ({
     entity: {
       path,
-      classifierPath: FUNCTION_CLASSIFIER,
+      classifierPath: CORE_PURE_PATH.FUNCTION,
       content: { _type: 'function', name: path.split('::').at(-1) },
     },
   });
@@ -145,7 +144,7 @@ describe('Functions from Depot, for an access point definition flow (PLAN §11.3
       '1.4.0',
       true,
       true,
-      FUNCTION_CLASSIFIER,
+      CORE_PURE_PATH.FUNCTION,
     );
   });
 
