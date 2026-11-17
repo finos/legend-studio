@@ -140,6 +140,20 @@ export interface CubeSourceStep {
   create(id: string): SourceNode;
 }
 
+/**
+ * A call the host reads as one step whose inputs are some of its parameters,
+ * e.g. a user-defined function a definition's flow can't open, drawn as one
+ * box: the relations it takes, read before it, as its inputs in order
+ */
+export interface CubeCallStep {
+  /** The step's type, which its id is made from */
+  readonly type: string;
+  /** The indexes of the call's parameters that are relations: its inputs, in order */
+  readonly inputs: readonly number[];
+  /** The step, with this id, with one port per input */
+  create(id: string): QueryNode;
+}
+
 /** How a step stores an expression's lambda: protocol JSON with no source information */
 export interface CubeExpressionCodec {
   /** The JSON of a lambda, as a Filter by Expression or an Extend stores it */
@@ -155,6 +169,16 @@ export interface CubeQueryReadOptions {
    */
   readonly bindSource: (source: IR) => CubeSourceStep;
   readonly expressions: CubeExpressionCodec;
+  /**
+   * The step of a call the host reads as one, with the relations it takes as
+   * its inputs, e.g. a user-defined function a flow can't open; `undefined`
+   * for any other call, read as Cube reads it. It may be asked more than once
+   * for a call. `findCubeLambdaSources` doesn't look inside such a call: a
+   * host that reads one finds the sources it takes itself.
+   */
+  readonly bindCall?:
+    | ((call: Extract<IR, { readonly k: 'func' }>) => CubeCallStep | undefined)
+    | undefined;
   /**
    * The schemas the host typed relations of the lambda to before reading,
    * by their IR (`findCubeLambdaExtends`): an Extend's new columns are typed
@@ -252,6 +276,14 @@ const RELATION_INPUTS: ReadonlyMap<string, number> = new Map([
   ['concatenate', 2],
 ]);
 
+/**
+ * How many relations a function Cube reads as a step takes first, e.g. 2 for
+ * a join; `undefined` for any other (PLAN §11.32: a flow opens
+ * user-defined functions through these)
+ */
+export const getCubeRelationInputCount = (name: string): number | undefined =>
+  RELATION_INPUTS.get(getCubeFunctionName(name));
+
 /** Whether the IR is a source: an accessor, or the call of a function of the model */
 export const isCubeLambdaSource = (ir: IR): boolean =>
   ir.k === 'storeAccessor' ||
@@ -297,7 +329,7 @@ const isPlainExtend = (ir: IR): boolean =>
  * reads them: a lambda binds its parameters, and a let the name the
  * statements after it read
  */
-const findFreeVariables = (
+export const findCubeFreeVariables = (
   ir: IR,
   readExpression: (json: JsonObject) => IR,
 ): string[] => {
@@ -695,7 +727,7 @@ class CubeQueryReader {
       return [];
     }
     const read = irs.flatMap((ir) =>
-      findFreeVariables(ir, this.options.expressions.read),
+      findCubeFreeVariables(ir, this.options.expressions.read),
     );
     return parameters.filter((parameter) => read.includes(parameter));
   }
@@ -727,6 +759,12 @@ class CubeQueryReader {
         }
         return;
       }
+      // a call the host reads as one step: its rows are its relations'
+      const call = ir.k === 'func' ? this.options.bindCall?.(ir) : undefined;
+      if (call) {
+        this.callInputsOf(ir, call).forEach(visit);
+        return;
+      }
       if (ir.k !== 'func' || isCubeLambdaSource(ir)) {
         return;
       }
@@ -749,6 +787,20 @@ class CubeQueryReader {
       ir.params.slice(0, inputCount).forEach(visit);
     };
     visit(this.parts.relation);
+  }
+
+  /** The relations a call the host reads as one step takes, its inputs in order */
+  private callInputsOf(ir: IR, call: CubeCallStep): IR[] {
+    return call.inputs.map((index) => {
+      const input = ir.k === 'func' ? ir.params[index] : undefined;
+      if (input === undefined) {
+        throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SHAPE,
+          CUBE_QUERY_READER_MESSAGE.NOT_A_RELATION,
+        );
+      }
+      return input;
+    });
   }
 
   /** Notes the parameters the step reads, if it reads any */
@@ -942,6 +994,13 @@ class CubeQueryReader {
       // the steps after it read the variable, as the run that bound it wrote them
       const step = this.readRelation(bound, new Set(lets).add(ir.name));
       return { id: step.id, ir };
+    }
+    const call = ir.k === 'func' ? this.options.bindCall?.(ir) : undefined;
+    if (call) {
+      const inputs = this.callInputsOf(ir, call).map((input) =>
+        this.readRelation(input, lets),
+      );
+      return this.add(call.create(this.nextId(call.type)), inputs, ir);
     }
     if (isCubeLambdaSource(ir)) {
       const source = this.options.bindSource(ir);

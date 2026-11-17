@@ -35,6 +35,7 @@ import {
   getShownContainers,
   getStepsForNewContainer,
   isConnectedStepSet,
+  isInFoldedStepContainer,
   reconcileStepContainers,
   type StepContainer,
 } from '../StepContainer.js';
@@ -409,5 +410,128 @@ describe(unitTest('Saved spec: step containers'), () => {
     expect(() => decodeCubeSpec(withContainers(containers))).toThrow(
       new CubeSpecDecodeError(path, detail),
     );
+  });
+});
+
+/**
+ * Containers inside containers (PLAN §11.32): a definition's flow draws the
+ * call of a user-defined function as a container, and a call in its body as
+ * one inside it. The manager's example: s1 → join (left), s2 → f → join
+ * (right), join → sort.
+ */
+describe(unitTest('Step containers inside others'), () => {
+  const nested = (
+    id: string,
+    steps: string[],
+    parentId?: string,
+    folded = false,
+  ): StepContainer => ({
+    id,
+    title: id,
+    steps,
+    folded,
+    ...(parentId === undefined ? {} : { parentId }),
+  });
+
+  test('Draws each inside its parent, the innermost owning a step both list', () => {
+    expect(
+      getShownContainers(managerQuery(), [
+        nested('outer', ['join', 'f']),
+        nested('inner', ['f', 's2'], 'outer'),
+      ]),
+    ).toEqual([
+      {
+        container: nested('outer', ['join', 'f']),
+        steps: ['join'],
+        nestedSteps: ['f', 's2'],
+      },
+      { container: nested('inner', ['f', 's2'], 'outer'), steps: ['f', 's2'] },
+    ]);
+  });
+
+  test('Draws a parent whose own steps are linked only through the steps inside it', () => {
+    // join and s1 are linked; s2 → f → join through the inner container
+    const shown = getShownContainers(managerQuery(), [
+      nested('outer', ['s2', 'join']),
+      nested('inner', ['f'], 'outer'),
+    ]);
+    expect(shown.map((each) => [each.container.id, each.steps])).toEqual([
+      ['outer', ['join', 's2']],
+      ['inner', ['f']],
+    ]);
+  });
+
+  test('Draws a parent with no step of its own, around the containers inside it', () => {
+    expect(
+      getShownContainers(managerQuery(), [
+        nested('outer', []),
+        nested('inner', ['s2', 'f'], 'outer'),
+      ]).map((each) => [each.container.id, each.steps, each.nestedSteps]),
+    ).toEqual([
+      ['outer', [], ['f', 's2']],
+      ['inner', ['f', 's2'], undefined],
+    ]);
+  });
+
+  test("Doesn't draw a parent whose steps aren't one block, nor the containers inside it", () => {
+    expect(
+      getShownContainers(managerQuery(), [
+        nested('outer', ['sort']),
+        nested('inner', ['s2'], 'outer'),
+      ]),
+    ).toEqual([]);
+  });
+
+  test("Doesn't draw containers whose parents make a cycle", () => {
+    expect(
+      getShownContainers(managerQuery(), [
+        nested('a', ['s2'], 'b'),
+        nested('b', ['f'], 'a'),
+      ]),
+    ).toEqual([]);
+  });
+
+  test('Tells a container inside a folded one, at any depth', () => {
+    const shown = getShownContainers(managerQuery(), [
+      nested('outer', ['join'], undefined, true),
+      nested('middle', ['f'], 'outer'),
+      nested('inner', ['s2'], 'middle'),
+    ]);
+    const byId = (id: string): StepContainer =>
+      shown.find((each) => each.container.id === id)
+        ?.container as StepContainer;
+    expect(isInFoldedStepContainer(shown, byId('outer'))).toBe(false);
+    expect(isInFoldedStepContainer(shown, byId('middle'))).toBe(true);
+    expect(isInFoldedStepContainer(shown, byId('inner'))).toBe(true);
+  });
+
+  test("A cube's saved containers never nest: the spec neither writes nor reads a parent", () => {
+    const document = new CubeDocument({
+      meta: {
+        ...DEFAULT_META,
+        containers: [
+          nested('outer', ['join']),
+          nested('inner', ['f'], 'outer'),
+        ],
+      },
+    });
+    expect(encodeCubeSpec(document).meta).toEqual({
+      containers: [
+        { id: 'outer', title: 'outer', steps: ['join'] },
+        { id: 'inner', title: 'inner', steps: ['f'] },
+      ],
+    });
+    // a parent written by hand is kept as an unknown key, and nests nothing
+    const read = decodeCubeSpec({
+      formatVersion: 1,
+      query: { nodes: [] },
+      meta: {
+        containers: [
+          { id: 'inner', title: 'inner', steps: ['f'], parentId: 'outer' },
+        ],
+      },
+    }).document.meta.containers?.[0];
+    expect(read?.parentId).toBeUndefined();
+    expect(read?.rest).toEqual({ parentId: 'outer' });
   });
 });
