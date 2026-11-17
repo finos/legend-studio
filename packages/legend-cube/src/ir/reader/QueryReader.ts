@@ -278,7 +278,7 @@ const RELATION_INPUTS: ReadonlyMap<string, number> = new Map([
 
 /**
  * How many relations a function Cube reads as a step takes first, e.g. 2 for
- * a join; `undefined` for any other (PLAN §11.32: a flow opens
+ * a join; `undefined` for any other (PLAN §11.33: a flow opens
  * user-defined functions through these)
  */
 export const getCubeRelationInputCount = (name: string): number | undefined =>

@@ -414,7 +414,7 @@ describe(unitTest('Saved spec: step containers'), () => {
 });
 
 /**
- * Containers inside containers (PLAN §11.32): a definition's flow draws the
+ * Containers inside containers (PLAN §11.33): a definition's flow draws the
  * call of a user-defined function as a container, and a call in its body as
  * one inside it. The manager's example: s1 → join (left), s2 → f → join
  * (right), join → sort.

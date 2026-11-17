@@ -69,7 +69,7 @@ describe('Node editor registries', () => {
       dataProductAccessPoint:
         'Sources data from an access point of a deployed data product.',
       ingestDataset:
-        'Sources data from a data set of a deployed ingest definition.',
+        'Sources data from a data set of a deployed ingest definition: its rows, or its batch metadata, a row per batch it was sent in.',
       service:
         "Sources data from a deployed service. In progress: Cube can't read services yet.",
       dataSpace:

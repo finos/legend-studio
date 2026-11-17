@@ -439,6 +439,7 @@ import type { MetadataRequestOptions } from '../../../action/dev-metadata/Metada
 import {
   type Accessor,
   type DataProductAccessor,
+  IngestionAccessor,
   RelationalStoreAccessor,
 } from '../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import { IngestDefinition } from '../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
@@ -450,6 +451,8 @@ import {
   V1_createAccessorFromPackageableElement,
   V1_buildDataProductAccessor,
   V1_resolveAccessorsFromRawLambda,
+  V1_qualifyIngestAccessor,
+  V1_buildIngestAccessorQualifier,
   V1_resolveRelationalStoreAccessorPath,
   V1_buildRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
@@ -2445,10 +2448,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           });
         }
         if (v1Accessor instanceof V1_IngestDefinitionAccessor) {
-          return this.createAccessorFromPackageableElement(element, graph, {
-            schemaName: undefined,
-            tableName: v1Accessor.path[1],
-          });
+          const accessor = await this.createAccessorFromPackageableElement(
+            element,
+            graph,
+            {
+              schemaName: undefined,
+              tableName: v1Accessor.path[1],
+            },
+          );
+          return accessor instanceof IngestionAccessor
+            ? V1_qualifyIngestAccessor(accessor, v1Accessor, graph)
+            : accessor;
         }
         if (v1Accessor instanceof V1_RelationStoreAccessor) {
           // best effort: skip an accessor whose path is malformed
@@ -4807,17 +4817,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       .filter(filterByType(V1_IngestDefinitionAccessor))
       .forEach((accessor) => {
         const [ingestDefinitionPath, datasetName] = accessor.path;
+        // a data set's batch metadata is read apart from its rows
+        const { accessorQualifier } = accessor;
+        const qualifier = accessorQualifier
+          ? returnUndefOnError(() =>
+              V1_buildIngestAccessorQualifier(accessorQualifier),
+            )
+          : undefined;
         if (
           ingestDefinitionPath &&
           datasetName &&
           !references.some(
             (reference) =>
               reference.ingestDefinitionPath === ingestDefinitionPath &&
-              reference.datasetName === datasetName,
+              reference.datasetName === datasetName &&
+              reference.qualifier === qualifier,
           )
         ) {
           references.push(
-            new IngestDatasetReference(ingestDefinitionPath, datasetName),
+            new IngestDatasetReference(
+              ingestDefinitionPath,
+              datasetName,
+              qualifier,
+            ),
           );
         }
       });

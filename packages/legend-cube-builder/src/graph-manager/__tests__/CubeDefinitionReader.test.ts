@@ -23,6 +23,8 @@ import {
   Extend,
   Filter,
   Group,
+  ingestAccessor,
+  IngestDatasetQualifier,
   IngestDatasetSource,
   isSameCubeIR,
   TypeFamily,
@@ -316,6 +318,170 @@ describe("Reading an access point's definition to draw it", () => {
       [],
     ]);
     expect(flow.parameters).toEqual([]);
+  });
+});
+
+/** The batch metadata of the data set the access points read, `#I{…EOD_POSITIONS|metadata}#`, as legend-graph writes it */
+const EOD_POSITIONS_METADATA = {
+  _type: 'classInstance',
+  type: 'I',
+  value: {
+    metadata: true,
+    accessorQualifier: 'metadata',
+    path: [INGEST_DEFINITION, 'EOD_POSITIONS'],
+  },
+};
+
+/** The columns of a data set's batch metadata, as legend-graph types them */
+const METADATA_COLUMNS = [
+  'table_name',
+  'batch_start_ts_utc',
+  'batch_end_ts_utc',
+  'batch_status',
+  'table_batch_id',
+  'ingest_request_id',
+  'batch_source_info',
+  'additional_metadata',
+  'batch_statistics',
+];
+
+/** `$p.<column> == '<value>'` */
+const equalsText = (column: string, value: string): unknown => ({
+  _type: 'func',
+  function: 'equal',
+  parameters: [columnOf(column), { _type: 'string', value }],
+});
+
+describe("Reading a definition of a data set's batch metadata", () => {
+  test('Types it as legend-graph types the batch metadata, with or without its ingest definition, every step checked', () => {
+    // the batches that succeeded
+    const lambda = queryOf(
+      filterOf(EOD_POSITIONS_METADATA, equalsText('batch_status', 'SUCCESS')),
+    );
+    // nothing for the host to load first
+    expect(findCubeDefinitionIngestDefinitions(lambda)).toEqual([]);
+    [withIngestDefinition, {}].forEach((options) => {
+      const flow = asFlow(readCubeDefinition(lambda, options));
+      expect(stepTypes(flow)).toEqual([IngestDatasetSource.TYPE, 'filter']);
+      const source = flow.query.getNode(
+        flow.steps[0]?.id ?? '',
+      ) as IngestDatasetSource;
+      expect(source.qualifier).toBe(IngestDatasetQualifier.METADATA);
+      expect([source.ingestDefinition, source.dataSet]).toEqual([
+        INGEST_DEFINITION,
+        'EOD_POSITIONS',
+      ]);
+      expect(source.resolution.kind).toBe('resolved');
+      expect(flow.uncheckedStepIds).toEqual([]);
+      expect(flow.unknownDataSets).toEqual([]);
+      expect(
+        buildSchemasAndValidity(flow.query)
+          .schemas.get(flow.outputStepId)
+          ?.names(),
+      ).toEqual(METADATA_COLUMNS);
+      // the Pure up to the source: its accessor, with its qualifier
+      expect(
+        isSameCubeIR(
+          flow.steps[0]?.ir as IR,
+          ingestAccessor(
+            [INGEST_DEFINITION, 'EOD_POSITIONS'],
+            undefined,
+            undefined,
+            IngestDatasetQualifier.METADATA,
+          ),
+        ),
+      ).toBe(true);
+    });
+  });
+
+  test("Reads a data set's rows and its batch metadata as two steps, each typed as it reads", () => {
+    // each position with its batch's status, the join made up
+    const lambda = queryOf({
+      _type: 'func',
+      function: 'join',
+      parameters: [
+        EOD_POSITIONS,
+        EOD_POSITIONS_METADATA,
+        {
+          _type: 'property',
+          parameters: [
+            { _type: 'packageableElementPtr', fullPath: 'JoinKind' },
+          ],
+          property: 'INNER',
+        },
+        {
+          _type: 'lambda',
+          parameters: [variableOf('p'), variableOf('m')],
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                columnOf('STATUS'),
+                {
+                  _type: 'property',
+                  property: 'batch_status',
+                  parameters: [variableOf('m')],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    // the definition, for the rows
+    expect(findCubeDefinitionIngestDefinitions(lambda)).toEqual([
+      INGEST_DEFINITION,
+    ]);
+    const flow = asFlow(readCubeDefinition(lambda, withIngestDefinition));
+    expect(stepTypes(flow)).toEqual([
+      IngestDatasetSource.TYPE,
+      IngestDatasetSource.TYPE,
+      'join',
+    ]);
+    const [rows, metadata] = flow.steps.map(
+      (step) => flow.query.getNode(step.id) as IngestDatasetSource,
+    );
+    expect([rows?.dataSet, rows?.qualifier]).toEqual([
+      'EOD_POSITIONS',
+      undefined,
+    ]);
+    expect([metadata?.dataSet, metadata?.qualifier]).toEqual([
+      'EOD_POSITIONS',
+      IngestDatasetQualifier.METADATA,
+    ]);
+    expect(flow.uncheckedStepIds).toEqual([]);
+    const schemas = buildSchemasAndValidity(flow.query).schemas;
+    expect(schemas.get(rows?.id ?? '')?.names()).not.toEqual(METADATA_COLUMNS);
+    expect(schemas.get(metadata?.id ?? '')?.names()).toEqual(METADATA_COLUMNS);
+    // the join's keys first, as Cube's Join gives them
+    expect([...(schemas.get(flow.outputStepId)?.names() ?? [])].sort()).toEqual(
+      [
+        ...(schemas.get(rows?.id ?? '')?.names() ?? []),
+        ...METADATA_COLUMNS,
+      ].sort(),
+    );
+  });
+
+  test("Refuses a qualifier Cube can't type, saying which, as a source", () => {
+    const reading = readCubeDefinition(
+      queryOf({
+        _type: 'classInstance',
+        type: 'I',
+        value: {
+          metadata: false,
+          accessorQualifier: 'incoming',
+          path: [INGEST_DEFINITION, 'EOD_POSITIONS'],
+        },
+      }),
+      withIngestDefinition,
+    );
+    expect(reading).toEqual({
+      kind: 'refused',
+      reason: CubeLambdaReadErrorKind.SOURCE,
+      message:
+        "Cube reads an ingest data set's rows, #I{…}#, and its batch metadata, #I{…|metadata}#, not #I{…|incoming}#.",
+    });
   });
 });
 

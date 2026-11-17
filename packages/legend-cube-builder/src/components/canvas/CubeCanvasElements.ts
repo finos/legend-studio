@@ -347,7 +347,11 @@ export const getCubeCanvasNodeLabel = (
     return { title: node.accessPoint, detail: node.dataProductName };
   }
   if (node instanceof IngestDatasetSource) {
-    return { title: node.dataSet, detail: node.ingestDefinitionName };
+    // a data set's batch metadata, `#I{…|metadata}#`, e.g. "TRADES metadata"
+    return {
+      title: node.readsMetadata ? `${node.dataSet} metadata` : node.dataSet,
+      detail: node.ingestDefinitionName,
+    };
   }
   if (node instanceof FunctionSource) {
     // its values, as the call takes them: `100000, (none)`

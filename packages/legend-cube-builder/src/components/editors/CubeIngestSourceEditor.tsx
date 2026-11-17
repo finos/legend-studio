@@ -20,7 +20,10 @@ import { guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { getIngestEnvironmentLabel } from '../../__lib__/LegendCubeIngestLabels.js';
+import {
+  CUBE_INGEST_METADATA_READS_LABEL,
+  getIngestEnvironmentLabel,
+} from '../../__lib__/LegendCubeIngestLabels.js';
 import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
 import { getCubeIngestSettings } from '../../graph-manager/CubeIngest.js';
 import { getCubeIngestEnvironmentKeyOfModel } from '../../graph-manager/CubeIngestCatalog.js';
@@ -34,7 +37,9 @@ import { CubeWarehouseControl } from './CubeWarehouseControl.js';
  * producer deployment and warehouse, which can be edited, its columns as
  * its deployed definition declares them, and Refresh, which reads the
  * definition again. In a data product cube (§11.30), the cube's class and
- * warehouse, and no producer deployment
+ * warehouse, and no producer deployment. A source of the data set's batch
+ * metadata says so, and has no Refresh: its columns are the same for every
+ * data set.
  */
 export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
   const { editorState, readOnly } = props;
@@ -65,6 +70,12 @@ export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
         </dd>
         <dt className="text-[var(--color-text-secondary)]">Data set</dt>
         <dd className="min-w-0 break-all">{source.dataSet}</dd>
+        {source.readsMetadata && (
+          <>
+            <dt className="text-[var(--color-text-secondary)]">Reads</dt>
+            <dd className="min-w-0">{CUBE_INGEST_METADATA_READS_LABEL}</dd>
+          </>
+        )}
         {environment && (
           <>
             <dt className="text-[var(--color-text-secondary)]">Environment</dt>
@@ -91,24 +102,27 @@ export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
           </>
         )}
       </dl>
-      <div className="flex items-center gap-2">
-        <CubeButton
-          title="Read the data set's columns again from the deployed ingest definition"
-          disabled={refreshing}
-          onClick={() => {
-            flowResult(editorState.refreshSource(source.id)).catch(
-              editorState.host.applicationStore.alertUnhandledError,
-            );
-          }}
-        >
-          Refresh
-        </CubeButton>
-        {refreshing && (
-          <span className="text-base text-[var(--color-text-secondary)]">
-            {CUBE_PENDING_LABEL.REFRESHING_SOURCE}
-          </span>
-        )}
-      </div>
+      {/* a data set's batch metadata has the same columns whatever the data set */}
+      {!source.readsMetadata && (
+        <div className="flex items-center gap-2">
+          <CubeButton
+            title="Read the data set's columns again from the deployed ingest definition"
+            disabled={refreshing}
+            onClick={() => {
+              flowResult(editorState.refreshSource(source.id)).catch(
+                editorState.host.applicationStore.alertUnhandledError,
+              );
+            }}
+          >
+            Refresh
+          </CubeButton>
+          {refreshing && (
+            <span className="text-base text-[var(--color-text-secondary)]">
+              {CUBE_PENDING_LABEL.REFRESHING_SOURCE}
+            </span>
+          )}
+        </div>
+      )}
       <PanelLoadingIndicator isLoading={refreshing} />
       {resolution.kind === 'resolved' ? (
         <CubeSchemaColumnsTable schema={resolution.schema} />

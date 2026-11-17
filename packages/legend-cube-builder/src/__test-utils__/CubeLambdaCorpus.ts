@@ -233,7 +233,8 @@ export const TEST__bindSampleSources =
         (node): node is IngestDatasetSource =>
           node instanceof IngestDatasetSource &&
           node.ingestDefinition === source.path[0] &&
-          node.dataSet === source.path[1],
+          node.dataSet === source.path[1] &&
+          node.qualifier === source.qualifier,
       );
       if (!dataSet) {
         throw new CubeLambdaReadError(

@@ -99,15 +99,36 @@ import {
   type Accessor,
   type AccessorInstanceValue,
   DataProductAccessor,
+  IngestAccessorQualifier,
   IngestionAccessor,
   RelationalStoreAccessor,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import {
   type V1_Accessor,
   V1_DataProductAccessor,
+  V1_IngestAccessorQualifier,
   V1_IngestDefinitionAccessor,
   V1_RelationStoreAccessor,
 } from '../../../model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
+
+const V1_transformIngestAccessorQualifier = (
+  qualifier: IngestAccessorQualifier,
+): V1_IngestAccessorQualifier => {
+  switch (qualifier) {
+    case IngestAccessorQualifier.METADATA:
+      return V1_IngestAccessorQualifier.METADATA;
+    case IngestAccessorQualifier.INCOMING:
+      return V1_IngestAccessorQualifier.INCOMING;
+    case IngestAccessorQualifier.MILESTONED:
+      return V1_IngestAccessorQualifier.MILESTONED;
+    case IngestAccessorQualifier.INCOMING_MILESTONED:
+      return V1_IngestAccessorQualifier.INCOMING_MILESTONED;
+    default:
+      throw new UnsupportedOperationError(
+        `Can't transform ingest accessor qualifier '${qualifier}'`,
+      );
+  }
+};
 
 const transformAccessor = (accessor: Accessor): V1_Accessor => {
   if (accessor instanceof DataProductAccessor) {
@@ -117,6 +138,11 @@ const transformAccessor = (accessor: Accessor): V1_Accessor => {
   } else if (accessor instanceof IngestionAccessor) {
     const v1Accessor = new V1_IngestDefinitionAccessor();
     v1Accessor.path = accessor.path;
+    v1Accessor.accessorQualifier = accessor.qualifier
+      ? V1_transformIngestAccessorQualifier(accessor.qualifier)
+      : undefined;
+    v1Accessor.metadata =
+      accessor.qualifier === IngestAccessorQualifier.METADATA;
     return v1Accessor;
   } else if (accessor instanceof RelationalStoreAccessor) {
     const v1Accessor = new V1_RelationStoreAccessor();

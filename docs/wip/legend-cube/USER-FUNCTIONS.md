@@ -10,7 +10,7 @@ its body's steps, and what the editable canvas would do with them. It is based o
 
 The prototype is the local branch `cube-user-functions` in `../legend-studio-cube-functions`. The evidence, the mock
 data, the scripts and the shots are in `../legend-studio-cube-functions-evidence/`. Every name in them is made up.
-PLAN §11.32 holds the short version.
+PLAN §11.33 holds the short version.
 
 ## Summary
 

@@ -25,6 +25,7 @@ import {
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
 } from '../../nodes/NodeRegistry.js';
+import { IngestDatasetQualifier } from '../../ir/CubeIR.js';
 import { IngestDatasetSource } from '../../nodes/sources/IngestDatasetSource.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import type { JsonObject, JsonValue } from '../../utils/Json.js';
@@ -125,6 +126,38 @@ describe(unitTest('Saved specs of ingest cubes'), () => {
     const [node] = (saved.query as { nodes: JsonObject[] }).nodes;
     expect(node?.schemaSnapshot).toBeUndefined();
     expect(node?.ingestDefinitionUrn).toBe(URN);
+  });
+
+  test("Saves a source of a data set's batch metadata with its qualifier, and refuses one Cube doesn't read", () => {
+    const query = SPEC.query as { nodes: JsonObject[] };
+    const [first, ...others] = query.nodes;
+    const { schemaSnapshot, laterKey, ...coordinates } = first as JsonObject;
+    // the qualifier where Cube writes it: after the data set
+    const metadataNode: JsonObject = {
+      ...coordinates,
+      qualifier: 'metadata',
+      schemaSnapshot: schemaSnapshot as JsonValue,
+      laterKey: laterKey as JsonValue,
+    };
+    const spec: JsonObject = {
+      ...SPEC,
+      query: { ...query, nodes: [metadataNode, ...others] },
+    };
+    const { document } = decodeCubeSpec(spec, { registry: REGISTRY });
+    const [metadata, rows] = document.query.nodes as IngestDatasetSource[];
+    expect(metadata?.qualifier).toBe(IngestDatasetQualifier.METADATA);
+    expect(metadata?.rest).toEqual({ laterKey: 'kept' });
+    expect(rows?.qualifier).toBeUndefined();
+    expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
+      JSON.stringify(spec),
+    );
+    ['incoming', 'METADATA', '', 12].forEach((value) =>
+      expect(() =>
+        decodeCubeSpec(withFirstNodeField('qualifier', value), {
+          registry: REGISTRY,
+        }),
+      ).toThrow(CubeSpecDecodeError),
+    );
   });
 
   test.each(['ingestDefinitionUrn', 'ingestDefinition', 'dataSet'])(

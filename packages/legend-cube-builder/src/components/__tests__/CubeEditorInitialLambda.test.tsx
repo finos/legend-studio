@@ -31,8 +31,11 @@ import {
   colSpecArray,
   columnAccess,
   dataProductAccessor,
+  enumValue,
   func,
   ingestAccessor,
+  IngestDatasetQualifier,
+  JOIN_KIND_PATH,
   lambda,
   literal,
   aggregationColSpec,
@@ -71,6 +74,13 @@ import { CubeEditor } from '../CubeEditor.js';
 
 const LABEL = 'materialized view BIG_TRADES';
 const TRADES = ingestAccessor([FAKE_INGEST_ORDERS, 'TRADES']);
+/** TRADES's batch metadata, `#I{…TRADES|metadata}#` */
+const TRADES_METADATA = ingestAccessor(
+  [FAKE_INGEST_ORDERS, 'TRADES'],
+  undefined,
+  undefined,
+  IngestDatasetQualifier.METADATA,
+);
 const row = (name: string): IR => columnAccess('row', name);
 const integer = (value: string): IR => literal({ kind: 'integer', value });
 
@@ -207,6 +217,103 @@ describe('Opening the page on a lambda', () => {
       ),
     );
     expect(TEST__getCanvasNodes()).toHaveLength(0);
+  });
+
+  test("Reads a data set's batch metadata into a step of its own, typed by the batch metadata's columns, written back with its qualifier", async () => {
+    // the batches after the tenth, as Cube writes a Filter and a Limit
+    await renderOn(
+      ingestHost(),
+      serializeCubeLambdaForHost(
+        lambda(
+          [],
+          [
+            func('limit', [
+              func('filter', [
+                TRADES_METADATA,
+                lambda(
+                  ['row'],
+                  [func('greaterThan', [row('table_batch_id'), integer('10')])],
+                ),
+              ]),
+              integer('5'),
+            ]),
+          ],
+        ),
+      ),
+    );
+    await TEST__findCanvasNode('limit101');
+    expect(TEST__getCanvasNodes()).toHaveLength(3);
+    expect(
+      (await TEST__findCanvasNode('ingestDataset101')).textContent,
+    ).toContain('TRADES metadata');
+    // Cube writes it back the same, its qualifier kept, so there's nothing to say
+    await waitFor(() =>
+      expect(
+        screen.queryByText(CUBE_LAMBDA_IMPORT_MESSAGE.READING(LABEL)),
+      ).toBeNull(),
+    );
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT)).toBeNull();
+  });
+
+  test("Reads a data set's rows and its batch metadata as two steps", async () => {
+    // each trade with a batch of its id, the join made up
+    await renderOn(
+      ingestHost(),
+      serializeCubeLambdaForHost(
+        lambda(
+          [],
+          [
+            func('join', [
+              TRADES,
+              TRADES_METADATA,
+              enumValue(JOIN_KIND_PATH, 'INNER'),
+              lambda(
+                ['l', 'r'],
+                [
+                  func('equal', [
+                    columnAccess('l', 'TRADE_ID'),
+                    columnAccess('r', 'table_batch_id'),
+                  ]),
+                ],
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+    await TEST__findCanvasNode('join101');
+    expect(
+      (await TEST__findCanvasNode('ingestDataset101')).textContent,
+    ).not.toContain('metadata');
+    expect(
+      (await TEST__findCanvasNode('ingestDataset102')).textContent,
+    ).toContain('TRADES metadata');
+    expect(
+      screen.queryByText(CUBE_LAMBDA_IMPORT_MESSAGE.CANT_READ(LABEL)),
+    ).toBeNull();
+  });
+
+  test("Reads a materialized view's batch metadata, whose rows Cube can't read", async () => {
+    await renderOn(
+      ingestHost(),
+      serializeCubeLambdaForHost(
+        lambda(
+          [],
+          [
+            ingestAccessor(
+              [FAKE_INGEST_ORDERS, 'DAILY'],
+              undefined,
+              undefined,
+              IngestDatasetQualifier.METADATA,
+            ),
+          ],
+        ),
+      ),
+    );
+    expect(
+      (await TEST__findCanvasNode('ingestDataset101')).textContent,
+    ).toContain('DAILY metadata');
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT)).toBeNull();
   });
 
   test('Asks for a source first when the host has several ingest deployments', async () => {

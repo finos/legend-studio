@@ -1,5 +1,11 @@
 # @finos/legend-cube
 
+## 0.0.11
+
+### Patch Changes
+
+- [#5914](https://github.com/finos/legend-studio/pull/5914) [`d61ffa4`](https://github.com/finos/legend-studio/commit/d61ffa49c3e6ab2ae9605eab2ae0efd486cb70d7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube reads queries of an ingest data set's batch metadata, `#I{ingest.dataSet|metadata}#`. It draws them read-only, in the data product viewer and in Studio's ingest definition Overview, and opens them in its editor, Edit in Cube included. Their columns are the batch metadata's, as legend-graph types them, and Cube writes the accessor back with its qualifier. Its Ingest tab can add a data set's batch metadata as a source too: **Read: Batch metadata**. Cube refuses a qualifier it can't type yet, e.g. `incoming`, naming it, where it used to read the data set's rows instead. legend-graph exports the batch metadata's relation type as protocol, `V1_getIngestMetadataRelationType`, for a reader with no graph.
+
 ## 0.0.10
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @finos/legend-server-marketplace
 
+## 0.2.26
+
+### Patch Changes
+
+- [#5905](https://github.com/finos/legend-studio/pull/5905) [`9775e72`](https://github.com/finos/legend-studio/commit/9775e7283cf2e768293db9982573cecbe8280c4b) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add a Lakehouse data product quality ("AI Readiness") badge to the Data Product viewer header, mirroring the DataSpace viewer's badge: it sits in the upper-right corner next to the Version/environment badges, with the title truncating (ellipsis, full name via tooltip) instead of overlapping it when the AI chat panel is open and resized.
+
+- [#5905](https://github.com/finos/legend-studio/pull/5905) [`9775e72`](https://github.com/finos/legend-studio/commit/9775e7283cf2e768293db9982573cecbe8280c4b) ([@nguyenqchi](https://github.com/nguyenqchi)) - Share the AI-readiness badge, its tier roadmap and its styles between the data product and data space viewers, take the data product quality level and breakdown types from the quality response model, and count a data product whose columns can't be found as 0% documented, not 100%, so it isn't promoted to Diamond.
+
 ## 0.2.25
 
 ### Patch Changes

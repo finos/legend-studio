@@ -87,8 +87,25 @@ export class DataProductAccessor extends Accessor {
   }
 }
 
+/**
+ * What an ingest accessor reads of its data set, written `#I{ingest.dataSet|qualifier}#`
+ */
+export enum IngestAccessorQualifier {
+  /** The data set's batch metadata, whatever the data set's columns */
+  METADATA = 'metadata',
+  INCOMING = 'incoming',
+  MILESTONED = 'milestoned',
+  INCOMING_MILESTONED = 'incomingMilestoned',
+}
+
 export class IngestionAccessor extends Accessor {
   declare parentElement: IngestDefinition;
+
+  qualifier: IngestAccessorQualifier | undefined;
+
+  override get hashCode(): string {
+    return hashArray([super.hashCode, this.qualifier ?? '']);
+  }
 
   override get accessorOwnerLabel(): string {
     return 'Ingestion Source';

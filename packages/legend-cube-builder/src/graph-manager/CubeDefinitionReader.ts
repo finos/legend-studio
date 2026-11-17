@@ -18,6 +18,7 @@ import {
   CubeLambdaReadError,
   CubeLambdaReadErrorKind,
   findCubeLambdaSources,
+  IngestDatasetQualifier,
   IngestDatasetSource,
   readCubeQuery,
   resolveCubeType,
@@ -35,6 +36,7 @@ import { CUBE_DEFINITION_FLOW_MESSAGE } from '../__lib__/LegendCubeDefinitionFlo
 import type { CubeIngestDataSet } from './CubeIngestCatalog.js';
 import {
   CUBE_EXPRESSION_CODEC,
+  getCubeIngestMetadataSchema,
   readCubeIngestDataSets,
   readCubeLambdaJson,
   readCubeLambdaParameters,
@@ -44,11 +46,12 @@ import {
 // A data product's access point definition, its lambda, read into steps to
 // be drawn read-only (`CubeDefinitionFlow`): in the browser, with no engine,
 // as the host has the lambda's protocol JSON already, and the columns of its
-// ingest data sets typed from their definitions' JSON. Cube reads all of a
-// lambda or none of it, so what it can't read comes back as a refusal, of a
-// kind a host can count, and the host shows the Pure instead. A definition
-// may take parameters, which its steps read where they keep the Pure as it
-// is: a filter's condition, a new column's expression.
+// ingest data sets typed from their definitions' JSON, those of a data set's
+// batch metadata (`#I{…|metadata}#`) as legend-graph types them. Cube reads
+// all of a lambda or none of it, so what it can't read comes back as a
+// refusal, of a kind a host can count, and the host shows the Pure instead.
+// A definition may take parameters, which its steps read where they keep the
+// Pure as it is: a filter's condition, a new column's expression.
 
 /** An ingest data set a definition reads */
 export interface CubeDefinitionDataSet {
@@ -182,9 +185,10 @@ const printMultiplicity = ({
       : `[${lowerBound}..${upperBound}]`;
 
 /**
- * The ingest definitions a definition reads, by path, in the order it reads
- * them: what a host loads before reading it (`getIngestDefinition`); none when
- * Cube can't read it
+ * The ingest definitions a definition reads the rows of, by path, in the
+ * order it reads them: what a host loads before reading it
+ * (`getIngestDefinition`); none when Cube can't read it. A data set's batch
+ * metadata needs no definition: its columns are the same for every data set.
  */
 export const findCubeDefinitionIngestDefinitions = (
   lambda: unknown,
@@ -196,7 +200,9 @@ export const findCubeDefinitionIngestDefinitions = (
     return [
       ...new Set(
         sources.flatMap((source) =>
-          source.k === 'ingestAccessor' ? [source.path[0]] : [],
+          source.k === 'ingestAccessor' && source.qualifier === undefined
+            ? [source.path[0]]
+            : [],
         ),
       ),
     ];
@@ -254,7 +260,13 @@ export const readCubeDefinition = (
         );
       }
       const [ingestDefinition, dataSet] = source.path;
-      const schema = schemaOf(ingestDefinition, dataSet);
+      const { qualifier } = source;
+      // a data set's batch metadata has the same columns whatever the data
+      // set, so is known without its definition
+      const schema =
+        qualifier === IngestDatasetQualifier.METADATA
+          ? getCubeIngestMetadataSchema()
+          : schemaOf(ingestDefinition, dataSet);
       if (
         !schema &&
         !unknownDataSets.some(
@@ -276,6 +288,7 @@ export const readCubeDefinition = (
               ingestDefinitionUrn: ingestDefinition,
               ingestDefinition,
               dataSet,
+              qualifier,
             },
             schema ? { kind: 'resolved', schema } : UNRESOLVED,
           ),

@@ -151,7 +151,7 @@ const PRO_OPTIONS = { hideAttribution: true };
 /** A step's description, a data set's named whether or not its columns are known */
 const describeStep = (node: QueryNode): string =>
   node instanceof IngestDatasetSource
-    ? `Data set "${node.dataSet}" from ingest definition "${node.ingestDefinitionName}"`
+    ? node.describeDataSet()
     : node.describe();
 
 export interface CubeDefinitionFlowProps {

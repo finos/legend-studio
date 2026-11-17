@@ -34,6 +34,7 @@ import {
   V1_WriteModeType,
   type V1_WriteMode,
   V1_deserializeIngestDefinitionContent,
+  V1_getIngestMetadataRelationType,
 } from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
 import { CubeIngestDataSet } from '../../../CubeIngestCatalog.js';
@@ -160,21 +161,10 @@ const readColumnType = (
       };
 };
 
-/** A data set's schema, or why it can't be picked */
-const readSchema = (
-  dataset: V1_IngestDataset,
-  definitionWriteMode: V1_WriteMode | undefined,
-): { schema: Schema } | { reason: string } => {
-  // the protocol types both as always there, but saved content may lack them
-  const source = dataset.source as V1_IngestDatasetSource | undefined;
-  if (source?._type === MATERIALIZED_VIEW_SOURCE) {
-    return { reason: V1_CUBE_INGEST_DATA_SET_REASON.MATERIALIZED_VIEW };
-  }
-  const schema: V1_IngestDatasetSchema | undefined = source?.schema;
-  const declared = schema?.columns ?? [];
-  if (!declared.length) {
-    return { reason: V1_CUBE_INGEST_DATA_SET_REASON.NO_COLUMNS };
-  }
+/** A relation type's columns, each holding one value at most, or why one can't be read */
+const readColumns = (
+  declared: readonly V1_RelationTypeColumn[],
+): { columns: SchemaColumn[] } | { reason: string } => {
   const columns: SchemaColumn[] = [];
   for (const column of declared) {
     if (column.multiplicity.upperBound !== 1) {
@@ -194,16 +184,56 @@ const readSchema = (
       ),
     );
   }
+  return { columns };
+};
+
+/** A data set's schema, or why it can't be picked */
+const readSchema = (
+  dataset: V1_IngestDataset,
+  definitionWriteMode: V1_WriteMode | undefined,
+): { schema: Schema } | { reason: string } => {
+  // the protocol types both as always there, but saved content may lack them
+  const source = dataset.source as V1_IngestDatasetSource | undefined;
+  if (source?._type === MATERIALIZED_VIEW_SOURCE) {
+    return { reason: V1_CUBE_INGEST_DATA_SET_REASON.MATERIALIZED_VIEW };
+  }
+  const schema: V1_IngestDatasetSchema | undefined = source?.schema;
+  const declared = schema?.columns ?? [];
+  if (!declared.length) {
+    return { reason: V1_CUBE_INGEST_DATA_SET_REASON.NO_COLUMNS };
+  }
+  const read = readColumns(declared);
+  if ('reason' in read) {
+    return read;
+  }
   try {
     return {
       schema: new Schema([
-        ...columns,
+        ...read.columns,
         ...milestoningColumns(dataset.writeMode ?? definitionWriteMode),
       ]),
     };
   } catch (error) {
     return { reason: error instanceof Error ? error.message : String(error) };
   }
+};
+
+let metadataSchema: Schema | undefined;
+
+/**
+ * The columns of a data set's batch metadata, `#I{definition.dataSet|metadata}#`:
+ * the same for every data set, as legend-graph types them, so read once
+ */
+export const V1_getCubeIngestMetadataSchema = (): Schema => {
+  if (!metadataSchema) {
+    const read = readColumns(V1_getIngestMetadataRelationType().columns);
+    if ('reason' in read) {
+      // the columns are legend-graph's, so a test catches this first
+      throw new Error(`Cube can't read the batch metadata: ${read.reason}`);
+    }
+    metadataSchema = new Schema(read.columns);
+  }
+  return metadataSchema;
 };
 
 /**
