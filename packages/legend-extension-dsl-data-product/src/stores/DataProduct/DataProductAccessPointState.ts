@@ -18,6 +18,7 @@ import {
   type V1_AccessPoint,
   type V1_DataProductArtifact,
   type V1_EntitlementsDataProductDetails,
+  CORE_PURE_PATH,
   LakehouseTargetEnv,
   V1_LakehouseAccessPoint,
   V1_RelationElement,
@@ -551,18 +552,17 @@ export class DataProductAccessPointState {
 
   /**
    * Shows a user-defined function's Pure under the flow, as the engine
-   * prints its element (PLAN §11.33)
+   * prints its element, through the graph manager (PLAN §11.33)
    */
   *showFunction(call: {
     readonly name: string;
     readonly path: string | undefined;
     readonly origin: string | undefined;
   }): GeneratorFn<void> {
-    const content = call.path
-      ? this.functionElements.get(call.path)
-      : undefined;
+    const { path } = call;
+    const content = path ? this.functionElements.get(path) : undefined;
     this.shownFunction = { ...call, pure: undefined };
-    if (!content) {
+    if (!path || !content) {
       this.shownFunction = {
         ...call,
         pure: undefined,
@@ -572,13 +572,9 @@ export class DataProductAccessPointState {
     }
     try {
       const pure =
-        (yield this.apgState.dataProductViewerState.engineServerClient.JSONToGrammar_model(
-          {
-            _type: 'data',
-            serializer: { name: 'pure', version: 'vX_X_X' },
-            elements: [content],
-          },
-          V1_RenderStyle.PRETTY,
+        (yield this.apgState.dataProductViewerState.graphManagerState.graphManager.entitiesToPureCode(
+          [{ path, classifierPath: CORE_PURE_PATH.FUNCTION, content }],
+          { pretty: true },
         )) as string;
       this.shownFunction = { ...call, pure: pure.trim() };
     } catch (error) {

@@ -102,8 +102,8 @@ import type { DataProductDataAccessState } from './DataProductDataAccessState.js
 import type {
   DataProductDefinitionFlowEntry,
   DataProductIngestDefinitionLoader,
-  DataProductFunctionLoader,
 } from './DataProductDefinitionFlow.js';
+import type { CubeDefinitionFunctionLoader } from '@finos/legend-cube-builder/definition-flow';
 import { DataAccessState } from '@finos/legend-query-builder';
 import {
   type LegendAIConfig,
@@ -179,7 +179,7 @@ export class DataProductViewerState extends BaseViewerState<
    * The user-defined functions an access point's definition calls, which its
    * flow opens into containers; without it, a call is refused
    */
-  readonly loadFunctions?: DataProductFunctionLoader | undefined;
+  readonly loadFunctions?: CubeDefinitionFunctionLoader | undefined;
   dataProductDataAccessState: DataProductDataAccessState | undefined;
   readonly qualityState: DataProductQualityState;
 
@@ -235,7 +235,7 @@ export class DataProductViewerState extends BaseViewerState<
       fetchDataProductQuality?:
         | (() => Promise<DataProductQualityResponse>)
         | undefined;
-      loadFunctions?: DataProductFunctionLoader | undefined;
+      loadFunctions?: CubeDefinitionFunctionLoader | undefined;
     },
     registryServerClient?: RegistryServerClient | undefined,
   ) {

@@ -424,16 +424,18 @@ const DataProductAccessPointDefinition = observer(
                 className="data-product__viewer__definition__function"
                 aria-label={`Function ${accessPointState.shownFunction.name}`}
               >
-                <div className="data-product__viewer__definition__function__header">
-                  <span className="data-product__viewer__definition__title data-product__viewer__definition__function__title">
-                    {accessPointState.shownFunction.name}
-                  </span>
-                  {accessPointState.shownFunction.origin && (
-                    <span className="data-product__viewer__definition__caption">
-                      {`from ${accessPointState.shownFunction.origin}`}
+                <div className="data-product__viewer__definition__header">
+                  <div className="data-product__viewer__definition__function__heading">
+                    <span className="data-product__viewer__definition__title data-product__viewer__definition__function__title">
+                      {accessPointState.shownFunction.name}
                     </span>
-                  )}
-                  <span className="data-product__viewer__definition__function__actions">
+                    {accessPointState.shownFunction.origin && (
+                      <span className="data-product__viewer__definition__caption">
+                        {`from ${accessPointState.shownFunction.origin}`}
+                      </span>
+                    )}
+                  </div>
+                  <span className="data-product__viewer__definition__actions">
                     {accessPointState.shownFunction.pure !== undefined && (
                       <CopyCodeButton
                         value={accessPointState.shownFunction.pure}

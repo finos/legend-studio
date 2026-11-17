@@ -21,12 +21,18 @@ import type {
   CubeDefinitionFunctionLoader,
   CubeDefinitionRefusal,
 } from '@finos/legend-cube-builder/definition-flow';
+import { CORE_PURE_PATH } from '@finos/legend-graph';
 import {
   type DepotServerClient,
+  ProjectVersionEntities,
   resolveVersion,
+  StoredEntity,
 } from '@finos/legend-server-depot';
 import type { PlainObject } from '@finos/legend-shared';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import {
+  type ProjectGAVCoordinates,
+  generateGAVCoordinates,
+} from '@finos/legend-storage';
 
 // An access point's definition as Legend Cube draws it, read-only: its
 // function, read into steps in the browser with no engine call. Cube's code
@@ -66,34 +72,6 @@ export const createDepotIngestDefinitionLoader =
     ).content as PlainObject | undefined;
 
 /**
- * The user-defined functions a definition calls, by the names calls name
- * them by (`pkg::name`): every overload, from the data product's project and
- * its dependencies (PLAN §11.33). Marketplace reads them from
- * Depot, Studio from its graph.
- */
-export type DataProductFunctionLoader = CubeDefinitionFunctionLoader;
-
-const FUNCTION_CLASSIFIER =
-  'meta::pure::metamodel::function::ConcreteFunctionDefinition';
-
-/** A Depot entity, flat or as Depot's classifier routes wrap it */
-const readStoredEntity = (
-  value: PlainObject,
-  origin: string | undefined,
-): CubeDefinitionFunctionElement | undefined => {
-  const entity = (value.entity ?? value) as PlainObject;
-  const path = entity.path;
-  const content = entity.content;
-  return typeof path === 'string' && content && typeof content === 'object'
-    ? {
-        path,
-        content: content as PlainObject,
-        origin,
-      }
-    : undefined;
-};
-
-/**
  * Functions from Depot, at the data product's version: its project's and its
  * dependencies', in one request (`…/classifiers/<function>/dependencies`,
  * transitive, the project itself included), made the first time a definition
@@ -102,37 +80,47 @@ const readStoredEntity = (
 export const createDepotFunctionLoader = (
   depotServerClient: DepotServerClient,
   projectGAV: ProjectGAVCoordinates,
-): DataProductFunctionLoader => {
+): CubeDefinitionFunctionLoader => {
   let all: Promise<CubeDefinitionFunctionElement[]> | undefined;
-  const loadAll = async (): Promise<CubeDefinitionFunctionElement[]> => {
-    const projects = await depotServerClient.getDependencyEntities(
-      projectGAV.groupId,
-      projectGAV.artifactId,
-      resolveVersion(projectGAV.versionId),
-      true,
-      true,
-      FUNCTION_CLASSIFIER,
-    );
-    return projects.flatMap((project) => {
-      // the data product's own project goes without saying
-      const origin =
-        project.groupId === projectGAV.groupId &&
-        project.artifactId === projectGAV.artifactId
-          ? undefined
-          : `${String(project.groupId)}:${String(project.artifactId)}:${String(project.versionId)}`;
-      return ((project.entities ?? []) as PlainObject[]).flatMap((each) => {
-        const element = readStoredEntity(each, origin);
-        return element ? [element] : [];
+  const loadAll = async (): Promise<CubeDefinitionFunctionElement[]> =>
+    (
+      await depotServerClient.getDependencyEntities(
+        projectGAV.groupId,
+        projectGAV.artifactId,
+        resolveVersion(projectGAV.versionId),
+        true,
+        true,
+        CORE_PURE_PATH.FUNCTION,
+      )
+    )
+      .map((json) => ProjectVersionEntities.serialization.fromJson(json))
+      .flatMap((project) => {
+        // the data product's own project goes without saying
+        const origin =
+          project.groupId === projectGAV.groupId &&
+          project.artifactId === projectGAV.artifactId
+            ? undefined
+            : generateGAVCoordinates(
+                project.groupId,
+                project.artifactId,
+                project.versionId,
+              );
+        // asked for by classifier, Depot lists each entity as a stored entity
+        return project.entities.map((each) => {
+          const { entity } = StoredEntity.serialization.fromJson(
+            each as unknown as PlainObject<StoredEntity>,
+          );
+          return { path: entity.path, content: entity.content, origin };
+        });
       });
-    });
-  };
   return async (names) => {
     all ??= loadAll().catch((error: unknown) => {
       // a failure isn't kept: the next definition asks again
       all = undefined;
       throw error;
     });
-    // a path is its name and its signature: Cube tells overloads apart
+    // every overload of each name, and maybe a few more (`pkg::name_other`):
+    // Cube keeps only the functions of exactly these names
     return (await all).filter((element) =>
       names.some((name) => element.path.startsWith(`${name}_`)),
     );
