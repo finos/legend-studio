@@ -70,15 +70,15 @@ export const getFirmIngest = async (): Promise<Entity> => ({
         [
           ingestColumn('ID', 'Int', {
             required: true,
-            description: "The firm's ID in the firm database",
+            doc: "The firm's ID in the firm database",
           }),
           ingestColumn('LEGAL_NAME', 'Varchar', {
             size: 200,
-            description: 'The name the firm is registered under',
+            doc: 'The name the firm is registered under',
           }),
           ingestColumn('INC_TYPE', 'Varchar', {
             size: 10,
-            description: 'How the firm is incorporated, e.g. LLC',
+            doc: 'How the firm is incorporated, e.g. LLC',
           }),
         ],
         {
@@ -91,13 +91,13 @@ export const getFirmIngest = async (): Promise<Entity> => ({
         [
           ingestColumn('ID', 'Int', {
             required: true,
-            description: "The person's ID in the firm database",
+            doc: "The person's ID in the firm database",
           }),
           ingestColumn('FIRST_NAME', 'Varchar', { size: 200 }),
           ingestColumn('LAST_NAME', 'Varchar', { size: 200 }),
-          ingestColumn('AGE', 'Int', { description: 'In years' }),
+          ingestColumn('AGE', 'Int', { doc: 'In years' }),
           ingestColumn('FIRM_ID', 'Int', {
-            description: 'The firm the person works for',
+            doc: 'The firm the person works for',
           }),
         ],
         {

@@ -121,6 +121,7 @@ import {
   getMockPendingManagerApprovalTasksResponse,
 } from '../__test-utils__/TEST_DATA__LakehouseDataContracts.js';
 import DEFINITIONS from '../__test-utils__/TEST_DATA__AccessPointDefinitionFlow.json' with { type: 'json' };
+import FUNCTIONS from '../__test-utils__/TEST_DATA__AccessPointFunctions.json' with { type: 'json' };
 import { DATA_PRODUCT_EVENT } from '../../__lib__/DataProductTelemetryHelper.js';
 
 jest.mock('react-oidc-context', () => {
@@ -5468,6 +5469,152 @@ describe('DataProductViewer', () => {
           error: 'The canvas failed',
         }),
       );
+    });
+
+    describe('Calls of user-defined functions (PLAN §11.33)', () => {
+      const ACTIVE_ORDERS_PURE = FUNCTIONS.functionPure;
+      const loadOrdersIngest = async (
+        path: string,
+      ): Promise<PlainObject | undefined> =>
+        path === FUNCTIONS.ingestDefinition
+          ? (FUNCTIONS.ingestDefinitionContent as PlainObject)
+          : undefined;
+
+      const setupWithFunctions = async (
+        func: PlainObject,
+        loadFunctions: (names: readonly string[]) => Promise<PlainObject[]>,
+        loadIngestDefinition = loadOrdersIngest,
+      ) => {
+        const result = await setupLakehouseDataProductTest(
+          dataProductDefinedBy(func),
+          mockEntitlementsSDLCDataProduct,
+          [],
+          [],
+          undefined,
+          undefined,
+          { loadIngestDefinition, loadFunctions },
+        );
+        createSpy(
+          result.dataProductViewerState.engineServerClient,
+          'JSONToGrammar_lambda',
+        ).mockResolvedValue(PURE);
+        const jsonToGrammarModel = createSpy(
+          result.dataProductViewerState.engineServerClient,
+          'JSONToGrammar_model',
+        ).mockResolvedValue(ACTIVE_ORDERS_PURE);
+        const logEvent = jest.spyOn(
+          result.dataProductViewerState.applicationStore.telemetryService,
+          'logEvent',
+        );
+        return { ...result, jsonToGrammarModel, logEvent };
+      };
+
+      test('draws a call as a container, its functions loaded before the ingest definitions, and shows its Pure', async () => {
+        const order: string[] = [];
+        const loadFunctions = jest.fn(async (names: readonly string[]) => {
+          order.push(`functions ${names.join(', ')}`);
+          return FUNCTIONS.functions as PlainObject[];
+        });
+        const loadIngestDefinition = jest.fn(async (path: string) => {
+          order.push(`ingest ${path}`);
+          return loadOrdersIngest(path);
+        });
+        const { jsonToGrammarModel, logEvent } = await setupWithFunctions(
+          FUNCTIONS.accessPoints.active_orders_by_region,
+          loadFunctions,
+          loadIngestDefinition,
+        );
+        const definition = await openDefinition();
+        // the data set and the filter in the container, the group after it
+        await findFlowNodes(definition, 3);
+        expect(order).toEqual([
+          'functions shop::orders::activeOrders',
+          'ingest shop::ingest::OrdersIngest',
+        ]);
+        const frame = within(definition).getByTestId(
+          LEGEND_CUBE_TEST_ID.CANVAS_CONTAINER,
+        );
+        expect(frame.textContent).toContain('activeOrders()');
+        expect(logEvent).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+          expect.objectContaining({
+            functionCallsOpened: 1,
+            functionCallsClosed: {},
+            scalarFunctionSteps: 0,
+            functionsUnloaded: false,
+          }),
+        );
+
+        await act(async () => {
+          fireEvent.click(
+            within(frame).getByLabelText(
+              'Show the Pure of shop::orders::activeOrders',
+            ),
+          );
+        });
+        const panel = await within(definition).findByLabelText(
+          'Function shop::orders::activeOrders',
+        );
+        expect(jsonToGrammarModel).toHaveBeenCalledTimes(1);
+        // the function's element, through the graph manager's protocol
+        expect(jsonToGrammarModel.mock.calls[0]?.[0]).toMatchObject({
+          _type: 'data',
+          elements: [
+            {
+              _type: 'function',
+              package: 'shop::orders',
+              name: 'activeOrders__Relation_1_',
+            },
+          ],
+        });
+        expect(
+          panel.querySelector('.data-product__viewer__code-box'),
+        ).not.toBeNull();
+        await act(async () => {
+          fireEvent.click(within(panel).getByText('Close'));
+        });
+        expect(
+          within(definition).queryByLabelText(
+            'Function shop::orders::activeOrders',
+          ),
+        ).toBeNull();
+      });
+
+      test("draws a function Depot doesn't have as one step, and says the steps after it aren't checked", async () => {
+        const { logEvent } = await setupWithFunctions(
+          FUNCTIONS.accessPoints.archived_orders,
+          async () => [],
+        );
+        const definition = await openDefinition();
+        await findFlowNodes(definition, 2);
+        expect(
+          within(definition).getByText(
+            "archivedOrders() is shown as one step, with no columns known, so the steps after it aren't checked.",
+          ),
+        ).toBeDefined();
+        expect(logEvent).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+          expect.objectContaining({
+            functionCallsOpened: 0,
+            functionCallsClosed: { notFound: 1 },
+          }),
+        );
+      });
+
+      test('refuses a call as before when its functions fail to load', async () => {
+        const { logEvent } = await setupWithFunctions(
+          FUNCTIONS.accessPoints.active_orders_by_region,
+          async () => {
+            throw new Error('Depot is down');
+          },
+        );
+        const definition = await openDefinition();
+        await waitFor(() => expect(showsPure(definition)).toBe(true));
+        expect(logEvent).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.REFUSE_ACCESS_POINT_DEFINITION_FLOW,
+          expect.objectContaining({ reason: 'source' }),
+        );
+      });
     });
   });
 

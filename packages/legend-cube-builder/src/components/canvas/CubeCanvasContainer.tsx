@@ -46,6 +46,10 @@ import {
 } from './CubeCanvasElements.js';
 import { CubeContainerContextMenu } from './CubeCanvasContainerMenu.js';
 import { CUBE_CANVAS_FRAME_HEAD_HEIGHT } from './CubeCanvasLayout.js';
+import {
+  CUBE_CANVAS_FOLDED_STYLE,
+  CUBE_CANVAS_FRAME_STYLE,
+} from './CubeCanvasContainerStyle.js';
 import { useCubeCanvasEditorState } from './CubeCanvasContext.js';
 
 // A container of steps (PLAN §11.29), as Alteryx's Tool Container: open, a
@@ -53,16 +57,8 @@ import { useCubeCanvasEditorState } from './CubeCanvasContext.js';
 // place. Its colours mix the theme's, so it reads in the dark theme and the
 // light one alike.
 
-const FRAME_STYLE = {
-  background: 'color-mix(in srgb, var(--color-accent) 7%, transparent)',
-  borderColor: 'color-mix(in srgb, var(--color-accent) 45%, transparent)',
-};
-
-/** A stack of cards: the box holds several steps */
-const FOLDED_STYLE = {
-  boxShadow:
-    '4px 4px 0 -1px var(--color-bg-panel), 4px 4px 0 0 var(--color-border-default), 8px 8px 0 -1px var(--color-bg-panel), 8px 8px 0 0 var(--color-border-default)',
-};
+const FRAME_STYLE = CUBE_CANVAS_FRAME_STYLE;
+const FOLDED_STYLE = CUBE_CANVAS_FOLDED_STYLE;
 
 /** How the canvas shows a container on its minimap: a tint of its plane */
 export const CUBE_CANVAS_CONTAINER_MINIMAP_COLOR =

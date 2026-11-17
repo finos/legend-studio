@@ -60,7 +60,15 @@
                       "lowerBound": 1,
                       "upperBound": 1
                     },
-                    "description": "The business day the position is as of"
+                    "taggedValues": [
+                      {
+                        "tag": {
+                          "profile": "meta::pure::profiles::doc",
+                          "value": "doc"
+                        },
+                        "value": "The business day the position is as of"
+                      }
+                    ]
                   },
                   {
                     "name": "POSITION_ID",

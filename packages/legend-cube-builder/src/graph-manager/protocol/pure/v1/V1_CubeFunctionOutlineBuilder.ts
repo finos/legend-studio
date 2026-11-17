@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import {
+  V1_ConcreteFunctionDefinition,
+  V1_deserializePackageableElement,
+  V1_getFunctionNameWithoutSignature,
+} from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
 import type {
   CubeOutlineFunction,
@@ -86,17 +91,6 @@ const multiplicityText = (json: unknown): string => {
   return lower === upper ? `[${lower}]` : `[${lower}..${upper}]`;
 };
 
-/** The engine's suffix for a multiplicity in a function's full name */
-const multiplicitySuffix = (json: unknown): string => {
-  const { lowerBound, upperBound } = asObject(json);
-  const lower = typeof lowerBound === 'number' ? lowerBound : 0;
-  const upper = typeof upperBound === 'number' ? upperBound : undefined;
-  if (upper === undefined) {
-    return lower === 0 ? 'MANY' : `$${lower}_MANY$`;
-  }
-  return lower === upper ? String(lower) : `$${lower}_${upper}$`;
-};
-
 const typePathOf = (genericType: unknown): string =>
   asString(asObject(asObject(genericType).rawType).fullPath) ?? '';
 
@@ -106,23 +100,22 @@ const returnsRelation = (element: PlainObject): boolean =>
 
 /**
  * The path a function is called by: its full name without the signature the
- * engine appends (`ordersAbove_Float_1__Relation_1_` → `ordersAbove`)
+ * engine appends (`orders_above_Float_1__String_1__Relation_1_` →
+ * `orders_above`), as legend-graph strips it; a name the engine wrote
+ * without one is its own
  */
 const callPathOf = (element: PlainObject): string => {
   const name = asString(element.name) ?? '';
   const pkg = asString(element.package);
-  const suffix = `_${asList(element.parameters)
-    .map((parameter) => {
-      const json = asObject(parameter);
-      return `${lastSegment(typePathOf(json.genericType))}_${multiplicitySuffix(json.multiplicity)}_`;
-    })
-    .join(
-      '',
-    )}_${lastSegment(typePathOf(element.returnGenericType))}_${multiplicitySuffix(element.returnMultiplicity)}_`;
-  const base = name.endsWith(suffix)
-    ? name.slice(0, -suffix.length)
-    : // a name the engine wrote otherwise: its first segment
-      (name.split('_')[0] ?? name);
+  let base = name;
+  try {
+    const protocol = V1_deserializePackageableElement(element, []);
+    if (protocol instanceof V1_ConcreteFunctionDefinition) {
+      base = V1_getFunctionNameWithoutSignature(protocol);
+    }
+  } catch {
+    // a function legend-graph can't read: its name as written
+  }
   return pkg ? `${pkg}::${base}` : base;
 };
 

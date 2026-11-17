@@ -371,3 +371,22 @@
     outline-offset: 0.1rem;
   }
 }
+
+// PLAN §11.33: a user-defined function's Pure, under the flow; its header
+// and actions are the definition's own
+.data-product__viewer__definition__function {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  &__heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+  }
+
+  &__title {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.3rem;
+  }
+}

@@ -413,11 +413,59 @@ const DataProductAccessPointDefinition = observer(
         {isUnavailable ? (
           <DataProductDefinitionUnavailable onRetry={retryDefinition} />
         ) : shownView === DataProductDefinitionView.FLOW ? (
-          <DataProductAccessPointDefinitionFlow
-            accessPointState={accessPointState}
-            onShowPure={() => setView(DataProductDefinitionView.PURE)}
-            onRetry={retryDefinitionFlow}
-          />
+          <>
+            <DataProductAccessPointDefinitionFlow
+              accessPointState={accessPointState}
+              onShowPure={() => setView(DataProductDefinitionView.PURE)}
+              onRetry={retryDefinitionFlow}
+            />
+            {accessPointState.shownFunction && (
+              <section
+                className="data-product__viewer__definition__function"
+                aria-label={`Function ${accessPointState.shownFunction.name}`}
+              >
+                <div className="data-product__viewer__definition__header">
+                  <div className="data-product__viewer__definition__function__heading">
+                    <span className="data-product__viewer__definition__title data-product__viewer__definition__function__title">
+                      {accessPointState.shownFunction.name}
+                    </span>
+                    {accessPointState.shownFunction.origin && (
+                      <span className="data-product__viewer__definition__caption">
+                        {`from ${accessPointState.shownFunction.origin}`}
+                      </span>
+                    )}
+                  </div>
+                  <span className="data-product__viewer__definition__actions">
+                    {accessPointState.shownFunction.pure !== undefined && (
+                      <CopyCodeButton
+                        value={accessPointState.shownFunction.pure}
+                        label="function"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      className="data-product__viewer__definition-flow__failure__action"
+                      onClick={() => accessPointState.hideFunction()}
+                    >
+                      Close
+                    </button>
+                  </span>
+                </div>
+                {accessPointState.shownFunction.pure !== undefined ? (
+                  <ReadOnlyPureCode
+                    value={accessPointState.shownFunction.pure}
+                    maxLines={DEFINITION_MAX_LINES}
+                  />
+                ) : accessPointState.shownFunction.error ? (
+                  <div className="data-product__viewer__definition__message">
+                    {accessPointState.shownFunction.error}
+                  </div>
+                ) : (
+                  <CodeLoadingIndicator />
+                )}
+              </section>
+            )}
+          </>
         ) : (
           <>
             {refusal && <DataProductDefinitionFlowRefusal refusal={refusal} />}

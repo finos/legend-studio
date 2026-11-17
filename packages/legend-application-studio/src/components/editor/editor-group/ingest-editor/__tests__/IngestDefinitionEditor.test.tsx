@@ -846,7 +846,7 @@ describe("The Definition tab's data sets, beside the materialized views", () => 
           (header) => header.textContent,
         ),
       ).toEqual(['Column Name', 'Column Type', 'Multiplicity', 'Key']);
-      // a column's description, under its name
+      // a column's doc, its doc.doc tagged value, under its name
       expect(getColumnRows(grid).slice(0, 2)).toEqual([
         [
           'BUSINESS_DATEThe business day the position is as of',

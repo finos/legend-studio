@@ -18,6 +18,7 @@ import {
   type V1_AccessPoint,
   type V1_DataProductArtifact,
   type V1_EntitlementsDataProductDetails,
+  CORE_PURE_PATH,
   LakehouseTargetEnv,
   V1_LakehouseAccessPoint,
   V1_RelationElement,
@@ -44,7 +45,7 @@ import {
   isEmpty,
   LogEvent,
 } from '@finos/legend-shared';
-import { makeAutoObservable, observable, computed, flow } from 'mobx';
+import { action, makeAutoObservable, observable, computed, flow } from 'mobx';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
 import { RegistryMetadataResponse } from '@finos/legend-server-marketplace';
@@ -54,6 +55,7 @@ import {
   type AccessPointDefinitionFlow_TelemetryData,
   DataProductTelemetryHelper,
 } from '../../__lib__/DataProductTelemetryHelper.js';
+import type { CubeDefinitionFunctions } from '@finos/legend-cube-builder/definition-flow';
 import {
   type DataProductDefinitionFlow,
   type DataProductDefinitionFlowEntry,
@@ -79,6 +81,18 @@ export class DataProductAccessPointState {
   grammar: string | undefined;
   /** Its definition, as Legend Cube's flow shows it, once read (`readDefinitionFlow`) */
   definitionFlow: DataProductDefinitionFlow | undefined;
+  /** The function elements its definition calls, by path, as loaded */
+  functionElements = new Map<string, PlainObject>();
+  /** A user-defined function whose Pure the Definition panel shows, under the flow */
+  shownFunction:
+    | {
+        readonly name: string;
+        readonly path: string | undefined;
+        readonly origin: string | undefined;
+        readonly pure: string | undefined;
+        readonly error?: string | undefined;
+      }
+    | undefined;
 
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
@@ -96,6 +110,10 @@ export class DataProductAccessPointState {
       // the reading's steps and Cube's code, as Cube made them
       definitionFlow: observable.ref,
       readDefinitionFlow: flow,
+      shownFunction: observable.ref,
+      functionElements: false,
+      showFunction: flow,
+      hideFunction: action,
       isCollapsed: computed,
       entitlementsDataProductDetails: computed,
       unsupportedLakehouseComputeTarget: computed,
@@ -384,11 +402,39 @@ export class DataProductAccessPointState {
         );
         return;
       }
+      // the functions it calls first: their bodies may read ingest
+      // definitions too (PLAN §11.33)
+      const loadFunctions = this.apgState.dataProductViewerState.loadFunctions;
+      let functions: CubeDefinitionFunctions | undefined;
+      let functionsUnloaded = false;
+      if (loadFunctions) {
+        try {
+          functions = (yield entry.loadCubeDefinitionFunctions(
+            lambda,
+            async (names) => {
+              const elements = await loadFunctions(names);
+              elements.forEach((element) =>
+                this.functionElements.set(element.path, element.content),
+              );
+              return elements;
+            },
+          )) as CubeDefinitionFunctions;
+        } catch (error) {
+          assertErrorThrown(error);
+          // its calls are drawn as boxes, or refused, as Cube reads them
+          functionsUnloaded = true;
+          this.apgState.applicationStore.logService.warn(
+            LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+            `Unable to load the functions of access point '${this.accessPoint.id}': ${error.message}`,
+          );
+        }
+      }
       const ingestDefinitions = (yield this.loadIngestDefinitions(
-        entry.findCubeDefinitionIngestDefinitions(lambda),
+        entry.findCubeDefinitionIngestDefinitions(lambda, { functions }),
       )) as Map<string, PlainObject>;
       const reading = entry.readCubeDefinition(lambda, {
         getIngestDefinition: (path) => ingestDefinitions.get(path),
+        functions,
       });
       const telemetryService = this.apgState.applicationStore.telemetryService;
       if (reading.kind === 'flow') {
@@ -406,6 +452,20 @@ export class DataProductAccessPointState {
               (each) => `${each.ingestDefinition}.${each.dataSet}`,
             ),
             durationMs: Date.now() - startedAt,
+            functionCallsOpened: reading.functionCalls.filter(
+              (call) => call.opened,
+            ).length,
+            functionCallsClosed: reading.functionCalls.reduce<
+              Record<string, number>
+            >((closed, call) => {
+              if (call.closedReason) {
+                closed[call.closedReason] =
+                  (closed[call.closedReason] ?? 0) + 1;
+              }
+              return closed;
+            }, {}),
+            scalarFunctionSteps: reading.scalarFunctions.size,
+            functionsUnloaded,
           },
         );
       } else {
@@ -488,6 +548,43 @@ export class DataProductAccessPointState {
       this.definitionFlowTelemetryData,
       { kind: failure, error: error.message },
     );
+  }
+
+  /**
+   * Shows a user-defined function's Pure under the flow, as the engine
+   * prints its element, through the graph manager (PLAN §11.33)
+   */
+  *showFunction(call: {
+    readonly name: string;
+    readonly path: string | undefined;
+    readonly origin: string | undefined;
+  }): GeneratorFn<void> {
+    const { path } = call;
+    const content = path ? this.functionElements.get(path) : undefined;
+    this.shownFunction = { ...call, pure: undefined };
+    if (!path || !content) {
+      this.shownFunction = {
+        ...call,
+        pure: undefined,
+        error: `${call.name} isn't in the data product's project or its dependencies.`,
+      };
+      return;
+    }
+    try {
+      const pure =
+        (yield this.apgState.dataProductViewerState.graphManagerState.graphManager.entitiesToPureCode(
+          [{ path, classifierPath: CORE_PURE_PATH.FUNCTION, content }],
+          { pretty: true },
+        )) as string;
+      this.shownFunction = { ...call, pure: pure.trim() };
+    } catch (error) {
+      assertErrorThrown(error);
+      this.shownFunction = { ...call, pure: undefined, error: error.message };
+    }
+  }
+
+  hideFunction(): void {
+    this.shownFunction = undefined;
   }
 
   /** Forgets its definition's flow, to read it again */

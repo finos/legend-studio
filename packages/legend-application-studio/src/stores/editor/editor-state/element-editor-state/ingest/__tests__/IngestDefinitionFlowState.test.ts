@@ -41,7 +41,21 @@ interface TestColumn {
   params?: number[];
   multiplicity?: { lowerBound: number; upperBound?: number };
   description?: string;
+  taggedValues?: TestTaggedValue[];
 }
+
+interface TestTaggedValue {
+  profile: string;
+  tag: string;
+  value: string;
+}
+
+/** A column's doc, `doc.doc`, its profile's path in full unless given */
+const doc = (
+  value: string,
+  profile = 'meta::pure::profiles::doc',
+  tag = 'doc',
+): TestTaggedValue => ({ profile, tag, value });
 
 const column = (
   name: string,
@@ -78,6 +92,16 @@ const dataSet = (
         },
         multiplicity: each.multiplicity,
         ...(each.description ? { description: each.description } : {}),
+        ...(each.taggedValues
+          ? {
+              taggedValues: each.taggedValues.map(
+                ({ profile, tag, value }) => ({
+                  tag: { profile, value: tag },
+                  value,
+                }),
+              ),
+            }
+          : {}),
       })),
     },
   },
@@ -233,6 +257,64 @@ test(
         notes: [
           'It declares LAKE_IN_ID, which its write mode, batch milestoned, adds too: it is listed once.',
         ],
+      },
+    });
+  },
+);
+
+test(
+  unitTest(
+    "A column's doc, its doc.doc tagged value, shows where the column has no description",
+  ),
+  async () => {
+    expect(
+      await describeDataSets({
+        writeMode: { _type: 'append_only' },
+        datasets: [
+          dataSet('TRADES', [
+            {
+              ...column('TRADE_ID', 'Integer'),
+              taggedValues: [doc('The trade, as the booking system names it')],
+            },
+            // its profile as a definition imports it
+            {
+              ...column('DESK', 'String'),
+              taggedValues: [doc('The desk that booked it', 'doc')],
+            },
+            // its description, over its doc
+            {
+              ...column('PRICE', 'Float'),
+              description: 'Its price, in USD',
+              taggedValues: [doc('Its price')],
+            },
+            // a blank description, so its doc, trimmed
+            {
+              ...column('QUANTITY', 'Integer'),
+              description: '  ',
+              taggedValues: [doc('  How many units  ')],
+            },
+            // a tagged value of the doc profile that isn't its doc
+            {
+              ...column('TRADED_ON', 'StrictDate'),
+              taggedValues: [
+                doc('Check the time zone', 'meta::pure::profiles::doc', 'todo'),
+              ],
+            },
+          ]),
+        ],
+      }),
+    ).toEqual({
+      TRADES: {
+        writeMode: 'append only',
+        rows: [
+          'TRADE_ID: Integer [1] - Required (key): The trade, as the booking system names it',
+          'DESK: String [1] - Required: The desk that booked it',
+          'PRICE: Float [1] - Required: Its price, in USD',
+          'QUANTITY: Integer [1] - Required: How many units',
+          'TRADED_ON: StrictDate [1] - Required',
+        ],
+        declaredCount: 5,
+        notes: [],
       },
     });
   },

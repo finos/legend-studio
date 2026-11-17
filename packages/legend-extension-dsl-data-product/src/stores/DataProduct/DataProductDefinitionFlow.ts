@@ -17,14 +17,22 @@
 import type * as CubeDefinitionFlowEntry from '@finos/legend-cube-builder/definition-flow';
 import type {
   CubeDefinitionFlowReading,
+  CubeDefinitionFunctionElement,
+  CubeDefinitionFunctionLoader,
   CubeDefinitionRefusal,
 } from '@finos/legend-cube-builder/definition-flow';
+import { CORE_PURE_PATH } from '@finos/legend-graph';
 import {
   type DepotServerClient,
+  ProjectVersionEntities,
   resolveVersion,
+  StoredEntity,
 } from '@finos/legend-server-depot';
 import type { PlainObject } from '@finos/legend-shared';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import {
+  type ProjectGAVCoordinates,
+  generateGAVCoordinates,
+} from '@finos/legend-storage';
 
 // An access point's definition as Legend Cube draws it, read-only: its
 // function, read into steps in the browser with no engine call. Cube's code
@@ -62,6 +70,62 @@ export const createDepotIngestDefinitionLoader =
         path,
       )
     ).content as PlainObject | undefined;
+
+/**
+ * Functions from Depot, at the data product's version: its project's and its
+ * dependencies', in one request (`…/classifiers/<function>/dependencies`,
+ * transitive, the project itself included), made the first time a definition
+ * calls a function and kept for the page: a released version doesn't change
+ */
+export const createDepotFunctionLoader = (
+  depotServerClient: DepotServerClient,
+  projectGAV: ProjectGAVCoordinates,
+): CubeDefinitionFunctionLoader => {
+  let all: Promise<CubeDefinitionFunctionElement[]> | undefined;
+  const loadAll = async (): Promise<CubeDefinitionFunctionElement[]> =>
+    (
+      await depotServerClient.getDependencyEntities(
+        projectGAV.groupId,
+        projectGAV.artifactId,
+        resolveVersion(projectGAV.versionId),
+        true,
+        true,
+        CORE_PURE_PATH.FUNCTION,
+      )
+    )
+      .map((json) => ProjectVersionEntities.serialization.fromJson(json))
+      .flatMap((project) => {
+        // the data product's own project goes without saying
+        const origin =
+          project.groupId === projectGAV.groupId &&
+          project.artifactId === projectGAV.artifactId
+            ? undefined
+            : generateGAVCoordinates(
+                project.groupId,
+                project.artifactId,
+                project.versionId,
+              );
+        // asked for by classifier, Depot lists each entity as a stored entity
+        return project.entities.map((each) => {
+          const { entity } = StoredEntity.serialization.fromJson(
+            each as unknown as PlainObject<StoredEntity>,
+          );
+          return { path: entity.path, content: entity.content, origin };
+        });
+      });
+  return async (names) => {
+    all ??= loadAll().catch((error: unknown) => {
+      // a failure isn't kept: the next definition asks again
+      all = undefined;
+      throw error;
+    });
+    // every overload of each name, and maybe a few more (`pkg::name_other`):
+    // Cube keeps only the functions of exactly these names
+    return (await all).filter((element) =>
+      names.some((name) => element.path.startsWith(`${name}_`)),
+    );
+  };
+};
 
 /** Why the flow can't be shown, when Cube didn't refuse the definition */
 export enum DataProductDefinitionFlowFailureKind {
