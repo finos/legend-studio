@@ -6088,6 +6088,54 @@ them back without it.
 
 **Status:** a pull request into `cube-view-dev`, after #5906.
 
+### 11.33 User-defined functions in the definition flow, as containers (research, 2026-11-12)
+
+**Ask:** the user, on 2026-11-12: many access points call user-defined functions, e.g.
+`myIngestDefWithFilter()->moreOperations()`, and the viewer's flow refuses them. Draw each call as a container
+(§11.29) with the function's name on top and its body inside, the steps after it carrying on. Research, a plan and
+mock-ups only. The guide is `USER-FUNCTIONS.md`. The prototype is the local branch `cube-user-functions`, never
+pushed. Evidence: `../legend-studio-cube-functions-evidence/`.
+
+**Findings:**
+
+- Today every such access point is refused as `source`, and a call in the middle of a chain loses its input too. A
+  short name is refused as `noStep`. A scalar function in a filter already draws, as a Filter by Expression.
+- A call names a function without the signature its element carries. The compiler matches `package::name`, then an
+  overload by count and type.
+- A function with steps after it must declare all its columns. Legend Engine has no generic functions. The finos
+  engine has no data products, and the artifact Studio models lists no functions.
+
+**Recommended:**
+
+- Open calls in the browser before Cube reads the steps: the body put in the call's place, its parameters given the
+  call's values. The rules are in USER-FUNCTIONS.md §4.
+- Draw each opened call as a nested-capable container with the call on top.
+- Draw a call Cube can't open as one box typed by its declared columns, never refusing the whole flow.
+- Load functions before ingest definitions. Marketplace makes one Depot request per project version (functions, with
+  dependencies); Studio reads its graph.
+- In the editor, the call is one step whose inside is a locked drawing. The Pure and the spec keep the call.
+
+**Steps (USER-FUNCTIONS.md §11, one PR each):**
+
+| Step | What                                                                        | Status |
+| ---- | --------------------------------------------------------------------------- | ------ |
+| F1   | Core: a call read as one step with inputs; containers that nest (#5910)     | 🚧     |
+| F2   | The flow's reader opens calls: loader, rules, boxes, scalar calls           | ⏳     |
+| F3   | The flow draws them: frames, nesting, folding, boxes, the ƒ badge           | ⏳     |
+| F4   | Marketplace's viewer: the Depot loader, the read order, the function's Pure | ⏳     |
+| F5   | Studio: the preview and the ingest Overview, from the graph                 | ⏳     |
+| F6   | Producer Info's view flows                                                  | ⏳     |
+| F7   | The editor: the call step, locked inside, folds saved, Import Pure          | ⏳     |
+| F8   | Later: overloads by literal type; the artifact's fields                     | ⏳     |
+
+**Settled with the user (2026-11-14):** a function Cube can't open is one box, not a refusal; function containers
+nest, the user's own stay flat; in the editor a call is one step with a locked inside; no Copy Its Steps Out (people
+change the function itself); a call holding more than 5 steps starts folded.
+
+**Also settled (2026-11-14):** no request for functions in the data product artifact for now; the two bugs found are
+fixed first, as finos/legend-studio#5908 (Cube's Function source picker) and #5909 (legend-graph's lookup behind the
+ingest Overview).
+
 ## 12. G. Risks and open questions
 
 ### 12.1 Risks

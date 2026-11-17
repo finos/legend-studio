@@ -30,6 +30,12 @@ export interface StepContainer {
   readonly steps: readonly string[];
   /** Drawn as one box in its steps' place, its steps out of sight */
   readonly folded: boolean;
+  /**
+   * The container it is drawn inside, e.g. the call of a user-defined
+   * function whose body calls another (PLAN §11.32): only a
+   * definition's flow nests containers; a cube's own never do
+   */
+  readonly parentId?: string | undefined;
   readonly rest?: JsonObject;
 }
 
@@ -37,6 +43,8 @@ export interface StepContainer {
 export interface ShownStepContainer {
   readonly container: StepContainer;
   readonly steps: readonly string[];
+  /** The steps of the containers drawn inside it, at any depth, sorted by id: none unless it has some */
+  readonly nestedSteps?: readonly string[] | undefined;
 }
 
 // by code unit, so the order never depends on the locale
@@ -92,6 +100,73 @@ export const isConnectedStepSet = (
 ): boolean => getStepBlocks(query, steps).length === 1;
 
 /**
+ * Containers drawn inside others (PLAN §11.32): the innermost
+ * takes a step two list, and a container is drawn when its steps and the
+ * steps of the containers inside it are one block; one with a parent not
+ * drawn isn't drawn. In the order saved.
+ */
+const getShownNestedContainers = (
+  query: Query,
+  containers: readonly StepContainer[],
+): ShownStepContainer[] => {
+  const byId = new Map(
+    containers.map((container) => [container.id, container]),
+  );
+  const children = new Map<string, StepContainer[]>();
+  containers.forEach((container) => {
+    if (container.parentId !== undefined && byId.has(container.parentId)) {
+      children.set(container.parentId, [
+        ...(children.get(container.parentId) ?? []),
+        container,
+      ]);
+    }
+  });
+  const taken = new Set<string>();
+  const shown = new Map<string, ShownStepContainer>();
+  // children first, so the innermost takes its steps
+  const visit = (container: StepContainer, path: ReadonlySet<string>): void => {
+    if (path.has(container.id)) {
+      return;
+    }
+    const inner = children.get(container.id) ?? [];
+    inner.forEach((child) => visit(child, new Set(path).add(container.id)));
+    const steps = [...new Set(container.steps)].filter(
+      (id) => query.getNode(id) !== undefined && !taken.has(id),
+    );
+    const nestedSteps = inner.flatMap((child) => {
+      const drawn = shown.get(child.id);
+      return drawn ? [...drawn.steps, ...(drawn.nestedSteps ?? [])] : [];
+    });
+    const block = new Set([...steps, ...nestedSteps]);
+    if (block.size && isConnectedStepSet(query, block)) {
+      steps.forEach((id) => taken.add(id));
+      shown.set(container.id, {
+        container,
+        steps: steps.sort(compareText),
+        ...(nestedSteps.length
+          ? { nestedSteps: nestedSteps.sort(compareText) }
+          : {}),
+      });
+    }
+  };
+  containers
+    .filter(
+      (container) =>
+        container.parentId === undefined || !byId.has(container.parentId),
+    )
+    .forEach((container) => visit(container, new Set()));
+  // a container whose parent isn't drawn isn't either
+  const isDrawn = (container: StepContainer): boolean =>
+    shown.has(container.id) &&
+    (container.parentId === undefined ||
+      !byId.has(container.parentId) ||
+      isDrawn(byId.get(container.parentId) as StepContainer));
+  return containers
+    .filter(isDrawn)
+    .map((container) => shown.get(container.id) as ShownStepContainer);
+};
+
+/**
  * The containers the canvas draws, in the order saved, each with the steps
  * of it the query has. A step two list is the first's. A container left with
  * no step, e.g. saved by a Cube that removed its steps without knowing it, or
@@ -102,9 +177,13 @@ export const getShownContainers = (
   query: Query,
   containers: readonly StepContainer[] | undefined,
 ): ShownStepContainer[] => {
+  const all = containers ?? [];
+  if (all.some((container) => container.parentId !== undefined)) {
+    return getShownNestedContainers(query, all);
+  }
   const taken = new Set<string>();
   const shown: ShownStepContainer[] = [];
-  (containers ?? []).forEach((container) => {
+  all.forEach((container) => {
     const steps = [...new Set(container.steps)].filter(
       (id) => query.getNode(id) !== undefined && !taken.has(id),
     );
@@ -122,6 +201,19 @@ export const getStepContainer = (
   stepId: string,
 ): ShownStepContainer | undefined =>
   shown.find((each) => each.steps.includes(stepId));
+
+/** Whether the container is drawn inside another that is folded: it isn't drawn then */
+export const isInFoldedStepContainer = (
+  shown: readonly ShownStepContainer[],
+  container: StepContainer,
+): boolean => {
+  const parent = shown.find(
+    (each) => each.container.id === container.parentId,
+  )?.container;
+  return parent
+    ? parent.folded || isInFoldedStepContainer(shown, parent)
+    : false;
+};
 
 /**
  * The steps a new container from this step takes: the step, and each step
