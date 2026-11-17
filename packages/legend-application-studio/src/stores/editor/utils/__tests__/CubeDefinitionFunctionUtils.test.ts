@@ -125,7 +125,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('The functions a definition calls, from the graph (PLAN §11.33)', () => {
+describe('The functions a definition calls, from the graph', () => {
   test(
     unitTest(
       "gives the project's own function with no project, and a dependency's with its project",

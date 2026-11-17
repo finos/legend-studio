@@ -39,9 +39,9 @@ const isGraphFullyBuilt = (editorStore: EditorStore): boolean =>
   editorStore.graphManagerState.graphBuildState.hasSucceeded;
 
 /**
- * The user-defined functions a definition's flow opens into containers
- * (PLAN §11.33), from Studio's graph: the project's own, its dependencies'
- * and the generated ones, as they are in the workspace, with no request.
+ * The user-defined functions a definition's flow opens into containers,
+ * from Studio's graph: the project's own, its dependencies' and the
+ * generated ones, as they are in the workspace, with no request.
  * A dependency's function says the project it comes from, as Depot's loader
  * in Marketplace does; the project's own goes without saying. The graph is
  * read once it is fully built, never text mode's light graph.

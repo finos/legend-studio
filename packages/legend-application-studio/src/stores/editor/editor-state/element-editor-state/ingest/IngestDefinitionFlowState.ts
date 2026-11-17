@@ -519,8 +519,8 @@ export class IngestDefinitionFlowState {
 
   /**
    * Loads, from the graph, the user-defined functions each view's function
-   * calls, the dependencies' included, as deep as Cube opens calls (PLAN
-   * §11.33): again each time the Overview shows, as a function may have
+   * calls, the dependencies' included, as deep as Cube opens calls: again
+   * each time the Overview shows, as a function may have
    * changed in the meantime. The graph is read once it is fully built, never
    * text mode's light graph, whose functions have no body.
    */

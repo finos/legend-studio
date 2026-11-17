@@ -1333,7 +1333,7 @@ describe("The Definition tab of a definition with a view of a data set's batch m
   );
 });
 
-describe('The Definition tab of a definition whose views call user-defined functions (PLAN §11.33)', () => {
+describe('The Definition tab of a definition whose views call user-defined functions', () => {
   const ORDERS_INGEST_PATH =
     TEST_DATA__CubeDefinitionFunctions.ingestDefinition;
 

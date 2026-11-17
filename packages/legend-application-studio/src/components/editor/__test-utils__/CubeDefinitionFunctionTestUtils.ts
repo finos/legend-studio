@@ -26,9 +26,9 @@ import {
 import TEST_DATA from './TEST_DATA__CubeDefinitionFunctions.json' with { type: 'json' };
 
 /**
- * The user-defined functions a definition's flow opens into containers
- * (PLAN §11.33), in a project built from Legend Cube's mock, as the engine
- * prints it: an ingest definition whose views, and a data product whose
+ * The user-defined functions a definition's flow opens into containers, in
+ * a project built from Legend Cube's mock, as the engine prints it: an
+ * ingest definition whose views, and a data product whose
  * access points, call `shop::orders::activeOrders()`, a function of the
  * project, and `shop::common::onlyOpen(…)`, one of a project it depends on
  */
