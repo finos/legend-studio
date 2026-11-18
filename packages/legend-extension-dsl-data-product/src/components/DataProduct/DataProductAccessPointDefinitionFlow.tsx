@@ -310,6 +310,9 @@ export const DataProductAccessPointDefinitionFlow = observer(
     const unknownDataSets = uniq(
       reading.unknownDataSets.map((each) => each.dataSet),
     );
+    // views aren't a failure: Cube doesn't type them yet
+    const materializedViewsNote =
+      entry.describeCubeDefinitionMaterializedViews(reading);
     // a function drawn as one box whose columns aren't known: the steps after
     // it aren't checked (PLAN §11.33)
     const uncheckedCalls = reading.functionCalls.filter(
@@ -346,6 +349,11 @@ export const DataProductAccessPointDefinitionFlow = observer(
             {`Couldn't load the columns of ${listNames(unknownDataSets)}, so the steps after ${
               unknownDataSets.length === 1 ? 'it' : 'them'
             } aren't checked.`}
+          </div>
+        )}
+        {materializedViewsNote && (
+          <div className="data-product__viewer__definition__note" role="note">
+            {materializedViewsNote}
           </div>
         )}
         <DefinitionFlowErrorBoundary

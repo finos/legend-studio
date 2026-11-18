@@ -1333,6 +1333,101 @@ describe("The Definition tab of a definition with a view of a data set's batch m
   );
 });
 
+/** A view of the view POSITIONS_BY_LEGAL_ENTITY: its rows of one legal entity */
+const ONE_ENTITY_VIEW: PlainObject = {
+  name: 'ONE_ENTITY_POSITIONS',
+  primaryKey: [],
+  privacyClassification: { sensitivity: 'DP10' },
+  source: {
+    _type: 'FunctionSource',
+    function: {
+      _type: 'lambda',
+      parameters: [],
+      body: [
+        {
+          _type: 'func',
+          function: 'filter',
+          parameters: [
+            {
+              _type: 'classInstance',
+              type: 'I',
+              value: {
+                path: [INGEST_PATH, 'POSITIONS_BY_LEGAL_ENTITY'],
+                metadata: false,
+              },
+            },
+            {
+              _type: 'lambda',
+              parameters: [{ _type: 'var', name: 'p' }],
+              body: [
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      property: 'LEGAL_ENTITY_ID',
+                      parameters: [{ _type: 'var', name: 'p' }],
+                    },
+                    { _type: 'string', value: 'LE-1' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+};
+
+describe('The Definition tab of a definition with a view of another view', () => {
+  test(
+    integrationTest(
+      "Draws the view it reads by name, saying Cube doesn't read a view's columns yet, not that they aren't known",
+    ),
+    async () => {
+      const editorStore = TEST__provideMockedEditorStore();
+      const [ingest, ...others] = TEST_DATA.entities as PlainObject<Entity>[];
+      const content = ingest?.content as PlainObject;
+      const withViewOfView = {
+        ...ingest,
+        content: {
+          ...content,
+          datasets: [...(content.datasets as PlainObject[]), ONE_ENTITY_VIEW],
+        },
+      } as PlainObject<Entity>;
+      const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+        editorStore,
+        { entities: [withViewOfView, ...others] },
+      );
+      jest
+        .spyOn(editorStore.graphManagerState.graphManager, 'entitiesToPureCode')
+        .mockResolvedValue(DEFINITION_PURE);
+      await act(async () => {
+        await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      });
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      await findFlowNodes(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        5,
+      );
+
+      await pick(editorGroup, 'ONE_ENTITY_POSITIONS');
+      const panel = getViewPanel(editorGroup, 'ONE_ENTITY_POSITIONS');
+      const [view, filter] = await findFlowNodes(panel, 2);
+      expect(view?.textContent).toContain('POSITIONS_BY_LEGAL_ENTITY');
+      expect(filter?.textContent).toContain('Filter');
+      within(panel).getByText(
+        "POSITIONS_BY_LEGAL_ENTITY is a materialized view, whose columns Cube doesn't read yet, so the steps after it aren't checked.",
+      );
+      expect(within(panel).queryByText(/aren't known/u)).toBeNull();
+    },
+  );
+});
+
 describe('The Definition tab of a definition whose views call user-defined functions', () => {
   const ORDERS_INGEST_PATH =
     TEST_DATA__CubeDefinitionFunctions.ingestDefinition;

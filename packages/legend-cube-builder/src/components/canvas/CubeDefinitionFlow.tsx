@@ -297,6 +297,15 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
         const isUnknown =
           node instanceof IngestDatasetSource &&
           node.resolution.kind !== 'resolved';
+        // a view's columns aren't unknown for want of its definition: Cube
+        // doesn't type a view yet
+        const isMaterializedView =
+          isUnknown &&
+          flow.materializedViews.some(
+            (each) =>
+              each.ingestDefinition === node.ingestDefinition &&
+              each.dataSet === node.dataSet,
+          );
         const parameters = flow.parameters
           .filter((parameter) => parameter.stepIds.includes(node.id))
           .map((parameter) => parameter.name);
@@ -330,7 +339,11 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
                   )
                 : []),
               ...(isUnknown
-                ? [CUBE_DEFINITION_FLOW_LABEL.UNKNOWN_COLUMNS]
+                ? [
+                    isMaterializedView
+                      ? CUBE_DEFINITION_FLOW_LABEL.MATERIALIZED_VIEW_COLUMNS
+                      : CUBE_DEFINITION_FLOW_LABEL.UNKNOWN_COLUMNS,
+                  ]
                 : []),
               ...(parameters.length
                 ? [CUBE_DEFINITION_FLOW_LABEL.READS_PARAMETERS(parameters)]

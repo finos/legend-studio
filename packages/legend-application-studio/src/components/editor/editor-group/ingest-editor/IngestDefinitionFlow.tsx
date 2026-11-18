@@ -463,6 +463,9 @@ const MaterializedViewFlow = observer(
     const unknownDataSets = [
       ...new Set(reading.unknownDataSets.map((each) => each.dataSet)),
     ];
+    // a view of a view: Cube doesn't type a view yet
+    const materializedViewsNote =
+      entry.describeCubeDefinitionMaterializedViews(reading);
     return (
       <>
         {unknownDataSets.length > 0 && (
@@ -470,6 +473,11 @@ const MaterializedViewFlow = observer(
             {`The columns of ${listNames(unknownDataSets)} aren't known, so the steps after ${
               unknownDataSets.length === 1 ? 'it' : 'them'
             } aren't checked.`}
+          </div>
+        )}
+        {materializedViewsNote && (
+          <div className="ingest-definition-flow__view__note" role="note">
+            {materializedViewsNote}
           </div>
         )}
         <MaterializedViewFlowErrorBoundary
