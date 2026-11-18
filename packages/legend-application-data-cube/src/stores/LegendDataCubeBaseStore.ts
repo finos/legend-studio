@@ -22,6 +22,7 @@ import {
 } from '@finos/legend-application';
 import type { LegendDataCubePluginManager } from '../application/LegendDataCubePluginManager.js';
 import { DepotServerClient } from '@finos/legend-server-depot';
+import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import type { LegendDataCubeApplicationConfig } from '../application/LegendDataCubeApplicationConfig.js';
 import {
   type V1_EngineServerClient,
@@ -70,6 +71,7 @@ export class LegendDataCubeBaseStore {
   readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
   readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
   readonly lakehouseContractServerClient: LakehouseContractServerClient;
+  readonly marketplaceServerClient: MarketplaceServerClient | undefined;
   readonly graphManager: V1_PureGraphManager;
   readonly remoteEngine: V1_RemoteEngine;
   readonly engineServerClient: V1_EngineServerClient;
@@ -110,6 +112,13 @@ export class LegendDataCubeBaseStore {
     this.lakehouseContractServerClient.setTracerService(
       application.tracerService,
     );
+    if (this.application.config.marketplaceServerUrl) {
+      this.marketplaceServerClient = new MarketplaceServerClient({
+        serverUrl: this.application.config.marketplaceServerUrl,
+        subscriptionUrl: '',
+      });
+      this.marketplaceServerClient.setTracerService(application.tracerService);
+    }
 
     this.graphManager = new V1_PureGraphManager(
       this.application.pluginManager,
