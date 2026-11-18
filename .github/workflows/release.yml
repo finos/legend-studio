@@ -22,7 +22,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v7.0.1
         with:
           # fetch all Git history so that `changesets` can generate changelogs with the correct commits
           fetch-depth: 0
