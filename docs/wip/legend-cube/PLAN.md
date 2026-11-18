@@ -6125,7 +6125,7 @@ goes to master once the steps are in):**
 | F3   | The flow draws them: frames, nesting, folding, boxes, the ƒ badge (#5912, merged)           | ✅     |
 | F4   | Marketplace's viewer: the Depot loader, the read order, the function's Pure (#5913, merged) | ✅     |
 | F5   | Studio: the preview and the ingest Overview, from the graph (#5927, merged)                 | ✅     |
-| F6   | Producer Info's view flows, for owners, in a side panel (#PRNUM)                            | 🚧     |
+| F6   | Producer Info's view flows, for owners, in a side panel (#5936)                             | 🚧     |
 | F7   | The editor: the call step, locked inside, folds saved, Import Pure                          | ⏳     |
 | F8   | Later: overloads by literal type; the artifact's fields                                     | ⏳     |
 
