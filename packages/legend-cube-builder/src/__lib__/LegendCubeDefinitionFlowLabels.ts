@@ -17,6 +17,12 @@
 // What a definition flow (`@finos/legend-cube-builder/definition-flow`)
 // says: a data product's access point definition, drawn read-only
 
+/** `a`, `a and b`, `a, b and c` */
+const listNames = (names: readonly string[]): string =>
+  names.length <= 1
+    ? (names[0] ?? '')
+    : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+
 export const CUBE_DEFINITION_FLOW_MESSAGE = {
   /** A source other than an ingest data set: `what` names it, e.g. "a table, #>{…}#" */
   SOURCE: (what: string): string =>
@@ -25,19 +31,23 @@ export const CUBE_DEFINITION_FLOW_MESSAGE = {
   ACCESS_POINT: "a data product's access point, #P{…}#",
   FUNCTION: (name: string): string => `the function ${name}()`,
   OTHER: 'another source',
+  /** The note over a flow that reads materialized views, by their names */
+  MATERIALIZED_VIEWS: (names: readonly string[]): string =>
+    names.length === 1
+      ? `${listNames(names)} is a materialized view, whose columns Cube doesn't read yet, so the steps after it aren't checked.`
+      : `${listNames(names)} are materialized views, whose columns Cube doesn't read yet, so the steps after them aren't checked.`,
 };
 
 /** `$a`, `$a and $b`, `$a, $b and $c` */
-const listParameters = (names: readonly string[]): string => {
-  const variables = names.map((name) => `$${name}`);
-  return variables.length <= 1
-    ? (variables[0] ?? '')
-    : `${variables.slice(0, -1).join(', ')} and ${variables.at(-1)}`;
-};
+const listParameters = (names: readonly string[]): string =>
+  listNames(names.map((name) => `$${name}`));
 
 export const CUBE_DEFINITION_FLOW_LABEL = {
   /** In the tooltip of a data set whose columns the host didn't give */
   UNKNOWN_COLUMNS: "Its columns aren't known.",
+  /** In the tooltip of a materialized view, which Cube doesn't type yet */
+  MATERIALIZED_VIEW_COLUMNS:
+    "It is a materialized view, whose columns Cube doesn't read yet.",
   /** What the output step's label says on hover: nothing runs in a flow */
   OUTPUT_TITLE: 'The output step: the definition gives its rows',
   /** In the tooltip of a step that reads the definition's parameters */

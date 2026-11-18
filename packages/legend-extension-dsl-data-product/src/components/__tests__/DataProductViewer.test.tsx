@@ -5212,6 +5212,104 @@ describe('DataProductViewer', () => {
             `${DEFINITIONS.ingestDefinition}.EOD_POSITIONS`,
             `${DEFINITIONS.ingestDefinition}.LEGAL_ENTITIES`,
           ],
+          materializedViews: [],
+        }),
+      );
+    });
+
+    test("draws a materialized view by name, and says Cube doesn't read a view's columns yet, not that they couldn't be loaded", async () => {
+      const content = DEFINITIONS.ingestDefinitionContent as {
+        datasets: PlainObject[];
+      };
+      /** `#I{…<data set>}#`, as the engine's grammar gives one */
+      const dataSetOf = (dataSet: string): PlainObject => ({
+        _type: 'classInstance',
+        type: 'I',
+        value: {
+          metadata: false,
+          path: [DEFINITIONS.ingestDefinition, dataSet],
+        },
+      });
+      // the ingest definition, with a view of its positions: a function
+      // over its data sets, which declares no columns
+      const loadIngestDefinition = async (
+        path: string,
+      ): Promise<PlainObject | undefined> =>
+        path === DEFINITIONS.ingestDefinition
+          ? {
+              ...content,
+              datasets: [
+                ...content.datasets,
+                {
+                  name: 'SIGNED_OFF_POSITIONS',
+                  primaryKey: [],
+                  source: {
+                    _type: 'FunctionSource',
+                    function: {
+                      _type: 'lambda',
+                      parameters: [],
+                      body: [dataSetOf('EOD_POSITIONS')],
+                    },
+                  },
+                },
+              ],
+            }
+          : undefined;
+      // the view's rows of one desk
+      const { logEvent } = await setupDefinition(
+        {
+          _type: 'lambda',
+          parameters: [],
+          body: [
+            {
+              _type: 'func',
+              function: 'filter',
+              parameters: [
+                dataSetOf('SIGNED_OFF_POSITIONS'),
+                {
+                  _type: 'lambda',
+                  parameters: [{ _type: 'var', name: 'p' }],
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'equal',
+                      parameters: [
+                        {
+                          _type: 'property',
+                          property: 'DESK',
+                          parameters: [{ _type: 'var', name: 'p' }],
+                        },
+                        { _type: 'string', value: 'RATES' },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        loadIngestDefinition,
+      );
+
+      const definition = await openDefinition();
+      // the view and the filter
+      await findFlowNodes(definition, 2);
+      const note = within(definition).getByText(
+        "SIGNED_OFF_POSITIONS is a materialized view, whose columns Cube doesn't read yet, so the steps after it aren't checked.",
+      );
+      // a note, not a warning: nothing failed
+      expect(note.className).not.toContain('--warning');
+      expect(
+        within(definition).queryByText(/^Couldn't load the columns/),
+      ).toBeNull();
+      expect(logEvent).toHaveBeenCalledWith(
+        DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+        expect.objectContaining({
+          steps: 2,
+          unknownDataSets: [],
+          materializedViews: [
+            `${DEFINITIONS.ingestDefinition}.SIGNED_OFF_POSITIONS`,
+          ],
         }),
       );
     });

@@ -40,17 +40,24 @@ export class CubeIngestDataSet {
   /** Why it can't be picked, e.g. it is a materialized view; none when it can */
   readonly disabledReason: string | undefined;
   readonly primaryKey: readonly string[];
+  /**
+   * Whether it is a materialized view, whose rows a function over other data
+   * sets gives: it declares no columns, so Cube doesn't type it yet
+   */
+  readonly isMaterializedView: boolean;
 
   constructor(fields: {
     name: string;
     schema?: Schema | undefined;
     disabledReason?: string | undefined;
     primaryKey?: readonly string[];
+    isMaterializedView?: boolean | undefined;
   }) {
     this.name = fields.name;
     this.schema = fields.schema;
     this.disabledReason = fields.disabledReason;
     this.primaryKey = fields.primaryKey ?? [];
+    this.isMaterializedView = fields.isMaterializedView ?? false;
   }
 
   get isPickable(): boolean {

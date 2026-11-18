@@ -204,6 +204,13 @@ describe("An ingest definition's data sets", () => {
     dataSets
       .filter((each) => !each.isPickable)
       .forEach((each) => expect(each.schema).toBeUndefined());
+    // only a view says it is one, for a flow to tell it from columns that
+    // couldn't be loaded
+    expect(
+      dataSets
+        .filter((each) => each.isMaterializedView)
+        .map((each) => each.name),
+    ).toEqual(['DAILY']);
     expect(
       V1_CUBE_INGEST_DATA_SET_REASON.UNKNOWN_TYPE('COLOR', 'test::Color'),
     ).toBe(`Column "COLOR" has a type Cube doesn't know: test::Color`);

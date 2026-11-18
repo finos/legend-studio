@@ -27,6 +27,7 @@ export {
 export {
   findCubeDefinitionIngestDefinitions,
   readCubeDefinition,
+  describeCubeDefinitionMaterializedViews,
   type CubeDefinitionDataSet,
   type CubeDefinitionFlowReading,
   CUBE_DEFINITION_CALL_OPEN_STEPS,

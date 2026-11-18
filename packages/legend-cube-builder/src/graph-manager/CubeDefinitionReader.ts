@@ -35,9 +35,12 @@ import {
   type CubeType,
   type IR,
   type Query,
-  type Schema,
 } from '@finos/legend-cube';
-import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  type PlainObject,
+  uniq,
+} from '@finos/legend-shared';
 import { CUBE_DEFINITION_FLOW_MESSAGE } from '../__lib__/LegendCubeDefinitionFlowLabels.js';
 import type { CubeIngestDataSet } from './CubeIngestCatalog.js';
 import {
@@ -189,8 +192,19 @@ export interface CubeDefinitionFlowReading {
   readonly lets: ReadonlyMap<string, IR>;
   /** The steps read without being checked, as the columns before them weren't known */
   readonly uncheckedStepIds: readonly string[];
-  /** The ingest data sets it reads whose columns the host didn't give: drawn by name */
+  /**
+   * The ingest data sets it reads whose columns the host didn't give, or
+   * Cube couldn't read: drawn by name. A materialized view isn't one of
+   * them: see `materializedViews`.
+   */
   readonly unknownDataSets: readonly CubeDefinitionDataSet[];
+  /**
+   * The materialized views it reads, as their ingest definition says: data
+   * sets whose rows a function over other data sets gives, which declare no
+   * columns, so Cube doesn't type them yet. Drawn by name, the steps after
+   * them unchecked.
+   */
+  readonly materializedViews: readonly CubeDefinitionDataSet[];
   /** The values it takes when it is queried, in order: none for most */
   readonly parameters: readonly CubeDefinitionParameter[];
   /** The steps as Cube holds them, for `CubeDefinitionFlow` to draw */
@@ -237,6 +251,20 @@ export interface CubeDefinitionReadOptions {
    */
   readonly functions?: CubeDefinitionFunctions | undefined;
 }
+
+/**
+ * The note a host shows over a flow that reads materialized views, which
+ * Cube doesn't type yet: their columns didn't fail to load. None when it
+ * reads none.
+ */
+export const describeCubeDefinitionMaterializedViews = (
+  reading: Pick<CubeDefinitionFlowReading, 'materializedViews'>,
+): string | undefined => {
+  const names = uniq(reading.materializedViews.map((each) => each.dataSet));
+  return names.length
+    ? CUBE_DEFINITION_FLOW_MESSAGE.MATERIALIZED_VIEWS(names)
+    : undefined;
+};
 
 const refusalOf = (error: CubeLambdaReadError): CubeDefinitionRefusal => ({
   kind: 'refused',
@@ -350,18 +378,42 @@ const bindClosedCall = (
       };
 };
 
+/** The data sets a reading draws by name, by why their columns aren't known */
+interface CubeUntypedDataSets {
+  /** Their ingest definition wasn't given, Cube couldn't read it, or it lacks them */
+  readonly unknown: CubeDefinitionDataSet[];
+  /** Materialized views, which Cube doesn't type yet */
+  readonly materializedViews: CubeDefinitionDataSet[];
+}
+
+/** Adds a data set to a list, once */
+const addDataSet = (
+  list: CubeDefinitionDataSet[],
+  ingestDefinition: string,
+  dataSet: string,
+): void => {
+  if (
+    !list.some(
+      (each) =>
+        each.ingestDefinition === ingestDefinition && each.dataSet === dataSet,
+    )
+  ) {
+    list.push({ ingestDefinition, dataSet });
+  }
+};
+
 /** The step each source reads as: an ingest data set, typed from its definition when the host has it */
 const createBindSource = (
   options: Pick<CubeDefinitionReadOptions, 'getIngestDefinition'>,
-  unknownDataSets: CubeDefinitionDataSet[],
+  untyped: CubeUntypedDataSets,
 ): ((source: IR) => CubeSourceStep) => {
   // each ingest definition's data sets, typed once; none for one the host
   // doesn't have or Cube can't read, whose data sets are drawn by name
   const dataSets = new Map<string, readonly CubeIngestDataSet[]>();
-  const schemaOf = (
+  const dataSetOf = (
     ingestDefinition: string,
     dataSet: string,
-  ): Schema | undefined => {
+  ): CubeIngestDataSet | undefined => {
     if (!dataSets.has(ingestDefinition)) {
       const content = options.getIngestDefinition?.(ingestDefinition);
       let read: readonly CubeIngestDataSet[] = [];
@@ -372,8 +424,9 @@ const createBindSource = (
       }
       dataSets.set(ingestDefinition, read);
     }
-    return dataSets.get(ingestDefinition)?.find((each) => each.name === dataSet)
-      ?.schema;
+    return dataSets
+      .get(ingestDefinition)
+      ?.find((each) => each.name === dataSet);
   };
   return (source: IR): CubeSourceStep => {
     if (source.k !== 'ingestAccessor') {
@@ -387,21 +440,23 @@ const createBindSource = (
     const isStandIn = ingestDefinition === CUBE_DEFINITION_INPUT_STAND_IN;
     // a data set's batch metadata has the same columns whatever the data
     // set, so is known without its definition
-    const schema = isStandIn
-      ? undefined
-      : qualifier === IngestDatasetQualifier.METADATA
+    const readsMetadata = qualifier === IngestDatasetQualifier.METADATA;
+    const read =
+      isStandIn || readsMetadata
+        ? undefined
+        : dataSetOf(ingestDefinition, dataSet);
+    const schema =
+      !isStandIn && readsMetadata
         ? getCubeIngestMetadataSchema()
-        : schemaOf(ingestDefinition, dataSet);
-    if (
-      !schema &&
-      !isStandIn &&
-      !unknownDataSets.some(
-        (each) =>
-          each.ingestDefinition === ingestDefinition &&
-          each.dataSet === dataSet,
-      )
-    ) {
-      unknownDataSets.push({ ingestDefinition, dataSet });
+        : read?.schema;
+    if (!schema && !isStandIn) {
+      // a view's columns aren't unknown for want of its definition: Cube
+      // doesn't type a view yet
+      addDataSet(
+        read?.isMaterializedView ? untyped.materializedViews : untyped.unknown,
+        ingestDefinition,
+        dataSet,
+      );
     }
     return {
       type: IngestDatasetSource.TYPE,
@@ -437,7 +492,10 @@ const expand = (
         ...(parts.parameters ? { parameters: parts.parameters } : {}),
       },
       {
-        bindSource: createBindSource(options, []),
+        bindSource: createBindSource(options, {
+          unknown: [],
+          materializedViews: [],
+        }),
         bindCall: (call) => bindClosedCall(undefined, call),
         expressions: CUBE_EXPRESSION_CODEC,
         forDrawing: true,
@@ -505,9 +563,9 @@ export const readCubeDefinition = (
       ? expand(split, options.functions, options)
       : undefined;
     const parts = expansion?.parts ?? split;
-    const unknownDataSets: CubeDefinitionDataSet[] = [];
+    const untyped: CubeUntypedDataSets = { unknown: [], materializedViews: [] };
     const { query, unchecked, stepIRs, parameterReads } = readCubeQuery(parts, {
-      bindSource: createBindSource(options, unknownDataSets),
+      bindSource: createBindSource(options, untyped),
       ...(expansion
         ? { bindCall: (call) => bindClosedCall(expansion, call) }
         : {}),
@@ -591,7 +649,8 @@ export const readCubeDefinition = (
       outputStepId: guaranteeNonNullable(query.selected),
       lets: parts.lets,
       uncheckedStepIds: unchecked,
-      unknownDataSets,
+      unknownDataSets: untyped.unknown,
+      materializedViews: untyped.materializedViews,
       parameters: readCubeLambdaParameters(lambda).map((parameter) => ({
         name: parameter.name,
         type: parameter.type ? typeOf(parameter.type) : undefined,

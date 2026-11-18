@@ -230,6 +230,10 @@ return reading.kind === 'flow' ? (
   (`splitCubeLambda` reads them only with `readsParameters`).
 - **Unknown columns:** a data set whose definition the host doesn't give, or Cube can't read, is drawn by its name,
   as any other, and the steps after it aren't checked (`unknownDataSets`, `uncheckedStepIds`).
+- **Materialized views:** a data set whose source is a function declares no columns, and Cube doesn't type a view
+  yet. It is drawn by its name too, the steps after it unchecked, but listed apart (`materializedViews`): its
+  columns didn't fail to load. `describeCubeDefinitionMaterializedViews` gives the host's note, and the view's
+  tooltip says so.
 - **Steps:** `steps`, each after the ones it reads, with its inputs and the relation it was read from (`ir`, which
   reads the lambda's `lets` by name): the Pure up to it.
 - **The canvas:** it fills its container and pans. Its controls, bottom right, zoom, as pinching does; the wheel
