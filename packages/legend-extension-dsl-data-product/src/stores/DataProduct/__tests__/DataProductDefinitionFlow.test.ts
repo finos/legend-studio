@@ -75,6 +75,36 @@ describe('Ingest definitions from Depot, for an access point definition flow', (
       INGEST_DEFINITION,
     );
   });
+
+  test('asks Depot once for each ingest definition, and again after a failure', async () => {
+    const depotServerClient = new DepotServerClient({
+      serverUrl: 'http://testDepotServerClientUrl',
+    });
+    const getVersionEntity = createSpy(depotServerClient, 'getVersionEntity')
+      .mockRejectedValueOnce(new Error('Depot is down'))
+      .mockResolvedValue({
+        path: INGEST_DEFINITION,
+        classifierPath:
+          'meta::external::ingest::specification::metamodel::IngestDefinition',
+        content: CONTENT,
+      });
+    const load = createDepotIngestDefinitionLoader(depotServerClient, {
+      groupId: 'com.example.markets',
+      artifactId: 'trade-positions',
+      versionId: '1.2.0',
+    });
+
+    await expect(load(INGEST_DEFINITION)).rejects.toThrow('Depot is down');
+    // the access points' flows and Producer Info, at once
+    const [first, second] = await Promise.all([
+      load(INGEST_DEFINITION),
+      load(INGEST_DEFINITION),
+    ]);
+    expect(first).toEqual(CONTENT);
+    expect(second).toBe(first);
+    expect(await load(INGEST_DEFINITION)).toBe(first);
+    expect(getVersionEntity).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('Functions from Depot, for an access point definition flow (PLAN §11.33)', () => {
