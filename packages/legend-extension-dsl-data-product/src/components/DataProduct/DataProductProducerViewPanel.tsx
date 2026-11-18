@@ -97,8 +97,12 @@ const DataProductProducerViewDefinition = observer(
             <DataProductIngestViewTag />
           </span>
         }
-        caption={`A materialized view: its ingest definition computes its rows from ${
-          reads.length === 1 ? 'a data set' : 'other data sets'
+        caption={`A materialized view: its ingest definition computes its rows${
+          reads.length === 0
+            ? ''
+            : reads.length === 1
+              ? ' from a data set'
+              : ' from other data sets'
         } with a function, and keeps them.`}
         copyLabel="function"
         pure={view.pure}
@@ -118,48 +122,50 @@ const DataProductProducerViewDefinition = observer(
         )}
       >
         <dl className="data-product__viewer__producer-view__facts">
-          <div className="data-product__viewer__producer-view__fact">
-            <dt>Reads</dt>
-            <dd>
-              {reads.length
-                ? reads.map((read) => {
-                    const readView = producerViewsState.getView(
-                      read.ingestDefinitionPath,
-                      read.datasetName,
-                    );
-                    const key = `${read.ingestDefinitionPath}.${read.datasetName}`;
-                    const chip = (
-                      <>
-                        <DatabaseImportIcon />
-                        <span className="data-product__viewer__producer-view__chip__name">
-                          {read.datasetName}
-                        </span>
-                        {readView && <DataProductIngestViewTag />}
-                      </>
-                    );
-                    return readView ? (
-                      <button
-                        key={key}
-                        type="button"
-                        className="data-product__viewer__producer-view__chip data-product__viewer__producer-view__chip--link"
-                        title={`See how ${read.datasetName} is made`}
-                        onClick={() => producerViewsState.showView(readView)}
-                      >
-                        {chip}
-                      </button>
-                    ) : (
-                      <span
-                        key={key}
-                        className="data-product__viewer__producer-view__chip"
-                        title={read.ingestDefinitionPath}
-                      >
-                        {chip}
+          {/* none found when it reads them only through the functions it
+          calls, whose bodies come from Depot: its flow shows them */}
+          {reads.length > 0 && (
+            <div className="data-product__viewer__producer-view__fact">
+              <dt>Reads</dt>
+              <dd>
+                {reads.map((read) => {
+                  const readView = producerViewsState.getView(
+                    read.ingestDefinitionPath,
+                    read.datasetName,
+                  );
+                  const key = `${read.ingestDefinitionPath}.${read.datasetName}`;
+                  const chip = (
+                    <>
+                      <DatabaseImportIcon />
+                      <span className="data-product__viewer__producer-view__chip__name">
+                        {read.datasetName}
                       </span>
-                    );
-                  })
-                : '—'}
-            </dd>
-          </div>
+                      {readView && <DataProductIngestViewTag />}
+                    </>
+                  );
+                  return readView ? (
+                    <button
+                      key={key}
+                      type="button"
+                      className="data-product__viewer__producer-view__chip data-product__viewer__producer-view__chip--link"
+                      title={`See how ${read.datasetName} is made`}
+                      onClick={() => producerViewsState.showView(readView)}
+                    >
+                      {chip}
+                    </button>
+                  ) : (
+                    <span
+                      key={key}
+                      className="data-product__viewer__producer-view__chip"
+                      title={read.ingestDefinitionPath}
+                    >
+                      {chip}
+                    </span>
+                  );
+                })}
+              </dd>
+            </div>
+          )}
           <div className="data-product__viewer__producer-view__fact">
             <dt>Key</dt>
             <dd className="data-product__viewer__producer-view__fact--code">

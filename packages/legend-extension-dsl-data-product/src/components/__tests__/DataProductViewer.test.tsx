@@ -6011,6 +6011,9 @@ describe('DataProductViewer', () => {
           LEGEND_CUBE_TEST_ID.CANVAS_CONTAINER,
         );
         expect(frame.textContent).toContain('activeOrders()');
+        // it reads ORDERS only through the function, whose body comes from
+        // Depot: its flow shows it
+        expect(within(panel).queryByText('Reads')).toBeNull();
         expect(logEvent).toHaveBeenCalledWith(
           DATA_PRODUCT_EVENT.SHOW_INGEST_VIEW_FLOW,
           expect.objectContaining({
