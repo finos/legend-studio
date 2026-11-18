@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.22.7
+
+### Patch Changes
+
+- [#5926](https://github.com/finos/legend-studio/pull/5926) [`0ce7a95`](https://github.com/finos/legend-studio/commit/0ce7a9568c5596c8d20554ab721670ca621fb911) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The ingest definition Overview shows a column's documentation, its `doc.doc` tagged value, under its name in a data set's Schema.
+
 ## 28.22.6
 
 ### Patch Changes

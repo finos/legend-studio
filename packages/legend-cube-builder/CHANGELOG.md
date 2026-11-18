@@ -1,5 +1,15 @@
 # @finos/legend-cube-builder
 
+## 0.0.16
+
+### Patch Changes
+
+- [#5926](https://github.com/finos/legend-studio/pull/5926) [`0ce7a95`](https://github.com/finos/legend-studio/commit/0ce7a9568c5596c8d20554ab721670ca621fb911) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - A definition's flow draws each opened call of a user-defined function as a container of its body's steps, the call with its values on top; calls in a function's body as containers inside it; a call holding more than 5 steps folded at first, and any call folded or opened from its head; a call Cube can't open as one dashed step saying why; and a small ƒ on a step whose expression calls a user-defined function. `onShowFunction` tells the host which function's Pure to show.
+
+- [#5926](https://github.com/finos/legend-studio/pull/5926) [`0ce7a95`](https://github.com/finos/legend-studio/commit/0ce7a9568c5596c8d20554ab721670ca621fb911) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - A definition's flow (`@finos/legend-cube-builder/definition-flow`) opens the calls of user-defined functions: `loadCubeDefinitionFunctions` loads the functions a definition calls through the host's loader, and `readCubeDefinition` with `functions` puts each call Cube can open in its body's place, reporting it as a container (`functionCalls`), and each it can't as one step typed by the columns the function declares. `findCubeDefinitionIngestDefinitions` sees through the bodies.
+
+- [#5926](https://github.com/finos/legend-studio/pull/5926) [`0ce7a95`](https://github.com/finos/legend-studio/commit/0ce7a9568c5596c8d20554ab721670ca621fb911) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Cube's Function source picker calls a project function by its whole name: one taking two or more values with an underscore in its name, e.g. `orders_above(min, region)`, was called by the part before its first underscore (`orders`), a function that doesn't exist.
+
 ## 0.0.15
 
 ### Patch Changes

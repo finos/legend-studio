@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.10.1
+
+### Patch Changes
+
+- [#5926](https://github.com/finos/legend-studio/pull/5926) [`0ce7a95`](https://github.com/finos/legend-studio/commit/0ce7a9568c5596c8d20554ab721670ca621fb911) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The ingest data sets a lambda reads through a function it calls come from the function of that exact name taking as many values: a call to `my::orders()` followed `my::orders_above(…)` when that one came first.
+
 ## 32.10.0
 
 ### Minor Changes

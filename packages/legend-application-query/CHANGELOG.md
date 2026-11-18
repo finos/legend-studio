@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.73
+
+### Patch Changes
+
+- [#5921](https://github.com/finos/legend-studio/pull/5921) [`2a6ca88`](https://github.com/finos/legend-studio/commit/2a6ca88fe7402f3a81d0cbdda24868f92a728c77) ([@gs-gunjan](https://github.com/gs-gunjan)) - Fetch the data spaces and data products once while a query loads: flows that ask for them while they are being fetched wait on that fetch instead of fetching them again.
+
 ## 13.8.72
 
 ## 13.8.71
