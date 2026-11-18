@@ -25,15 +25,16 @@ import { uniq } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import { Component, type ReactNode } from 'react';
-import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
 import {
   DataProductDefinitionFlowFailureKind,
   DataProductDefinitionFlowKind,
 } from '../../stores/DataProduct/DataProductDefinitionFlow.js';
+import type { DataProductDefinitionFlowState } from '../../stores/DataProduct/DataProductDefinitionFlowState.js';
 
-// An access point's definition as Legend Cube's flow, in the Definition
-// panel: an extra view of the Pure. Whatever goes wrong, the panel says so in
-// a line and offers the Pure; nothing else in the viewer is affected.
+// A definition as Legend Cube's flow, an extra view of its Pure: an access
+// point's, in its Definition panel, or a materialized view's, in Producer
+// Info. Whatever goes wrong, the panel says so in a line and offers the Pure;
+// nothing else in the viewer is affected.
 
 /** How the Definition panel shows the definition */
 export enum DataProductDefinitionView {
@@ -174,15 +175,17 @@ export const DataProductDefinitionFlowRefusal: React.FC<{
 /** Neither view of the definition can be shown: the flow failed, and the Pure couldn't be fetched */
 export const DataProductDefinitionUnavailable: React.FC<{
   onRetry: () => void;
+  /** What the definition is, e.g. "this access point's definition" */
+  subject: string;
+  /** What else to say, after "Neither its flow nor its Pure can be shown." */
+  children?: ReactNode;
 }> = (props) => (
   <div className="data-product__viewer__definition-flow__failure" role="alert">
     <div className="data-product__viewer__definition-flow__failure__title">
-      Couldn&apos;t load this access point&apos;s definition
+      {`Couldn't load ${props.subject}`}
     </div>
     <div className="data-product__viewer__definition-flow__failure__text">
-      Neither its flow nor its Pure can be shown. Querying the access point
-      still works: see <strong>Pure Query</strong>. If this persists, tell the
-      data product&apos;s owners.
+      Neither its flow nor its Pure can be shown. {props.children}
     </div>
     <div className="data-product__viewer__definition-flow__failure__actions">
       <button
@@ -268,13 +271,13 @@ class DefinitionFlowErrorBoundary extends Component<
  */
 export const DataProductAccessPointDefinitionFlow = observer(
   (props: {
-    accessPointState: DataProductAccessPointState;
+    flowState: DataProductDefinitionFlowState;
     onShowPure: () => void;
     onRetry: () => void;
   }) => {
-    const { accessPointState, onShowPure, onRetry } = props;
-    const definitionFlow = accessPointState.definitionFlow;
-    const { layoutService } = accessPointState.apgState.applicationStore;
+    const { flowState, onShowPure, onRetry } = props;
+    const definitionFlow = flowState.definitionFlow;
+    const { layoutService } = flowState.viewerState.applicationStore;
 
     if (definitionFlow === undefined) {
       return (
@@ -350,7 +353,7 @@ export const DataProductAccessPointDefinitionFlow = observer(
         )}
         <DefinitionFlowErrorBoundary
           onError={(error) =>
-            accessPointState.logDefinitionFlowFailure(
+            flowState.logDefinitionFlowFailure(
               DataProductDefinitionFlowFailureKind.DRAW,
               error,
             )
@@ -371,9 +374,8 @@ export const DataProductAccessPointDefinitionFlow = observer(
             <entry.CubeDefinitionFlow
               flow={reading}
               onShowFunction={(call) => {
-                flowResult(accessPointState.showFunction(call)).catch(
-                  accessPointState.apgState.applicationStore
-                    .alertUnhandledError,
+                flowResult(flowState.showFunction(call)).catch(
+                  flowState.viewerState.applicationStore.alertUnhandledError,
                 );
               }}
               colorMode={
