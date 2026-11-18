@@ -84,6 +84,19 @@ To initiate a `patch release`:
 - Review and merge that PR. The release workflow then opens the `Patch Release vx.y.z-patch.n` PR.
 - Merge the `Patch Release` PR to publish.
 
+`release/*` branches are protected: PRs into them need an approving review, the `verification/cla-signed` check and a linear history, so squash or rebase them.
+
+If the workflow can't prepare the patch release (e.g. a cherry-pick conflicts), do the same by hand and open the PR into the `release branch` yourself:
+
+```sh
+# the commit the release was published from: its tag, or the `chore: bump versions and release` commit with that version
+git push <finos-remote> <release-commit>:refs/heads/release/13.281.0  # first patch of this release only
+git switch -c patch-13.281.0 <finos-remote>/release/13.281.0
+yarn changeset:cli pre enter patch  # first patch of this release only
+git add .changeset/pre.json && git commit -m "chore: enter prerelease mode for patch releases of v13.281.0"
+git cherry-pick -x <fix-commit> ...  # resolve conflicts if any
+```
+
 > The release workflow refuses to create a release PR on a `release branch` that is not in prerelease mode `patch`, or whose changesets ask for more than `patch`; and on the `default branch` when it is in prerelease mode.
 >
 > A `release branch` runs its own copy of the release workflow and scripts, i.e. the ones of the release it was cut from. Releases cut before this process existed still work with the steps above, but their older workflow names the PR `Recovery Release` and does not tag the release. Two kinds of older releases need their `.github/workflows/release.yml` updated on the `release branch`, with a PR, before they can be patched: releases cut before 2025-01-23, which use a Github action that is no longer allowed, and releases up to `13.282.0` if the `NPM_TOKEN` secret is gone, since they publish with it rather than [trusted publishing](https://docs.npmjs.com/trusted-publishers). The workflow token can't push workflow changes, so a person has to open that PR.

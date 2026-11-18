@@ -56,6 +56,8 @@ const BOT_GIT_IDENTITY = [
   '-c user.email="41898283+github-actions[bot]@users.noreply.github.com"',
 ].join(' ');
 
+const MANUAL_STEPS_HINT = `Prepare the patch release by hand instead: see https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#patch-releases`;
+
 const fail = (message) => {
   githubActionCore.error(message);
   process.exit(1);
@@ -195,7 +197,19 @@ const preparePatchRelease = async () => {
         `(dry run) Would create release branch '${releaseBranch}' from ${releaseCommit}`,
       );
     } else {
-      run(`git push ${REMOTE} ${releaseCommit}:refs/heads/${releaseBranch}`);
+      // NOTE: create the branch the way the release workflow creates `release/x.0.0` branches
+      // See ./concludeNewRelease.js
+      try {
+        await github.getOctokit(process.env.GITHUB_TOKEN).rest.git.createRef({
+          ref: `refs/heads/${releaseBranch}`,
+          sha: releaseCommit,
+          ...github.context.repo,
+        });
+      } catch (error) {
+        fail(
+          `Failed to create release branch '${releaseBranch}' from ${releaseCommit}. Error:\n${error.message}\n${MANUAL_STEPS_HINT}`,
+        );
+      }
       run(
         `git fetch ${REMOTE} ${releaseBranch}:refs/remotes/${releaseBranchRef}`,
       );
@@ -244,7 +258,7 @@ const preparePatchRelease = async () => {
     } catch (error) {
       tryRun('git cherry-pick --abort');
       fail(
-        `Can't cherry-pick ${sha} onto '${releaseBranch}' cleanly:\n${error.stderr ?? error.message}\nCherry-pick it by hand and open the PR into '${releaseBranch}' yourself.`,
+        `Can't cherry-pick ${sha} onto '${releaseBranch}' cleanly:\n${error.stderr ?? error.message}\n${MANUAL_STEPS_HINT}`,
       );
     }
   }
@@ -293,7 +307,13 @@ const preparePatchRelease = async () => {
     );
     return;
   }
-  git(`push ${REMOTE} HEAD:refs/heads/${workBranch}`);
+  try {
+    git(`push ${REMOTE} HEAD:refs/heads/${workBranch}`);
+  } catch (error) {
+    fail(
+      `Failed to push '${workBranch}'. Error:\n${error.stderr ?? error.message}\n${MANUAL_STEPS_HINT}`,
+    );
+  }
   const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
   const pullRequest = (
     await octokit.rest.pulls.create({
