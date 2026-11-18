@@ -1,5 +1,7 @@
 # @finos/legend-application-studio-deployment
 
+## 13.282.0
+
 ## 13.281.0
 
 ## 13.280.0
