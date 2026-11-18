@@ -33,26 +33,20 @@ import {
   DataProductDefinitionFlowKind,
 } from './DataProductDefinitionFlow.js';
 import type { DataProductViewerState } from './DataProductViewerState.js';
+import type {
+  DefinitionFlow_TelemetryData,
+  DefinitionFlowFailure_TelemetryData,
+  DefinitionFlowRefusal_TelemetryData,
+} from '../../__lib__/DataProductTelemetryHelper.js';
 
 /** What a definition's flow tells telemetry, once read or failed */
 export interface DataProductDefinitionFlowTelemetry {
   /** Cube read it into steps */
-  show: (flow: {
-    steps: number;
-    unknownDataSets: string[];
-    durationMs: number;
-    functionCallsOpened: number;
-    functionCallsClosed: Record<string, number>;
-    scalarFunctionSteps: number;
-    functionsUnloaded: boolean;
-  }) => void;
+  show: (flow: DefinitionFlow_TelemetryData) => void;
   /** Cube can't read it yet: it shows as Pure */
-  refuse: (refusal: {
-    reason: string;
-    functionName: string | undefined;
-  }) => void;
+  refuse: (refusal: DefinitionFlowRefusal_TelemetryData) => void;
   /** It can't be shown, though Cube didn't refuse it */
-  fail: (failure: { kind: string; error: string }) => void;
+  fail: (failure: DefinitionFlowFailure_TelemetryData) => void;
 }
 
 /** A user-defined function whose Pure shows under the flow */
