@@ -287,7 +287,7 @@ SQ1 needs nothing from anyone. SQ3 can be raised at the same time, since SQ4 wai
 ## 9. Questions for the user
 
 1. **Two stages?** First the box (SQ1), which ends the refusal with no engine change. Then the steps inside (SQ4),
-   which needs the engine's route. Recommended: yes.
+   which needs the engine's route. Recommended: yes. **Yes (the user, 2026-11-19): SQ1 is finos/legend-studio#5943.**
 2. **May I draft the engine route** as a PR to finos/legend-engine (SQ3)? Recommended: yes, alongside SQ1.
 3. **What do real islands read?** I could only test tables, functions, variables and inline rows. If you can share
    two or three real definitions with the names changed, I can check that `i()` and `p()` translate to `#I{}` and

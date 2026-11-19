@@ -6175,15 +6175,18 @@ ingest Overview).
 
 **Steps (SQL-ISLANDS.md §8, one PR each):**
 
-| Step | What                                                                                   | Status |
-| ---- | -------------------------------------------------------------------------------------- | ------ |
-| SQ1  | The box: the IR node, the reader, the dashed step, the SQL under the flow, its sources | ⏳     |
-| SQ2  | The typed box: a host asks the engine for its columns; Studio wires it                 | ⏳     |
-| SQ3  | The engine's route returning an island's translated Pure (finos/legend-engine)         | ⏳     |
-| SQ4  | The container: the loader, the translation read in place, nesting, the fallback box    | ⏳     |
-| SQ5  | The reading rules the translation needs: `project`, `count(*)`, unions, `except`…      | ⏳     |
-| SQ6  | The editor: the SQL step, Import Pure, the guide, a demo video                         | ⏳     |
-| SQ7  | Later: the translation in the artifact; display rules; counting islands                | ⏳     |
+| Step | What                                                                                | Status |
+| ---- | ----------------------------------------------------------------------------------- | ------ |
+| SQ1  | The box: the IR node, the reader, the dashed step, the SQL under the flow (#5943)   | 🚧     |
+| SQ2  | The typed box: a host asks the engine for its columns; Studio wires it              | ⏳     |
+| SQ3  | The engine's route returning an island's translated Pure (finos/legend-engine)      | ⏳     |
+| SQ4  | The container: the loader, the translation read in place, nesting, the fallback box | ⏳     |
+| SQ5  | The reading rules the translation needs: `project`, `count(*)`, unions, `except`…   | ⏳     |
+| SQ6  | The editor: the SQL step, Import Pure, the guide, a demo video                      | ⏳     |
+| SQ7  | Later: the translation in the artifact; display rules; counting islands             | ⏳     |
+
+**Settled with the user (2026-11-19):** two stages, the box first. SQ1 also fixes a bug found on the way: with a
+host's functions loaded, the ingest definition of a data set read inside a `let` wasn't found (in master since F2).
 
 **Open with the user (SQL-ISLANDS.md §9):** two stages or wait for the engine; whether to draft the engine route;
 what real islands read (`i()`, `p()`), with two or three examples; SQL as text only in the editor, or a Convert to
