@@ -93,6 +93,11 @@ export class DataProductAccessPointState {
         readonly error?: string | undefined;
       }
     | undefined;
+  /**
+   * The SQL of a step of the flow that is SQL, `#SQL{…}#`, which the
+   * Definition panel shows under the flow, in place of a function's Pure
+   */
+  shownSql: string | undefined;
 
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
@@ -114,6 +119,9 @@ export class DataProductAccessPointState {
       functionElements: false,
       showFunction: flow,
       hideFunction: action,
+      shownSql: observable,
+      showSql: action,
+      hideSql: action,
       isCollapsed: computed,
       entitlementsDataProductDetails: computed,
       unsupportedLakehouseComputeTarget: computed,
@@ -466,6 +474,7 @@ export class DataProductAccessPointState {
             }, {}),
             scalarFunctionSteps: reading.scalarFunctions.size,
             functionsUnloaded,
+            sqlSteps: reading.sqlIslands.length,
           },
         );
       } else {
@@ -561,6 +570,7 @@ export class DataProductAccessPointState {
   }): GeneratorFn<void> {
     const { path } = call;
     const content = path ? this.functionElements.get(path) : undefined;
+    this.shownSql = undefined;
     this.shownFunction = { ...call, pure: undefined };
     if (!path || !content) {
       this.shownFunction = {
@@ -585,6 +595,19 @@ export class DataProductAccessPointState {
 
   hideFunction(): void {
     this.shownFunction = undefined;
+  }
+
+  /**
+   * Shows the SQL of a step that is SQL under the flow, as written: the
+   * flow's box shows only its first words
+   */
+  showSql(sql: string): void {
+    this.shownFunction = undefined;
+    this.shownSql = sql.trim();
+  }
+
+  hideSql(): void {
+    this.shownSql = undefined;
   }
 
   /** Forgets its definition's flow, to read it again */

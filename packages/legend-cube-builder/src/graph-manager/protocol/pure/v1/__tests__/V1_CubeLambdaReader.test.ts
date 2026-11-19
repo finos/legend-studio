@@ -449,11 +449,21 @@ describe('Reading the JSON of a lambda', () => {
       V1_readCubeLambda(
         queryOf({
           _type: 'classInstance',
+          type: 'TDS',
+          value: { csv: 'a\n1' },
+        }),
+      ),
+    ).toThrow(V1_CUBE_LAMBDA_READER_MESSAGE.ACCESSOR('TDS'));
+    // an SQL island that holds no SQL
+    expect(() =>
+      V1_readCubeLambda(
+        queryOf({
+          _type: 'classInstance',
           type: 'SQL',
           value: { code: 'select 1' },
         }),
       ),
-    ).toThrow(V1_CUBE_LAMBDA_READER_MESSAGE.ACCESSOR('SQL'));
+    ).toThrow(V1_CUBE_LAMBDA_READER_MESSAGE.SQL);
     expect(() =>
       V1_readCubeLambda(
         queryOf({
@@ -504,6 +514,7 @@ describe('Reading the JSON of a lambda', () => {
       ),
     );
     [
+      { _type: 'classInstance', type: 'TDS', value: { csv: 'a\n1' } },
       { _type: 'classInstance', type: 'SQL', value: { code: 'select 1' } },
       {
         _type: 'classInstance',

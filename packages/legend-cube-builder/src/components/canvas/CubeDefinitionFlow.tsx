@@ -41,6 +41,7 @@ import {
   type CubeDefinitionFlowReading,
   type CubeDefinitionFunctionContainer,
   type CubeDefinitionScalarFunction,
+  type CubeDefinitionSqlIsland,
 } from '../../graph-manager/CubeDefinitionReader.js';
 import {
   buildCubeCanvasContainerNodes,
@@ -105,6 +106,10 @@ type CubeDefinitionStepData = {
   readonly readsParameters: boolean;
   /** The call of a user-defined function it is, drawn as one box */
   readonly closedCall?: CubeDefinitionFunctionContainer | undefined;
+  /** The SQL, `#SQL{…}#`, it is, drawn as one box */
+  readonly sqlIsland?: CubeDefinitionSqlIsland | undefined;
+  /** Whether a click on it shows its SQL */
+  readonly showsSql?: boolean | undefined;
   /** The user-defined functions its expressions call */
   readonly scalarFunctions?:
     | readonly CubeDefinitionScalarFunction[]
@@ -125,7 +130,7 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
 ) => {
   const { node, icon, title, detail, tooltip, isOutput } = props.data;
   const { isSelected, isSelectable, readsParameters } = props.data;
-  const { closedCall, scalarFunctions } = props.data;
+  const { closedCall, sqlIsland, showsSql, scalarFunctions } = props.data;
   return (
     <>
       <CubeCanvasInputHandles node={node} connectable={false} />
@@ -144,7 +149,8 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
             'legend-cube__node relative flex h-full w-full items-center gap-2 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
             {
               'legend-cube__node--function border-dashed': closedCall,
-              'cursor-pointer': isSelectable,
+              'legend-cube__node--sql border-dashed': sqlIsland,
+              'cursor-pointer': isSelectable || showsSql,
               'legend-cube__node--selected ring-2 ring-[var(--color-accent)]':
                 isSelected,
             },
@@ -153,14 +159,28 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
           aria-current={isSelected}
           data-testid={LEGEND_CUBE_TEST_ID.CANVAS_NODE}
         >
-          {closedCall ? (
+          {(closedCall ?? sqlIsland) ? (
             <>
-              <FunctionIcon
-                className="shrink-0 text-lg text-[var(--color-text-secondary)]"
-                aria-hidden={true}
-              />
+              {closedCall ? (
+                <FunctionIcon
+                  className="shrink-0 text-lg text-[var(--color-text-secondary)]"
+                  aria-hidden={true}
+                />
+              ) : (
+                <span className="shrink-0 rounded border border-[var(--color-border-default)] px-1 text-xs font-medium text-[var(--color-text-secondary)]">
+                  {CUBE_DEFINITION_FLOW_LABEL.SQL}
+                </span>
+              )}
               <span className="flex min-w-0 flex-col leading-tight">
-                <span className="truncate font-mono font-medium">{title}</span>
+                <span
+                  className={clsx('font-mono font-medium', {
+                    truncate: closedCall,
+                    // SQL: its first words, on two lines
+                    'line-clamp-2 break-words text-sm': !closedCall,
+                  })}
+                >
+                  {title}
+                </span>
                 <span className="truncate text-sm text-[var(--color-text-muted)]">
                   {detail}
                 </span>
@@ -206,6 +226,47 @@ const describeStep = (node: QueryNode): string =>
     ? node.describeDataSet()
     : node.describe();
 
+/** What an SQL step's SQL names, by short name: its data sets, then its access points */
+const namesOfSql = (island: CubeDefinitionSqlIsland): string[] => [
+  ...island.dataSets.map((each) => each.dataSet),
+  ...island.accessPoints.map((each) => each.accessPoint),
+];
+
+/** How many lines of an SQL step's SQL its tooltip shows */
+const SQL_TOOLTIP_LINES = 12;
+
+/** What an SQL step's tooltip says, one a line: its SQL's first lines, and what Cube knows of it */
+const describeSql = (
+  island: CubeDefinitionSqlIsland,
+  canShow: boolean,
+): string[] => {
+  const lines = island.sql.trim().split('\n');
+  return [
+    ...lines.slice(0, SQL_TOOLTIP_LINES),
+    ...(lines.length > SQL_TOOLTIP_LINES ? ['…'] : []),
+    CUBE_DEFINITION_FLOW_LABEL.SQL_ONE_STEP,
+    ...(island.dataSets.length
+      ? [
+          CUBE_DEFINITION_FLOW_LABEL.SQL_NAMES_DATA_SETS(
+            island.dataSets.map(
+              (each) => `${each.ingestDefinition}.${each.dataSet}`,
+            ),
+          ),
+        ]
+      : []),
+    ...(island.accessPoints.length
+      ? [
+          CUBE_DEFINITION_FLOW_LABEL.SQL_NAMES_ACCESS_POINTS(
+            island.accessPoints.map(
+              (each) => `${each.dataProduct}.${each.accessPoint}`,
+            ),
+          ),
+        ]
+      : []),
+    ...(canShow ? [CUBE_DEFINITION_FLOW_LABEL.SHOW_SQL] : []),
+  ];
+};
+
 export interface CubeDefinitionFlowProps {
   /** The definition's steps, as `readCubeDefinition` read them */
   readonly flow: CubeDefinitionFlowReading;
@@ -226,6 +287,11 @@ export interface CubeDefinitionFlowProps {
     | ((call: CubeDefinitionFunctionContainer) => void)
     | undefined;
   /**
+   * Shows the SQL of a step that is SQL, `#SQL{…}#`, when it is clicked:
+   * Cube draws it as one box and reads none of it
+   */
+  readonly onShowSql?: ((island: CubeDefinitionSqlIsland) => void) | undefined;
+  /**
    * The calls folded to one box when the flow opens; by default, those
    * holding more than `CUBE_DEFINITION_CALL_OPEN_STEPS` steps
    */
@@ -235,6 +301,7 @@ export interface CubeDefinitionFlowProps {
 const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
   const { flow, selectedStepId, onSelectStep, colorMode, onShowFunction } =
     props;
+  const { onShowSql } = props;
   const { query } = flow;
   const registry = useMemo(() => createNodeRegistry(), []);
   // each opened call a container; folding is the viewer's own
@@ -285,15 +352,27 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
           (call) => !call.opened && call.stepIds.includes(node.id),
         );
         const closed = closedCall ? describeClosedCall(closedCall) : undefined;
+        const sqlIsland = flow.sqlIslands.find(
+          (island) => island.stepId === node.id,
+        );
+        const sqlNames = sqlIsland ? namesOfSql(sqlIsland) : [];
         const scalarFunctions = flow.scalarFunctions.get(node.id);
         const label = closedCall
           ? {
               title: printCubeDefinitionCall(closedCall),
               detail: closed?.line,
             }
-          : getCubeCanvasNodeLabel(node, definition?.label, {
-              namesUnresolvedSources: true,
-            });
+          : sqlIsland
+            ? {
+                // its SQL on one line: the box cuts what doesn't fit
+                title: sqlIsland.sql.trim().replace(/\s+/g, ' '),
+                detail: sqlNames.length
+                  ? CUBE_DEFINITION_FLOW_LABEL.SQL_NAMES(sqlNames)
+                  : CUBE_DEFINITION_FLOW_LABEL.SQL_COLUMNS_UNKNOWN,
+              }
+            : getCubeCanvasNodeLabel(node, definition?.label, {
+                namesUnresolvedSources: true,
+              });
         const isUnknown =
           node instanceof IngestDatasetSource &&
           node.resolution.kind !== 'resolved';
@@ -315,11 +394,16 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
             title: label.title,
             detail: label.detail,
             ...(closedCall ? { closedCall } : {}),
+            ...(sqlIsland
+              ? { sqlIsland, showsSql: onShowSql !== undefined }
+              : {}),
             ...(scalarFunctions ? { scalarFunctions } : {}),
             tooltip: [
               ...(closedCall
                 ? [describeCubeDefinitionCall(closedCall), closed?.why ?? '']
-                : [describeStep(node)]),
+                : sqlIsland
+                  ? describeSql(sqlIsland, onShowSql !== undefined)
+                  : [describeStep(node)]),
               ...(scalarFunctions
                 ? scalarFunctions.map((each) =>
                     CUBE_DEFINITION_FLOW_LABEL.CALLS_FUNCTION(
@@ -343,7 +427,16 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
           },
         };
       }),
-    [query, positions, registry, flow, calls, selectedStepId, isSelectable],
+    [
+      query,
+      positions,
+      registry,
+      flow,
+      calls,
+      selectedStepId,
+      isSelectable,
+      onShowSql,
+    ],
   );
   const functionNodes = useMemo(
     (): CubeDefinitionFunctionNode[] =>
@@ -429,11 +522,16 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
           if (flowNode.data.closedCall && onShowFunction) {
             onShowFunction(flowNode.data.closedCall);
           }
+          // SQL: its text, which the box cuts
+          if (flowNode.data.sqlIsland && onShowSql) {
+            onShowSql(flowNode.data.sqlIsland);
+          }
           onSelectStep?.(flowNode.id);
         }
       }}
       // React Flow's own keyboard help speaks of moving nodes, which the flow
-      // doesn't do; Enter and Space pick the focused step instead
+      // doesn't do; Enter and Space pick the focused step instead, or show
+      // its SQL
       disableKeyboardA11y={true}
       edgesFocusable={false}
       onKeyDown={(event) => {
@@ -444,14 +542,24 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
             ? target.dataset.id
             : undefined;
         if (
-          stepId !== undefined &&
-          query.getNode(stepId) !== undefined &&
-          onSelectStep &&
-          (event.key === 'Enter' || event.key === ' ')
+          stepId === undefined ||
+          query.getNode(stepId) === undefined ||
+          (event.key !== 'Enter' && event.key !== ' ')
         ) {
-          event.preventDefault();
-          onSelectStep(stepId);
+          return;
         }
+        // as a click does: a step that is SQL shows its SQL
+        const island = onShowSql
+          ? flow.sqlIslands.find((each) => each.stepId === stepId)
+          : undefined;
+        if (!onSelectStep && !island) {
+          return;
+        }
+        event.preventDefault();
+        if (island) {
+          onShowSql?.(island);
+        }
+        onSelectStep?.(stepId);
       }}
       colorMode={colorMode ?? 'light'}
       // its arrowheads in its edges' colour (`--xy-edge-stroke`, Cube's stylesheet)

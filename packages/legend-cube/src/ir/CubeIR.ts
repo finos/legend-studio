@@ -108,6 +108,21 @@ export type IR =
       /** What it reads of the data set other than its rows; none for its rows */
       readonly qualifier?: IngestDatasetQualifier;
     }
+  /**
+   * The engine's SQL island, `#SQL{select … from …}#`: a relation whose rows
+   * its SQL gives. Cube keeps the SQL as written and reads none of it.
+   */
+  | {
+      readonly k: 'sqlAccessor';
+      /** The SQL between the braces, as written */
+      readonly sql: string;
+      /**
+       * The names of the Pure around it that its SQL reads, `var('name')`,
+       * in the order it first reads them: a let's rows, a parameter's value
+       */
+      readonly variables: readonly string[];
+      readonly origin?: Origin;
+    }
   /** A packageable element, such as the runtime; never a type */
   | { readonly k: 'elementPtr'; readonly path: string }
   /** A type argument, e.g. of `cast`: `@String`, `@meta::pure::precisePrimitives::Varchar(15)` */
@@ -342,6 +357,17 @@ export const ingestAccessor = (
   ...(origin ? { origin } : {}),
   ...(urn !== undefined ? { urn } : {}),
   ...(qualifier !== undefined ? { qualifier } : {}),
+});
+
+export const sqlAccessor = (
+  sql: string,
+  variables: readonly string[] = [],
+  origin?: Origin,
+): IR => ({
+  k: 'sqlAccessor',
+  sql,
+  variables,
+  ...(origin ? { origin } : {}),
 });
 
 export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });

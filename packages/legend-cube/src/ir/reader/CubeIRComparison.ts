@@ -243,6 +243,9 @@ function same(
         (a.k !== 'ingestAccessor' ||
           (b.k === 'ingestAccessor' && a.qualifier === b.qualifier))
       );
+    case 'sqlAccessor':
+      // its SQL as written: Cube reads none of it, so can't tell two wordings alike
+      return b.k === 'sqlAccessor' && a.sql === b.sql;
     case 'elementPtr':
       return b.k === 'elementPtr' && a.path === b.path;
     case 'genericType':

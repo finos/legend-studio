@@ -975,6 +975,7 @@ export {
   V1_createAccessorFromPackageableElement,
   V1_createAccessorFromPackageableElementWithNonFunctionSources,
   V1_resolveAccessorsFromRawLambda,
+  V1_extractAccessorsFromSQL,
   V1_buildIngestMetadataRelationType,
   V1_getIngestMetadataRelationType,
   V1_qualifyIngestAccessor,

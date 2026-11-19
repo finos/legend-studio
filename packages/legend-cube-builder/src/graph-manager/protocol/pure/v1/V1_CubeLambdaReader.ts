@@ -33,13 +33,18 @@ import {
   literal,
   property,
   relationType,
+  sqlAccessor,
   storeAccessor,
   variable,
   type IR,
   type LiteralValue,
   type RelationTypeColumn,
 } from '@finos/legend-cube';
-import { V1_IngestAccessorQualifier } from '@finos/legend-graph';
+import {
+  V1_ClassInstanceType,
+  V1_IngestAccessorQualifier,
+} from '@finos/legend-graph';
+import { V1_findCubeSqlVariables } from './V1_CubeSqlIsland.js';
 
 // V1 protocol lambda JSON → Cube IR (Import Pure, PLAN §11.18): the inverse
 // of `V1_serializeCubeLambda`, tolerant of the shapes the engine's grammar
@@ -53,7 +58,8 @@ export const V1_CUBE_LAMBDA_READER_MESSAGE = {
   NUMBER: (value: unknown): string =>
     `Cube can't read the number ${String(value)} without losing digits.`,
   ACCESSOR: (type: string): string =>
-    `Cube can't read the accessor #${type}{…}#: it reads #>{…}#, #P{…}# and #I{…}#.`,
+    `Cube can't read the accessor #${type}{…}#: it reads #>{…}#, #P{…}#, #I{…}# and #SQL{…}#.`,
+  SQL: "The accessor #SQL{…}# doesn't hold its SQL.",
   ACCESSOR_PATH: (type: string): string =>
     `The accessor #${type}{…}# doesn't name what it reads.`,
   INGEST_QUALIFIER: (qualifier: string): string =>
@@ -366,6 +372,17 @@ const readClassInstance = (json: Json): IR => {
         undefined,
         readIngestQualifier(value),
       );
+    }
+    case V1_ClassInstanceType.SQL_ACCESSOR: {
+      // the engine's SQL island: its SQL kept as written, none of it read
+      const sql = isObject(value) ? stringOf(value.sql) : undefined;
+      if (sql === undefined) {
+        throw new CubeLambdaReadError(
+          CubeLambdaReadErrorKind.SOURCE,
+          V1_CUBE_LAMBDA_READER_MESSAGE.SQL,
+        );
+      }
+      return sqlAccessor(sql, V1_findCubeSqlVariables(sql));
     }
     default:
       throw new CubeLambdaReadError(

@@ -20,7 +20,10 @@ import {
   type LiteralValue,
   type Origin,
 } from '@finos/legend-cube';
-import { V1_IngestAccessorQualifier } from '@finos/legend-graph';
+import {
+  V1_ClassInstanceType,
+  V1_IngestAccessorQualifier,
+} from '@finos/legend-graph';
 import { parseLosslessJSON, type PlainObject } from '@finos/legend-shared';
 
 // Cube IR → V1 protocol lambda JSON (PLAN §8.3, §8.5), built as plain JSON,
@@ -297,6 +300,16 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
                   accessorQualifier: V1_IngestAccessorQualifier.METADATA,
                 }
               : { path: [...ir.path], metadata: false },
+        },
+        ir.origin ?? inherited,
+      );
+    case 'sqlAccessor':
+      // the engine's SQL island, its SQL as written
+      return stamped(
+        {
+          _type: 'classInstance',
+          type: V1_ClassInstanceType.SQL_ACCESSOR,
+          value: { sql: ir.sql },
         },
         ir.origin ?? inherited,
       );

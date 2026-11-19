@@ -15,7 +15,17 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { isSameCubeIR, splitCubeLambda, type IR } from '@finos/legend-cube';
+import {
+  func,
+  isSameCubeIR,
+  lambda as lambdaOf,
+  letBinding,
+  literal,
+  splitCubeLambda,
+  sqlAccessor,
+  storeAccessor,
+  type IR,
+} from '@finos/legend-cube';
 import { stringifyLosslessJSON, type PlainObject } from '@finos/legend-shared';
 import {
   CUBE_ENGINE_TEST__grammarToJson_lambda,
@@ -62,4 +72,25 @@ describe("Reading the engine's JSON of what Cube writes", () => {
       );
     },
   );
+
+  test("Reads the engine's SQL island back through the grammar: its SQL as written, and the names it reads", async () => {
+    const sql =
+      "select o.STATUS,\n  sum(o.AMOUNT) as total\nfrom var('orders') o\nwhere o.STATUS <> 'it''s {held}'\ngroup by o.STATUS";
+    const written = lambdaOf(
+      [],
+      [
+        letBinding('orders', storeAccessor(['db::Store', 'S', 'ORDERS'])),
+        func('limit', [
+          sqlAccessor(sql, ['orders']),
+          literal({ kind: 'integer', value: '5' }),
+        ]),
+      ],
+    );
+    const read = V1_readCubeLambda(await throughGrammar(written));
+    expect(isSameCubeIR(read, written, COMPARISON)).toBe(true);
+    // the names are found in the text the engine gives back
+    expect(splitCubeLambda(read).relation).toMatchObject({
+      params: [{ k: 'sqlAccessor', sql, variables: ['orders'] }, {}],
+    });
+  });
 });
