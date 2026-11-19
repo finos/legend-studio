@@ -659,7 +659,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       constantCount: this.constantState.constants.length,
       hasFilter: !this.filterState.isEmpty,
       filterNodeCount: this.filterState.nodes.size,
-      watermarkEnabled: this.watermarkState.value !== undefined,
+      watermarkEnabled: this.watermarkState.isEnabled,
       milestoningKind: this.milestoningState.milestoningKind,
     };
     if (
@@ -1315,11 +1315,13 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   get allValidationIssues(): string[] {
     return this.fetchStructureState.implementation.allValidationIssues.concat(
       this.filterState.allValidationIssues,
+      this.watermarkState.validationIssues,
     );
   }
 
   get canBuildQuery(): boolean {
     return (
+      this.watermarkState.isValid &&
       !this.filterState.hasInvalidFilterValues &&
       !this.filterState.hasInvalidDerivedPropertyParameters &&
       !this.fetchStructureState.implementation.hasInvalidFilterValues &&

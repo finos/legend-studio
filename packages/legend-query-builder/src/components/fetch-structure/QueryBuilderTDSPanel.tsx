@@ -119,7 +119,12 @@ import {
   QueryBuilderDerivationInfoTooltip,
   QueryBuilderPropertyInfoTooltip,
 } from '../shared/QueryBuilderPropertyInfoTooltip.js';
+import type { QueryBuilderState } from '../../stores/QueryBuilderState.js';
 import { getNameOfValueSpecification } from '../shared/QueryBuilderVariableSelector.js';
+import {
+  QueryBuilderDataDNSWatermark,
+  QueryBuilderStandardWatermark,
+} from '../../stores/watermark/QueryBuilderWatermarkState.js';
 import { QueryBuilderAggregateOperator_Percentile } from '../../stores/fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Percentile.js';
 import {
   getFurthestExistsNodeParent,
@@ -159,6 +164,25 @@ type QueryBuilderDerivationProjectionColumnDropTarget =
   | QueryBuilderExplorerTreeDragSource
   | QueryBuilderVariableDragSource
   | QueryBuilderFunctionsExplorerDragSource;
+
+const getWatermarkLabel = (queryBuilderState: QueryBuilderState): string => {
+  const watermark = queryBuilderState.watermarkState.watermark;
+  if (watermark instanceof QueryBuilderStandardWatermark) {
+    return (
+      getNameOfValueSpecification(watermark.value, queryBuilderState) ?? ''
+    );
+  }
+  if (watermark instanceof QueryBuilderDataDNSWatermark) {
+    const label = `Data DNS (${watermark.env})`;
+    const date =
+      watermark.date instanceof VariableExpression
+        ? `$${watermark.date.name}`
+        : watermark.date &&
+          getNameOfValueSpecification(watermark.date, queryBuilderState);
+    return date ? `${label}: ${date}` : label;
+  }
+  return '';
+};
 
 const QueryBuilderProjectionColumnContextMenu = observer(
   forwardRef<
@@ -1781,7 +1805,7 @@ export const QueryBuilderTDSPanel = observer(
                   </button>
                 </div>
               )}
-              {tdsState.queryBuilderState.watermarkState.value && (
+              {tdsState.queryBuilderState.watermarkState.isEnabled && (
                 <div className="query-builder__projection__result-modifier-prompt__group">
                   <div className="query-builder__projection__result-modifier-prompt__group__label">
                     Watermark
@@ -1790,10 +1814,7 @@ export const QueryBuilderTDSPanel = observer(
                     className="query-builder__projection__result-modifier-prompt__header__label editable-value"
                     onClick={openResultSetModifierEditor}
                   >
-                    {getNameOfValueSpecification(
-                      tdsState.queryBuilderState.watermarkState.value,
-                      tdsState.queryBuilderState,
-                    )}
+                    {getWatermarkLabel(tdsState.queryBuilderState)}
                   </button>
                 </div>
               )}

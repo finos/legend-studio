@@ -64,8 +64,9 @@ export const processTypedTDSProjectExpression = (
         QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.FILTER,
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATA_DNS_WATERMARK,
       ]),
-      `Can't process typed project() expression: only support typed project() immediately following either getAll(), filter(), or forWatermark()`,
+      `Can't process typed project() expression: only support typed project() immediately following either getAll(), filter(), forWatermark(), or forDataDNSWatermark()`,
     );
   } else if (!(_precedingExpression instanceof AccessorInstanceValue)) {
     throw new Error(
