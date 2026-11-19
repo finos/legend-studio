@@ -59,6 +59,11 @@ const LegendAnalyticsWebApplicationRouter = observer(() => {
             path={LEGEND_ANALYTICS_ROUTE_PATTERN.CUBE}
             element={<LegendAnalyticsCubePage />}
           />
+          {/* the same page, which React keeps as the address moves between the two */}
+          <Route
+            path={LEGEND_ANALYTICS_ROUTE_PATTERN.SAVED_CUBE}
+            element={<LegendAnalyticsCubePage />}
+          />
         </Routes>
       )}
     </div>

@@ -93,11 +93,13 @@ export const CubeImportPureDialog = observer(
         editorState.loadFunctionCatalogue();
       }
     }, [editorState, isOpen]);
-    const importText = (): void => {
-      flowResult(lambdaImport.importText()).catch(
-        applicationStore.alertUnhandledError,
-      );
-    };
+    // the lambda replaces the cube: unsaved changes are asked about first
+    const importText = (): void =>
+      editorState.persistence.confirmDiscard(() => {
+        flowResult(lambdaImport.importText()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      });
     return (
       <Dialog
         open={lambdaImport.isDialogOpen}
