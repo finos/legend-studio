@@ -16,7 +16,7 @@
 
 import {
   type ValueSpecification,
-  type VariableExpression,
+  VariableExpression,
   observe_ValueSpecification,
   GenericTypeExplicitReference,
   GenericType,
@@ -25,18 +25,132 @@ import {
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
+import { DATA_DNS_ENV } from '../../graph/QueryBuilderMetaModelConst.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from '../QueryBuilderStateHashUtils.js';
 import type { QueryBuilderState } from '../QueryBuilderState.js';
-import { isValueExpressionReferencedInValue } from '../QueryBuilderValueSpecificationHelper.js';
+import {
+  isValidInstanceValue,
+  isValueExpressionReferencedInValue,
+} from '../QueryBuilderValueSpecificationHelper.js';
+
+/**
+ * A query has at most one watermark, either the standard `forWatermark()` or the Data DNS
+ * `forDataDNSWatermark()`: the watermark state holds a single `QueryBuilderWatermark`.
+ */
+export abstract class QueryBuilderWatermark implements Hashable {
+  abstract get hashCode(): string;
+
+  abstract isVariableUsed(variable: VariableExpression): boolean;
+}
+
+/**
+ * Watermark given as a single value, i.e. `forWatermark()`.
+ */
+export class QueryBuilderStandardWatermark extends QueryBuilderWatermark {
+  value: ValueSpecification;
+
+  constructor(value: ValueSpecification) {
+    super();
+    makeObservable(this, {
+      value: observable,
+      hashCode: computed,
+    });
+    this.value = value;
+  }
+
+  isVariableUsed(variable: VariableExpression): boolean {
+    return isValueExpressionReferencedInValue(variable, this.value);
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.STANDARD_WATERMARK_STATE,
+      this.value,
+    ]);
+  }
+}
+
+/**
+ * Watermark resolved through the Data DNS Watermark Resolver, i.e. `forDataDNSWatermark()`.
+ */
+export class QueryBuilderDataDNSWatermark extends QueryBuilderWatermark {
+  env: DATA_DNS_ENV = DATA_DNS_ENV.PROD;
+  registryUri = '';
+  // the business date parameter of the query, which the watermark follows, or a date of the user's own
+  date: PrimitiveInstanceValue | VariableExpression | undefined;
+  milestone = '';
+
+  constructor() {
+    super();
+    makeObservable(this, {
+      env: observable,
+      registryUri: observable,
+      date: observable,
+      milestone: observable,
+      setEnv: action,
+      setRegistryUri: action,
+      setDate: action,
+      setMilestone: action,
+      hashCode: computed,
+    });
+  }
+
+  setEnv(val: DATA_DNS_ENV): void {
+    this.env = val;
+  }
+
+  setRegistryUri(val: string): void {
+    this.registryUri = val;
+  }
+
+  setDate(val: PrimitiveInstanceValue | VariableExpression | undefined): void {
+    this.date = val;
+  }
+
+  setMilestone(val: string): void {
+    this.milestone = val;
+  }
+
+  // the business date parameter of the query is given as context: the date can be it only while the query has it
+  isValid(businessDateVariable: VariableExpression | undefined): boolean {
+    return Boolean(
+      this.registryUri.trim() &&
+        this.date !== undefined &&
+        (this.date instanceof VariableExpression
+          ? this.date.name === businessDateVariable?.name
+          : isValidInstanceValue(this.date)),
+    );
+  }
+
+  isVariableUsed(variable: VariableExpression): boolean {
+    return this.date !== undefined
+      ? isValueExpressionReferencedInValue(variable, this.date)
+      : false;
+  }
+
+  get hashCode(): string {
+    return hashArray([
+      QUERY_BUILDER_STATE_HASH_STRUCTURE.DATA_DNS_WATERMARK_STATE,
+      this.env,
+      this.registryUri,
+      this.date ?? '',
+      this.milestone,
+    ]);
+  }
+}
 
 export class QueryBuilderWatermarkState implements Hashable {
   readonly queryBuilderState: QueryBuilderState;
-  value?: ValueSpecification | undefined;
+  watermark?: QueryBuilderWatermark | undefined;
 
   constructor(queryBuilderState: QueryBuilderState) {
     makeObservable(this, {
-      value: observable,
-      setValue: action,
+      watermark: observable,
+      setWatermark: action,
+      isEnabled: computed,
+      businessDateVariable: computed,
+      validationIssues: computed,
+      isValid: computed,
       hashCode: computed,
     });
 
@@ -53,22 +167,60 @@ export class QueryBuilderWatermarkState implements Hashable {
     return watermarkConstant;
   }
 
-  setValue(val: ValueSpecification | undefined): void {
-    this.value = val
-      ? observe_ValueSpecification(val, this.queryBuilderState.observerContext)
+  setWatermark(val: QueryBuilderWatermark | undefined): void {
+    if (val instanceof QueryBuilderStandardWatermark) {
+      val.value = observe_ValueSpecification(
+        val.value,
+        this.queryBuilderState.observerContext,
+      );
+    }
+    this.watermark = val;
+  }
+
+  get isEnabled(): boolean {
+    return this.watermark !== undefined;
+  }
+
+  /**
+   * The business date of the query, when it is a parameter: the Data DNS watermark uses the parameter
+   * itself, so that the watermark follows the value of the parameter.
+   */
+  get businessDateVariable(): VariableExpression | undefined {
+    const milestoningState = this.queryBuilderState.milestoningState;
+    return !milestoningState.isAllVersionsEnabled &&
+      milestoningState.businessDate instanceof VariableExpression
+      ? milestoningState.businessDate
       : undefined;
   }
 
+  get validationIssues(): string[] {
+    const watermark = this.watermark;
+    if (
+      watermark instanceof QueryBuilderDataDNSWatermark &&
+      !watermark.isValid(this.businessDateVariable)
+    ) {
+      return watermark.date instanceof VariableExpression &&
+        watermark.date.name !== this.businessDateVariable?.name
+        ? [
+            'Data DNS watermark uses the business date, which must be a date parameter',
+          ]
+        : ['Data DNS watermark is incomplete'];
+    }
+    return [];
+  }
+
+  get isValid(): boolean {
+    return this.validationIssues.length === 0;
+  }
+
   isVariableUsed(variable: VariableExpression): boolean {
-    return this.value
-      ? isValueExpressionReferencedInValue(variable, this.value)
-      : false;
+    return this.watermark?.isVariableUsed(variable) ?? false;
   }
 
   get hashCode(): string {
     return hashArray([
       QUERY_BUILDER_STATE_HASH_STRUCTURE.WATERMARK_STATE,
-      this.value ?? '',
+      this.watermark ?? '',
     ]);
   }
 }

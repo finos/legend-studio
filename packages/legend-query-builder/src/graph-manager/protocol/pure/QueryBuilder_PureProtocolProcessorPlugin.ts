@@ -24,6 +24,7 @@ import {
   V1_buildOLAPGroupByFunctionExpression,
   V1_buildProjectFunctionExpression,
   V1_buildSubTypePropertyExpressionTypeInference,
+  V1_buildDataDNSWatermarkFunctionExpression,
   V1_buildWatermarkFunctionExpression,
   V1_buildGroupByFunctionExpression,
   V1_buildOverFunctionExpression,
@@ -141,6 +142,19 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           )
         ) {
           return V1_buildWatermarkFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATA_DNS_WATERMARK,
+          )
+        ) {
+          return V1_buildDataDNSWatermarkFunctionExpression(
             functionName,
             parameters,
             openVariables,
