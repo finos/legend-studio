@@ -1333,6 +1333,113 @@ describe("The Definition tab of a definition with a view of a data set's batch m
   );
 });
 
+/** A view written in SQL, `#SQL{…}#->filter(…)`, as the engine's grammar writes it; the SQL made up */
+const SIGNED_OFF_BY_SQL_VIEW: PlainObject = {
+  name: 'SIGNED_OFF_BY_SQL',
+  primaryKey: [],
+  privacyClassification: { sensitivity: 'DP10' },
+  source: {
+    _type: 'FunctionSource',
+    function: {
+      _type: 'lambda',
+      parameters: [],
+      body: [
+        {
+          _type: 'func',
+          function: 'filter',
+          parameters: [
+            {
+              _type: 'classInstance',
+              type: 'SQL',
+              value: {
+                sql: `select STATUS, count(*) as POSITIONS from i('${INGEST_PATH}.EOD_POSITIONS') group by STATUS`,
+              },
+            },
+            {
+              _type: 'lambda',
+              parameters: [{ _type: 'var', name: 'p' }],
+              body: [
+                {
+                  _type: 'func',
+                  function: 'equal',
+                  parameters: [
+                    {
+                      _type: 'property',
+                      property: 'STATUS',
+                      parameters: [{ _type: 'var', name: 'p' }],
+                    },
+                    { _type: 'string', value: 'SIGNED_OFF' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+};
+
+describe('The Definition tab of a definition with a view written in SQL', () => {
+  test(
+    integrationTest(
+      "Draws the view's SQL as one step, then its filter, and says the filter isn't checked",
+    ),
+    async () => {
+      const editorStore = TEST__provideMockedEditorStore();
+      const [ingest, ...others] = TEST_DATA.entities as PlainObject<Entity>[];
+      const content = ingest?.content as PlainObject;
+      const withSql = {
+        ...ingest,
+        content: {
+          ...content,
+          datasets: [
+            ...(content.datasets as PlainObject[]),
+            SIGNED_OFF_BY_SQL_VIEW,
+          ],
+        },
+      } as PlainObject<Entity>;
+      const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+        editorStore,
+        { entities: [withSql, ...others] },
+      );
+      jest
+        .spyOn(editorStore.graphManagerState.graphManager, 'entitiesToPureCode')
+        .mockResolvedValue(DEFINITION_PURE);
+      await act(async () => {
+        await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+      });
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      await findFlowNodes(
+        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+        5,
+      );
+
+      await pick(editorGroup, 'SIGNED_OFF_BY_SQL');
+      const panel = getViewPanel(editorGroup, 'SIGNED_OFF_BY_SQL');
+      const [sql, filter] = await findFlowNodes(panel, 2);
+      expect(sql?.textContent).toContain('SQL');
+      expect(sql?.textContent).toContain('select STATUS, count(*)');
+      expect(sql?.textContent).toContain('names EOD_POSITIONS');
+      expect(filter?.textContent).toContain('Filter');
+      expect(
+        within(panel).getByText(
+          "The SQL is shown as one step, with no columns known, so the steps after it aren't checked.",
+        ),
+      ).toBeDefined();
+      await waitFor(() =>
+        expect(getViewRows(editorGroup)).toContain(
+          'SIGNED_OFF_BY_SQL | 2 steps',
+        ),
+      );
+      // the data set its SQL names, as legend-graph finds it
+      expect((await getMetadata(panel))['Data sets']).toBe('EOD_POSITIONS');
+    },
+  );
+});
+
 describe('The Definition tab of a definition whose views call user-defined functions', () => {
   const ORDERS_INGEST_PATH =
     TEST_DATA__CubeDefinitionFunctions.ingestDefinition;

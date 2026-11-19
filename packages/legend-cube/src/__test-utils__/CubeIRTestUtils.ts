@@ -57,6 +57,7 @@ const label = (node: IR): string | undefined => {
     case 'storeAccessor':
     case 'dataProductAccessor':
     case 'ingestAccessor':
+    case 'sqlAccessor':
       return printIR(node);
     default:
       return undefined;

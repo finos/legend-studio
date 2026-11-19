@@ -196,6 +196,24 @@ Two smaller findings:
   graph to send. A host that asks gets a typed box and checked steps after it. Marketplace would send a pointer to
   the product's project: left for stage 2, which needs the same model.
 
+**As built (SQ1, 2026-11-19):**
+
+- The box shows the SQL's first words on two lines, then what its text names by short name (`names ORDERS and
+CUSTOMERS`) or `columns not known`. Its tooltip has the SQL's first 12 lines and the full paths.
+- What its SQL names is listed, not drawn as inputs: the names come from a text match, so an edge would claim more
+  than Cube knows. A `let` it reads is a real input, since the name is the lambda's own.
+- A `let` that binds a value, e.g. a date, is read by the SQL without being an input. A parameter of the lambda it
+  reads is wired to its box, as for any step.
+- A function whose SQL reads one of the function's own values by name stays one box, as Cube doesn't rewrite SQL
+  to put the call's value in.
+- Hosts: the Marketplace viewer and Studio's preview show the SQL under the flow, with SQL colours and Copy.
+  Studio's ingest Overview shows the box and the note; the view's Pure is already beside it.
+- Typing the box with the engine is SQ2, not built.
+- **Found on the way, fixed here:** with a host's functions loaded, as Marketplace and Studio always load them,
+  the ingest definition of a data set read inside a `let` was not found, so the flow said "Couldn't load the columns
+  of …" and left the steps unchecked. `findCubeDefinitionIngestDefinitions` walked the lets as an object, and they
+  are a map. In master since F2.
+
 ### 7.2 The engine route
 
 A route beside the island's compiler, name open:

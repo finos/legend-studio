@@ -230,6 +230,11 @@ return reading.kind === 'flow' ? (
   (`splitCubeLambda` reads them only with `readsParameters`).
 - **Unknown columns:** a data set whose definition the host doesn't give, or Cube can't read, is drawn by its name,
   as any other, and the steps after it aren't checked (`unknownDataSets`, `uncheckedStepIds`).
+- **SQL:** the engine's SQL island, `#SQL{select … from …}#`, is one step: a dashed box showing its SQL's first
+  words. Cube doesn't read the SQL, so the box's columns aren't known and the steps after it aren't checked. A `let`
+  its SQL reads by name (`var('name')`) is its input. `sqlIslands` lists each with its step, its SQL, and the ingest
+  data sets and access points its text names (`i('…')`, `p('…')`), which may not be all it reads. A click on the box
+  calls `onShowSql`, for the host to show the SQL in full. The editor has no step for SQL: Import Pure refuses it.
 - **Steps:** `steps`, each after the ones it reads, with its inputs and the relation it was read from (`ir`, which
   reads the lambda's `lets` by name): the Pure up to it.
 - **The canvas:** it fills its container and pans. Its controls, bottom right, zoom, as pinching does; the wheel

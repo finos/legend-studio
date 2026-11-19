@@ -463,8 +463,16 @@ const MaterializedViewFlow = observer(
     const unknownDataSets = [
       ...new Set(reading.unknownDataSets.map((each) => each.dataSet)),
     ];
+    // SQL drawn as one box, its columns not known: the steps after it
+    // aren't checked
+    const uncheckedSql = entry.describeCubeDefinitionUncheckedSql(reading);
     return (
       <>
+        {uncheckedSql !== undefined && (
+          <div className="ingest-definition-flow__view__note" role="note">
+            {uncheckedSql}
+          </div>
+        )}
         {unknownDataSets.length > 0 && (
           <div className="ingest-definition-flow__view__note" role="note">
             {`The columns of ${listNames(unknownDataSets)} aren't known, so the steps after ${

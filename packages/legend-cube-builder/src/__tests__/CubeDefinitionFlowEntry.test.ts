@@ -97,6 +97,8 @@ describe('The definition flow entry', () => {
       'graph-manager/protocol/pure/v1/V1_CubeLambdaSerializer.ts',
       // the columns a user-defined function declares (PLAN §11.33)
       'graph-manager/protocol/pure/v1/V1_CubeRelationTypeAdapter.ts',
+      // what the SQL of an island, `#SQL{…}#`, names in its text
+      'graph-manager/protocol/pure/v1/V1_CubeSqlIsland.ts',
     ]);
   });
 

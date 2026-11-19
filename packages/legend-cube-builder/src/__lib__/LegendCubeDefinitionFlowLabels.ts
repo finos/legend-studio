@@ -25,6 +25,9 @@ export const CUBE_DEFINITION_FLOW_MESSAGE = {
   ACCESS_POINT: "a data product's access point, #P{…}#",
   FUNCTION: (name: string): string => `the function ${name}()`,
   OTHER: 'another source',
+  /** Why a function isn't opened: SQL in its body reads one of its values by name */
+  SQL_READS_VALUE: (name: string): string =>
+    `its SQL reads $${name}, a value of the function, by name.`,
 };
 
 /** `$a`, `$a and $b`, `$a, $b and $c` */
@@ -80,6 +83,25 @@ export const CUBE_DEFINITION_FLOW_LABEL = {
   FOLD_CALL: 'Fold the function to one box',
   OPEN_CALL: 'Open the function',
   SHOW_FUNCTION: (name: string): string => `Show the Pure of ${name}`,
+  /** On a step that is SQL, `#SQL{…}#`, drawn as one box */
+  SQL: 'SQL',
+  /** Under its first line: what its SQL names, or that nothing is known of it */
+  SQL_NAMES: (names: readonly string[]): string =>
+    `names ${names.length <= 2 ? names.join(' and ') : `${names[0]} and ${names.length - 1} more`}`,
+  SQL_COLUMNS_UNKNOWN: 'columns not known',
+  /** In its tooltip */
+  SQL_ONE_STEP:
+    "Cube shows SQL as one step and doesn't read it, so its columns aren't known.",
+  SQL_NAMES_DATA_SETS: (names: readonly string[]): string =>
+    `Ingest data sets it names: ${names.join(', ')}`,
+  SQL_NAMES_ACCESS_POINTS: (names: readonly string[]): string =>
+    `Access points it names: ${names.join(', ')}`,
+  SHOW_SQL: 'Click to show its SQL.',
+  /** A host's note above a flow whose SQL has steps after it */
+  SQL_UNCHECKED: (count: number): string =>
+    count === 1
+      ? "The SQL is shown as one step, with no columns known, so the steps after it aren't checked."
+      : "Each SQL is shown as one step, with no columns known, so the steps after them aren't checked.",
   /** How many steps a call holds */
   STEP_COUNT: (count: number): string =>
     `${count} ${count === 1 ? 'step' : 'steps'}`,

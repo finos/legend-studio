@@ -5616,6 +5616,63 @@ describe('DataProductViewer', () => {
         );
       });
     });
+
+    describe('SQL in a definition, #SQL{…}#', () => {
+      const SQL =
+        "select STATUS, sum(AMOUNT) as total\nfrom i('shop::ingest::OrdersIngest.ORDERS')\ngroup by STATUS";
+      /** `#SQL{…}#->limit(10)`, as the engine's grammar writes it */
+      const SQL_THEN_LIMIT = {
+        _type: 'lambda',
+        parameters: [],
+        body: [
+          {
+            _type: 'func',
+            function: 'limit',
+            parameters: [
+              { _type: 'classInstance', type: 'SQL', value: { sql: SQL } },
+              { _type: 'integer', value: 10 },
+            ],
+          },
+        ],
+      };
+
+      test('draws the SQL as one step where it was refused, says the steps after it are unchecked, and shows its SQL', async () => {
+        const { logEvent } = await setupDefinition(SQL_THEN_LIMIT);
+        const definition = await openDefinition();
+        // the SQL, then the limit
+        const [sqlStep] = await findFlowNodes(definition, 2);
+        expect(sqlStep?.textContent).toContain('SQL');
+        expect(sqlStep?.textContent).toContain('select STATUS, sum(AMOUNT)');
+        expect(sqlStep?.textContent).toContain('names ORDERS');
+        expect(
+          within(definition).getByText(
+            "The SQL is shown as one step, with no columns known, so the steps after it aren't checked.",
+          ),
+        ).toBeDefined();
+        expect(logEvent).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+          expect.objectContaining({ steps: 2, sqlSteps: 1 }),
+        );
+        expect(within(definition).queryByLabelText('SQL of a step')).toBeNull();
+
+        await act(async () => {
+          fireEvent.click(guaranteeNonNullable(sqlStep));
+        });
+        const panel = await within(definition).findByLabelText('SQL of a step');
+        expect(
+          panel.querySelector('.data-product__viewer__code-box'),
+        ).not.toBeNull();
+        // its SQL as written, not the flow's one line
+        await act(async () => {
+          fireEvent.click(within(panel).getByLabelText('Copy SQL'));
+        });
+        expect(writeText).toHaveBeenLastCalledWith(SQL);
+        await act(async () => {
+          fireEvent.click(within(panel).getByText('Close'));
+        });
+        expect(within(definition).queryByLabelText('SQL of a step')).toBeNull();
+      });
+    });
   });
 
   describe('Column Specifications: missing descriptions and sample values', () => {

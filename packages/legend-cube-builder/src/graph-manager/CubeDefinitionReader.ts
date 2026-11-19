@@ -38,7 +38,10 @@ import {
   type Schema,
 } from '@finos/legend-cube';
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
-import { CUBE_DEFINITION_FLOW_MESSAGE } from '../__lib__/LegendCubeDefinitionFlowLabels.js';
+import {
+  CUBE_DEFINITION_FLOW_LABEL,
+  CUBE_DEFINITION_FLOW_MESSAGE,
+} from '../__lib__/LegendCubeDefinitionFlowLabels.js';
 import type { CubeIngestDataSet } from './CubeIngestCatalog.js';
 import {
   CUBE_DEFINITION_INPUT_STAND_IN,
@@ -54,6 +57,7 @@ import {
 } from './CubeDefinitionFunctions.js';
 import {
   CUBE_EXPRESSION_CODEC,
+  findCubeSqlSources,
   getCubeIngestMetadataSchema,
   readCubeIngestDataSets,
   readCubeLambdaJson,
@@ -178,6 +182,29 @@ export interface CubeDefinitionScalarFunction {
   readonly origin: string | undefined;
 }
 
+/**
+ * The engine's SQL island in a definition, `#SQL{select … from …}#`: one
+ * step, a box, as Cube doesn't read its SQL
+ */
+export interface CubeDefinitionSqlIsland {
+  /** Its step */
+  readonly stepId: string;
+  /** Its SQL, as written */
+  readonly sql: string;
+  /**
+   * The ingest data sets its SQL names, `i('definition.dataSet')`: what its
+   * text names, which may not be all it reads
+   */
+  readonly dataSets: readonly CubeDefinitionDataSet[];
+  /** The access points its SQL names, `p('dataProduct.accessPoint')` */
+  readonly accessPoints: readonly {
+    /** The data product's path */
+    readonly dataProduct: string;
+    /** The access point's id */
+    readonly accessPoint: string;
+  }[];
+}
+
 /** A definition Cube can draw */
 export interface CubeDefinitionFlowReading {
   readonly kind: 'flow';
@@ -202,7 +229,26 @@ export interface CubeDefinitionFlowReading {
     string,
     readonly CubeDefinitionScalarFunction[]
   >;
+  /**
+   * Its steps that are SQL, `#SQL{…}#`, in the flow's order: each one box,
+   * its columns not known, so the steps after it are read unchecked
+   */
+  readonly sqlIslands: readonly CubeDefinitionSqlIsland[];
 }
+
+/**
+ * What a host says above a flow whose SQL, `#SQL{…}#`, has steps after it:
+ * that those steps aren't checked, as the SQL's columns aren't known;
+ * `undefined` for a flow with no SQL, or none with a step after it
+ */
+export const describeCubeDefinitionUncheckedSql = (
+  reading: CubeDefinitionFlowReading,
+): string | undefined => {
+  const count = reading.sqlIslands.filter(
+    (island) => island.stepId !== reading.outputStepId,
+  ).length;
+  return count ? CUBE_DEFINITION_FLOW_LABEL.SQL_UNCHECKED(count) : undefined;
+};
 
 /** A definition Cube can't draw, and why: a host shows its Pure instead */
 export interface CubeDefinitionRefusal {
@@ -376,6 +422,17 @@ const createBindSource = (
       ?.schema;
   };
   return (source: IR): CubeSourceStep => {
+    if (source.k === 'sqlAccessor') {
+      // one step of unknown columns, the lets its SQL reads as its inputs
+      return {
+        type: UnknownNode.TYPE,
+        create: (id, inputCount) =>
+          new UnknownNode(id, inputCount ?? 0, {
+            kind: 'sql',
+            sql: source.sql,
+          }),
+      };
+    }
     if (source.k !== 'ingestAccessor') {
       throw new CubeLambdaReadError(
         CubeLambdaReadErrorKind.SOURCE,
@@ -460,10 +517,13 @@ export const findCubeDefinitionIngestDefinitions = (
       readsParameters: true,
     });
     if (options.functions) {
-      // the bodies of the functions it calls may read some too
-      return findCubeIngestDefinitionsRead(
-        expand(parts, options.functions, {}).parts,
-      );
+      // the bodies of the functions it calls may read some too; its lets
+      // are a map, which the walk doesn't open
+      const expanded = expand(parts, options.functions, {}).parts;
+      return findCubeIngestDefinitionsRead([
+        expanded.relation,
+        ...expanded.lets.values(),
+      ]);
     }
     const sources = findCubeLambdaSources(parts);
     return [
@@ -607,6 +667,26 @@ export const readCubeDefinition = (
       query,
       functionCalls,
       scalarFunctions,
+      sqlIslands: query.nodes.flatMap((node) => {
+        const ir = stepIRs.get(node.id);
+        if (ir?.k !== 'sqlAccessor') {
+          return [];
+        }
+        const named = findCubeSqlSources(ir.sql);
+        return [
+          {
+            stepId: node.id,
+            sql: ir.sql,
+            dataSets: named.dataSets.map(([ingestDefinition, dataSet]) => ({
+              ingestDefinition,
+              dataSet,
+            })),
+            accessPoints: named.accessPoints.map(
+              ([dataProduct, accessPoint]) => ({ dataProduct, accessPoint }),
+            ),
+          },
+        ];
+      }),
     };
   } catch (error) {
     if (error instanceof CubeLambdaReadError) {
