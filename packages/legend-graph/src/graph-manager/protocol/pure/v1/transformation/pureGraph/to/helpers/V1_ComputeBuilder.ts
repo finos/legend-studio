@@ -19,6 +19,7 @@ import {
   type ComputeSpecification,
   DatabricksComputeSpecification,
   DatabricksTag,
+  SinglestoreComputeSpecification,
   SnowflakeComputeSpecification,
   UnknownComputeSpecification,
 } from '../../../../../../../../graph/metamodel/pure/compute/Compute.js';
@@ -27,6 +28,7 @@ import {
   type V1_ComputeSpecification,
   type V1_DatabricksTag,
   V1_DatabricksComputeSpecification,
+  V1_SinglestoreComputeSpecification,
   V1_SnowflakeComputeSpecification,
   V1_UnknownComputeSpecification,
 } from '../../../../model/packageableElements/compute/V1_Compute.js';
@@ -79,6 +81,14 @@ const V1_buildDatabricksComputeSpecification = (
   return spec;
 };
 
+const V1_buildSinglestoreComputeSpecification = (
+  v1Spec: V1_SinglestoreComputeSpecification,
+): SinglestoreComputeSpecification => {
+  const spec = new SinglestoreComputeSpecification();
+  spec.clusterSize = v1Spec.clusterSize;
+  return spec;
+};
+
 const V1_buildUnknownComputeSpecification = (
   v1Spec: V1_UnknownComputeSpecification,
 ): UnknownComputeSpecification => {
@@ -105,6 +115,8 @@ export const V1_buildComputeSpecification = (
     return V1_buildSnowflakeComputeSpecification(v1Spec);
   } else if (v1Spec instanceof V1_DatabricksComputeSpecification) {
     return V1_buildDatabricksComputeSpecification(v1Spec);
+  } else if (v1Spec instanceof V1_SinglestoreComputeSpecification) {
+    return V1_buildSinglestoreComputeSpecification(v1Spec);
   } else if (v1Spec instanceof V1_UnknownComputeSpecification) {
     return V1_buildUnknownComputeSpecification(v1Spec);
   }

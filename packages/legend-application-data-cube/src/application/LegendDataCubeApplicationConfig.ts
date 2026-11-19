@@ -47,6 +47,9 @@ export interface LegendDataCubeApplicationConfigurationData
     url?: string;
     legendLakehouseUrl?: string;
   };
+  marketplace?: {
+    serverUrl?: string;
+  };
   oidcConfig?: LegendDataCubeOidcConfig | undefined;
 }
 
@@ -63,6 +66,7 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
   readonly lakehousePlatformUrl: string;
   readonly lakehouseContractUrl: string;
   readonly legendLakehouseUrl?: string | undefined;
+  readonly marketplaceServerUrl?: string | undefined;
   readonly engineQueryServerUrl?: string | undefined;
   readonly engineQueryClientName?: string | undefined;
   readonly queryApplicationUrl?: string | undefined;
@@ -127,6 +131,12 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
     this.legendLakehouseUrl = input.configData.lakehouse.legendLakehouseUrl
       ? LegendApplicationConfig.resolveAbsoluteUrl(
           input.configData.lakehouse.legendLakehouseUrl,
+        )
+      : undefined;
+
+    this.marketplaceServerUrl = input.configData.marketplace?.serverUrl
+      ? LegendApplicationConfig.resolveAbsoluteUrl(
+          input.configData.marketplace.serverUrl,
         )
       : undefined;
 

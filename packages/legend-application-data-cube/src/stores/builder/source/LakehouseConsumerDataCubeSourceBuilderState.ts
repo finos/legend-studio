@@ -18,6 +18,7 @@ import {
   action,
   computed,
   flow,
+  flowResult,
   makeObservable,
   observable,
   reaction,
@@ -30,6 +31,7 @@ import {
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  guaranteeType,
   type GeneratorFn,
   type PlainObject,
 } from '@finos/legend-shared';
@@ -62,6 +64,7 @@ import {
   V1_dataProductModelSchema,
   V1_deserializePureModelContextData,
   V1_EntitlementsDataProductLiteModelSchema,
+  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_entitlementsDataProductLiteResponseToDataProductLite,
 } from '@finos/legend-graph';
 import {
@@ -73,6 +76,15 @@ import {
 import { LegendDataCubeCodeEditorState } from '../LegendDataCubeCodeEditorState.js';
 import type { Entity } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
+import {
+  DataProductSearchResponse,
+  LakehouseDataProductSearchResultDetails,
+  SearchType,
+  type DataProductSearchResult,
+  type MarketplaceServerClient,
+} from '@finos/legend-server-marketplace';
+
+const DATA_PRODUCT_SEARCH_PAGE_SIZE = 100;
 
 export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeSourceBuilderState {
   warehouse: string | undefined;
@@ -81,6 +93,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   selectedAccessPoint: [string, string] | undefined;
   paths: string[] = [];
   dataProducts: V1_EntitlementsDataProductLite[] = [];
+  searchResults: DataProductSearchResult[] = [];
+  isSearchCutShort = false;
   accessPoints: Map<string, string | undefined> = new Map();
   dpCoordinates: VersionedProjectData | undefined;
   origin: string | undefined;
@@ -93,7 +107,13 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
 
   private readonly _contractServerClient: LakehouseContractServerClient;
   private readonly _depotServerClient: DepotServerClient;
+  // data products are searched when the marketplace is configured, else listed and filtered in the browser
+  private readonly _marketplaceServerClient:
+    | MarketplaceServerClient
+    | undefined;
+  private _searchAbortController: AbortController | undefined;
   readonly dataProductLoadingState = ActionState.create();
+  readonly searchState = ActionState.create();
   readonly ingestEnvLoadingState = ActionState.create();
   readonly queryInitializationState = ActionState.create();
 
@@ -103,14 +123,19 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     depotServerClient: DepotServerClient,
     contractServerClient: LakehouseContractServerClient,
     alertService: DataCubeAlertService,
+    marketplaceServerClient?: MarketplaceServerClient | undefined,
   ) {
     super(application, engine, alertService);
     this._contractServerClient = contractServerClient;
     this._depotServerClient = depotServerClient;
+    this._marketplaceServerClient = marketplaceServerClient;
 
     makeObservable(this, {
       warehouse: observable,
       dataProducts: observable,
+      searchResults: observable,
+      isSearchCutShort: observable,
+      setSearchResults: action,
       selectedDataProduct: observable,
       envMode: observable,
       accessPoints: observable,
@@ -153,6 +178,14 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
     this.dataProducts = dataProducts;
   }
 
+  setSearchResults(
+    searchResults: DataProductSearchResult[],
+    isCutShort = false,
+  ) {
+    this.searchResults = searchResults;
+    this.isSearchCutShort = isCutShort;
+  }
+
   setSelectedDataProduct(
     dataProduct: V1_EntitlementsDataProductLite | undefined,
   ) {
@@ -172,6 +205,10 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
 
   setEnvMode(env: V1_EntitlementsLakehouseEnvironmentType): void {
     this.envMode = env;
+  }
+
+  get isSearchEnabled(): boolean {
+    return this._marketplaceServerClient !== undefined;
   }
 
   get filteredDataProducts(): V1_EntitlementsDataProductLite[] {
@@ -208,6 +245,101 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       this.dataProductLoadingState.fail();
       throw error;
     }
+  }
+
+  async switchEnvMode(
+    envMode: V1_EntitlementsLakehouseEnvironmentType,
+    accessToken: string | undefined,
+  ): Promise<void> {
+    this.stopSearch();
+    this.setEnvMode(envMode);
+    this.resetDataProduct();
+    if (!this.isSearchEnabled) {
+      await flowResult(this.loadDataProducts(accessToken));
+    }
+  }
+
+  async searchDataProducts(text: string): Promise<void> {
+    this.stopSearch();
+    const query = text.trim();
+    if (!this._marketplaceServerClient || !query) {
+      this.setSearchResults([]);
+      return;
+    }
+    const abortController = new AbortController();
+    this._searchAbortController = abortController;
+    try {
+      this.searchState.inProgress();
+      const response = DataProductSearchResponse.serialization.fromJson(
+        await this._marketplaceServerClient.lakehouseAccessSearch(
+          query,
+          this.envMode,
+          {
+            searchType: SearchType.FULL_TEXT,
+            pageSize: DATA_PRODUCT_SEARCH_PAGE_SIZE,
+            showAll: true,
+            signal: abortController.signal,
+          },
+        ),
+      );
+      if (abortController.signal.aborted) {
+        return;
+      }
+      this.setSearchResults(
+        response.results.filter(
+          (result) =>
+            result.dataProductDetails instanceof
+            LakehouseDataProductSearchResultDetails,
+        ),
+        response.metadata.total_count > response.results.length,
+      );
+      this.searchState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      if (abortController.signal.aborted) {
+        return;
+      }
+      this.searchState.fail();
+      this._application.notificationService.notifyError(
+        `unable to search data products: ${error.message}`,
+      );
+    }
+  }
+
+  stopSearch(): void {
+    this._searchAbortController?.abort();
+    this._searchAbortController = undefined;
+    this.searchState.reset();
+  }
+
+  async selectSearchResult(
+    result: DataProductSearchResult,
+    accessToken: string | undefined,
+  ): Promise<void> {
+    try {
+      const details = guaranteeType(
+        result.dataProductDetails,
+        LakehouseDataProductSearchResultDetails,
+      );
+      this.setSelectedDataProduct(
+        guaranteeNonNullable(
+          V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+            await this._contractServerClient.getDataProductByIdAndDID(
+              details.dataProductId,
+              details.deploymentId,
+              accessToken,
+            ),
+          )[0],
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this._application.notificationService.notifyError(
+        `unable to fetch data product: ${error.message}`,
+      );
+      return;
+    }
+    await this.fetchAccessPoints();
   }
 
   async fetchAccessPoints() {
@@ -322,6 +454,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
 
   resetDataProduct() {
     this.setSelectedDataProduct(undefined);
+    this.setSearchResults([]);
     this.resetEnvironment();
   }
 

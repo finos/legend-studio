@@ -248,6 +248,8 @@ export {
   V1_DatabricksClusterSize,
   V1_DatabricksSpotInstancePolicy,
   V1_DatabricksTag,
+  V1_SinglestoreComputeSpecification,
+  V1_SinglestoreClusterSize,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/compute/V1_Compute.js';
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
@@ -848,6 +850,8 @@ export {
   DatabricksClusterSize,
   DatabricksSpotInstancePolicy,
   DatabricksTag,
+  SinglestoreComputeSpecification,
+  SinglestoreClusterSize,
 } from './graph/metamodel/pure/compute/Compute.js';
 export * from './graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
 export * from './graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
