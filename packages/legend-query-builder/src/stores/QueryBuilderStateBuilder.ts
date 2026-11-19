@@ -652,6 +652,8 @@ export class QueryBuilderValueSpecificationProcessor
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_PROJECT,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_GROUP_BY,
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.OLAP_GROUPBY,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_EXTEND,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_SELECT,
         ])
       ) {
         assertTrue(
@@ -659,7 +661,7 @@ export class QueryBuilderValueSpecificationProcessor
             functionName,
             QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER,
           ),
-          `Can't process post-filter expression: only supports ${QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER}() immediately following project()/groupBy() (got '${functionName}')`,
+          `Can't process post-filter expression: only supports ${QUERY_BUILDER_SUPPORTED_FUNCTIONS.TDS_FILTER}() immediately following project()/groupBy()/olapGroupBy()/extend()/select() (got '${functionName}')`,
         );
         processTDSPostFilterExpression(
           valueSpecification,
@@ -675,7 +677,7 @@ export class QueryBuilderValueSpecificationProcessor
         return;
       } else {
         throw new UnsupportedOperationError(
-          `Can't process filter() expression: only support filter() immediately following getAll() or project()/forWatermark()/groupBy()/olapGroupBy()`,
+          `Can't process filter() expression: only support filter() immediately following getAll() or project()/forWatermark()/groupBy()/olapGroupBy()/extend()/select()`,
         );
       }
     } else if (

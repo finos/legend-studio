@@ -668,6 +668,335 @@ export const TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest = {
   parameters: [],
 };
 
+export const TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest_WithPostFilter =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'from',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'filter',
+            parameters: [
+              {
+                _type: 'func',
+                function: 'select',
+                parameters: [
+                  {
+                    _type: 'classInstance',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    type: 'I',
+                    value: {
+                      path: [
+                        'ingestion::CARBON_DIOXIDE_EMISSIONS',
+                        'CARBON_DIOXIDE_EMISSIONS',
+                      ],
+                      metadata: false,
+                    },
+                  },
+                  {
+                    _type: 'classInstance',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    type: 'colSpecArray',
+                    value: {
+                      colSpecs: [
+                        {
+                          name: 'country',
+                        },
+                        {
+                          name: 'year',
+                        },
+                        {
+                          name: 'iso_code',
+                        },
+                        {
+                          name: 'population',
+                        },
+                        {
+                          name: 'gdp',
+                        },
+                        {
+                          name: 'trade_co2_share',
+                        },
+                        {
+                          name: 'LAKE_IN_ID',
+                        },
+                        {
+                          name: 'LAKE_OUT_ID',
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'func',
+                    function: 'greaterThan',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'row',
+                          },
+                        ],
+                        property: 'year',
+                      },
+                      {
+                        _type: 'integer',
+                        value: 2000,
+                      },
+                    ],
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'row',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            _type: 'packageableElementPtr',
+            fullPath: 'runtime::LakehouseRuntime',
+          },
+        ],
+      },
+    ],
+    parameters: [],
+  };
+
+export const TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest_WithWindowColumnAndPostFilter =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'from',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'filter',
+            parameters: [
+              {
+                _type: 'func',
+                function: 'extend',
+                parameters: [
+                  {
+                    _type: 'func',
+                    function: 'select',
+                    parameters: [
+                      {
+                        _type: 'classInstance',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        type: 'I',
+                        value: {
+                          path: [
+                            'ingestion::CARBON_DIOXIDE_EMISSIONS',
+                            'CARBON_DIOXIDE_EMISSIONS',
+                          ],
+                          metadata: false,
+                        },
+                      },
+                      {
+                        _type: 'classInstance',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        type: 'colSpecArray',
+                        value: {
+                          colSpecs: [
+                            {
+                              name: 'country',
+                            },
+                            {
+                              name: 'year',
+                            },
+                            {
+                              name: 'iso_code',
+                            },
+                            {
+                              name: 'population',
+                            },
+                            {
+                              name: 'gdp',
+                            },
+                            {
+                              name: 'trade_co2_share',
+                            },
+                            {
+                              name: 'LAKE_IN_ID',
+                            },
+                            {
+                              name: 'LAKE_OUT_ID',
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    _type: 'func',
+                    function: 'over',
+                    parameters: [
+                      {
+                        _type: 'classInstance',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        type: 'colSpecArray',
+                        value: {
+                          colSpecs: [
+                            {
+                              name: 'country',
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        _type: 'collection',
+                        multiplicity: {
+                          lowerBound: 1,
+                          upperBound: 1,
+                        },
+                        values: [
+                          {
+                            _type: 'func',
+                            function: 'ascending',
+                            parameters: [
+                              {
+                                _type: 'classInstance',
+                                multiplicity: {
+                                  lowerBound: 1,
+                                  upperBound: 1,
+                                },
+                                type: 'colSpec',
+                                value: {
+                                  name: 'year',
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    _type: 'classInstance',
+                    multiplicity: {
+                      lowerBound: 1,
+                      upperBound: 1,
+                    },
+                    type: 'colSpecArray',
+                    value: {
+                      colSpecs: [
+                        {
+                          function1: {
+                            _type: 'lambda',
+                            body: [
+                              {
+                                _type: 'func',
+                                function: 'rank',
+                                parameters: [
+                                  {
+                                    _type: 'var',
+                                    name: 'p',
+                                  },
+                                  {
+                                    _type: 'var',
+                                    name: 'w',
+                                  },
+                                  {
+                                    _type: 'var',
+                                    name: 'r',
+                                  },
+                                ],
+                              },
+                            ],
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'p',
+                              },
+                              {
+                                _type: 'var',
+                                name: 'w',
+                              },
+                              {
+                                _type: 'var',
+                                name: 'r',
+                              },
+                            ],
+                          },
+                          name: 'rank',
+                        },
+                      ],
+                    },
+                  },
+                ],
+              },
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'func',
+                    function: 'lessThanEqual',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'row',
+                          },
+                        ],
+                        property: 'rank',
+                      },
+                      {
+                        _type: 'integer',
+                        value: 3,
+                      },
+                    ],
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'row',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            _type: 'packageableElementPtr',
+            fullPath: 'runtime::LakehouseRuntime',
+          },
+        ],
+      },
+    ],
+    parameters: [],
+  };
+
 export const TEST_DATA__QueryBuilder_Accessors = [
   {
     path: 'database::TestDatabase',

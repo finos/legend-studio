@@ -16,6 +16,7 @@
 
 import {
   type LambdaFunction,
+  type ValueSpecification,
   CollectionInstanceValue,
   extractElementNameFromPath,
   GenericType,
@@ -30,7 +31,10 @@ import {
   ColSpecArray,
   ColSpecArrayInstance,
   ColSpecInstanceValue,
+  Relation,
   RelationColumn,
+  RelationType,
+  getRelationTypeGenericType,
 } from '@finos/legend-graph';
 import {
   guaranteeNonNullable,
@@ -197,6 +201,39 @@ export const appendOverExpression = (
   return overExpression;
 };
 
+/**
+ * Like typed project() and groupBy(), extend() carries its relation type: the
+ * columns of the preceding relation plus the new window column. Whatever comes
+ * after it (e.g. the post-filter) needs this to refer to its columns as
+ * `$row.column` instead of falling back to the TDS getters.
+ */
+const buildExtendRelationGenericType = (
+  precedingExpression: ValueSpecification,
+  extendColumnState: QueryBuilderWindowColumnState,
+): GenericTypeExplicitReference | undefined => {
+  const precedingRelationType = getRelationTypeGenericType(precedingExpression);
+  if (!precedingRelationType) {
+    return undefined;
+  }
+  const relationType = new RelationType(RelationType.ID);
+  relationType.columns.push(
+    ...precedingRelationType.columns,
+    new RelationColumn(
+      extendColumnState.columnName,
+      GenericTypeExplicitReference.create(
+        new GenericType(
+          extendColumnState.getColumnType() ?? PrimitiveType.NUMBER,
+        ),
+      ),
+    ),
+  );
+  const relationGenericType = new GenericType(Relation.INSTANCE);
+  relationGenericType.typeArguments = [
+    GenericTypeExplicitReference.create(new GenericType(relationType)),
+  ];
+  return GenericTypeExplicitReference.create(relationGenericType);
+};
+
 const appendExtendColumnState = (
   extendColumnState: QueryBuilderWindowColumnState,
   lambda: LambdaFunction,
@@ -295,6 +332,10 @@ const appendExtendColumnState = (
       overExpression,
       operatorColSpecArrayInst,
     ];
+    extendExpression.genericType = buildExtendRelationGenericType(
+      currentExpression,
+      extendColumnState,
+    );
     lambda.expressionSequence[0] = extendExpression;
     return lambda;
   } else if (
@@ -352,6 +393,10 @@ const appendExtendColumnState = (
       overExpression,
       operatorColSpecArrayInst,
     ];
+    extendExpression.genericType = buildExtendRelationGenericType(
+      currentExpression,
+      extendColumnState,
+    );
 
     lambda.expressionSequence[0] = extendExpression;
     return lambda;

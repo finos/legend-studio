@@ -28,6 +28,7 @@ import {
   V1_buildGroupByFunctionExpression,
   V1_buildOverFunctionExpression,
   V1_buildExtendFunctionExpression,
+  V1_buildSelectFunctionExpression,
 } from './v1/V1_QueryValueSpecificationBuilderHelper.js';
 import {
   type V1_GraphBuilderContext,
@@ -259,6 +260,19 @@ export class QueryBuilder_PureProtocolProcessorPlugin extends PureProtocolProces
           )
         ) {
           return V1_buildOverFunctionExpression(
+            functionName,
+            parameters,
+            openVariables,
+            compileContext,
+            processingContext,
+          );
+        } else if (
+          matchFunctionName(
+            functionName,
+            QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_SELECT,
+          )
+        ) {
+          return V1_buildSelectFunctionExpression(
             functionName,
             parameters,
             openVariables,

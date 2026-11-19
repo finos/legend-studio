@@ -33,6 +33,8 @@ import {
   V1_GraphTransformerContextBuilder,
   PrimitiveType,
   LambdaFunctionInstanceValue,
+  Relation,
+  RelationType,
 } from '@finos/legend-graph';
 import {
   at,
@@ -42,6 +44,7 @@ import {
 import {
   type QueryBuilderProjectionColumnState,
   QueryBuilderDerivationProjectionColumnState,
+  QueryBuilderRelationColumnProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from './QueryBuilderProjectionColumnState.js';
 import {
@@ -255,6 +258,9 @@ const buildSelectExpression = (
   );
   const colSpecArray = new ColSpecArray();
   colSpecArrayInstance.values = [colSpecArray];
+  // like project(), select() carries its relation type, so that what follows it
+  // (e.g. a window column, then a post-filter on it) can refer to its columns
+  const relationType = new RelationType(RelationType.ID);
   tdsState.projectionColumns.forEach((projectionColumnState) => {
     if (
       projectionColumnState instanceof
@@ -267,8 +273,20 @@ const buildSelectExpression = (
     const colSpec = new ColSpec();
     colSpec.name = projectionColumnState.columnName;
     colSpecArray.colSpecs.push(colSpec);
+    if (
+      projectionColumnState instanceof
+      QueryBuilderRelationColumnProjectionColumnState
+    ) {
+      relationType.columns.push(projectionColumnState.column);
+    }
   });
   selectFunction.parametersValues = [precedingExpression, colSpecArrayInstance];
+  const relationGenericType = new GenericType(Relation.INSTANCE);
+  relationGenericType.typeArguments = [
+    GenericTypeExplicitReference.create(new GenericType(relationType)),
+  ];
+  selectFunction.genericType =
+    GenericTypeExplicitReference.create(relationGenericType);
   return selectFunction;
 };
 
