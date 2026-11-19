@@ -336,6 +336,11 @@ export enum V1_DataProductRegion {
   NAMR = 'NAMR',
 }
 
+export enum V1_DataJurisdiction {
+  US = 'US',
+  CHINA = 'CHINA',
+}
+
 export abstract class V1_DataProductIcon implements Hashable {
   abstract get hashCode(): string;
 }
@@ -416,12 +421,14 @@ export class V1_Expertise implements Hashable {
 }
 
 export class V1_DataProductOperationalMetadata implements Hashable {
+  accessibilityJurisdictions: V1_DataJurisdiction[] | undefined;
   coverageRegions: V1_DataProductRegion[] | undefined;
   updateFrequency: V1_DeliveryFrequency | undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OPERATIONAL_METADATA,
+      hashArray(this.accessibilityJurisdictions ?? []),
       hashArray(this.coverageRegions ?? []),
       this.updateFrequency ?? '',
     ]);

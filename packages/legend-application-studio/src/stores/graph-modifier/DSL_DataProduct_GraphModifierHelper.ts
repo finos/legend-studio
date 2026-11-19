@@ -39,6 +39,7 @@ import {
   type Expertise,
   observe_OperationalMetadata,
   OperationalMetadata,
+  type DataJurisdiction,
   type DeliveryFrequency,
   type Region,
   type DataProductOwner,
@@ -379,6 +380,33 @@ export const operationalMetadata_deleteCoverageRegion = action(
   (operationalMetadata: OperationalMetadata, region: Region) => {
     if (operationalMetadata.coverageRegions) {
       deleteEntry(operationalMetadata.coverageRegions, region);
+    }
+  },
+);
+
+export const operationalMetadata_addAccessibilityJurisdiction = action(
+  (
+    operationalMetadata: OperationalMetadata,
+    jurisdiction: DataJurisdiction,
+  ) => {
+    if (!operationalMetadata.accessibilityJurisdictions) {
+      operationalMetadata.accessibilityJurisdictions = [jurisdiction];
+    } else {
+      addUniqueEntry(
+        operationalMetadata.accessibilityJurisdictions,
+        jurisdiction,
+      );
+    }
+  },
+);
+
+export const operationalMetadata_deleteAccessibilityJurisdiction = action(
+  (
+    operationalMetadata: OperationalMetadata,
+    jurisdiction: DataJurisdiction,
+  ) => {
+    if (operationalMetadata.accessibilityJurisdictions) {
+      deleteEntry(operationalMetadata.accessibilityJurisdictions, jurisdiction);
     }
   },
 );
