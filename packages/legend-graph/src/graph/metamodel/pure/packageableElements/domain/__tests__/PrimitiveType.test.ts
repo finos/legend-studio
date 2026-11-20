@@ -91,40 +91,21 @@ describe('getCorrespondingStandardPrimitiveType', () => {
     ).toBe(PRIMITIVE_TYPE.FLOAT);
   });
 
-  test(unitTest('DECIMAL full path maps to DECIMAL'), () => {
-    expect(
-      getCorrespondingStandardPrimitiveType(PRECISE_PRIMITIVE_TYPE.DECIMAL),
-    ).toBe(PRIMITIVE_TYPE.DECIMAL);
-  });
-
   test(unitTest('NUMERIC full path maps to DECIMAL'), () => {
     expect(
       getCorrespondingStandardPrimitiveType(PRECISE_PRIMITIVE_TYPE.NUMERIC),
     ).toBe(PRIMITIVE_TYPE.DECIMAL);
   });
 
-  test(unitTest('STRICTDATE full path maps to STRICTDATE'), () => {
-    expect(
-      getCorrespondingStandardPrimitiveType(PRECISE_PRIMITIVE_TYPE.STRICTDATE),
-    ).toBe(PRIMITIVE_TYPE.STRICTDATE);
-  });
-
-  test(unitTest('DATETIME full path maps to DATETIME'), () => {
-    expect(
-      getCorrespondingStandardPrimitiveType(PRECISE_PRIMITIVE_TYPE.DATETIME),
-    ).toBe(PRIMITIVE_TYPE.DATETIME);
-  });
-
   test(unitTest('TIMESTAMP full path maps to DATETIME'), () => {
     expect(
       getCorrespondingStandardPrimitiveType(PRECISE_PRIMITIVE_TYPE.TIMESTAMP),
     ).toBe(PRIMITIVE_TYPE.DATETIME);
-  });
-
-  test(unitTest('STRICTTIME full path maps to STRICTTIME'), () => {
     expect(
-      getCorrespondingStandardPrimitiveType(PRECISE_PRIMITIVE_TYPE.STRICTTIME),
-    ).toBe(PRIMITIVE_TYPE.STRICTTIME);
+      getCorrespondingStandardPrimitiveType(
+        'meta::pure::precisePrimitives::Timestamp',
+      ),
+    ).toBe(PRIMITIVE_TYPE.DATETIME);
   });
 
   // -------------------- Short name matching --------------------
@@ -171,18 +152,32 @@ describe('getCorrespondingStandardPrimitiveType', () => {
     );
   });
 
-  test(unitTest('Short name "Time" maps to STRICTTIME'), () => {
-    expect(getCorrespondingStandardPrimitiveType('Time')).toBe(
-      PRIMITIVE_TYPE.STRICTTIME,
-    );
-  });
-
   // -------------------- Invalid inputs --------------------
 
   test(unitTest('Standard primitive type path returns undefined'), () => {
     expect(getCorrespondingStandardPrimitiveType('String')).toBeUndefined();
     expect(getCorrespondingStandardPrimitiveType('Integer')).toBeUndefined();
     expect(getCorrespondingStandardPrimitiveType('Boolean')).toBeUndefined();
+    expect(getCorrespondingStandardPrimitiveType('Date')).toBeUndefined();
+    expect(getCorrespondingStandardPrimitiveType('Decimal')).toBeUndefined();
+  });
+
+  // the engine defines no `Date`, `Time` or `Decimal` precise primitive type,
+  // and the relational `Timestamp` is a relational data type
+  test.each([
+    'meta::pure::precisePrimitives::Date',
+    'meta::pure::precisePrimitives::Decimal',
+    'meta::pure::precisePrimitives::Time',
+    'meta::relational::metamodel::datatype::Timestamp',
+  ])(
+    unitTest('Non-precise primitive type path %s returns undefined'),
+    (path) => {
+      expect(getCorrespondingStandardPrimitiveType(path)).toBeUndefined();
+    },
+  );
+
+  test(unitTest('Unknown short name "Time" returns undefined'), () => {
+    expect(getCorrespondingStandardPrimitiveType('Time')).toBeUndefined();
   });
 
   test(unitTest('Arbitrary path with delimiter returns undefined'), () => {
