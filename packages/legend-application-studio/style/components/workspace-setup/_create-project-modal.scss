@@ -55,6 +55,291 @@
       }
     }
   }
+
+  // What a copied workspace brings, under the Workspace Source selector
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 0 1rem 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--color-bg-panel);
+    border: 0.1rem solid var(--color-border-default);
+    font-size: 1.3rem;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+
+    &--loading {
+      flex-direction: row;
+      align-items: center;
+      color: var(--color-text-muted);
+    }
+
+    &--error {
+      color: var(--color-status-error);
+    }
+
+    &__spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    &__header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+    }
+
+    &__title {
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--color-text-primary);
+    }
+
+    &__counts {
+      display: flex;
+      gap: 1.2rem;
+      color: var(--color-text-muted);
+    }
+
+    &__change-type {
+      display: inline-block;
+      min-width: 1.4rem;
+      font-weight: 500;
+
+      &--create {
+        color: var(--color-status-success);
+      }
+
+      &--modify {
+        color: var(--color-status-warn);
+      }
+
+      &--delete {
+        color: var(--color-status-error);
+      }
+    }
+
+    &__warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      padding: 0.7rem 1rem;
+      background: var(--color-status-warn-bg);
+      border: 0.1rem solid var(--color-status-warn);
+      color: var(--color-text-primary);
+
+      &__icon {
+        flex: 0 0 auto;
+        margin-top: 0.2rem;
+        color: var(--color-status-warn);
+      }
+    }
+
+    &__toggle {
+      @include flexVCenter;
+
+      align-self: flex-start;
+      gap: 0.4rem;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      font-size: 1.3rem;
+      color: var(--color-text-link);
+      cursor: pointer;
+
+      svg {
+        font-size: 1rem;
+      }
+    }
+
+    &__elements {
+      max-height: 17rem;
+      overflow-y: auto;
+      padding: 0.2rem 0;
+      background: var(--color-bg-input);
+      border: 0.1rem solid var(--color-border-default);
+    }
+
+    &__element {
+      @include flexVCenter;
+
+      gap: 0.8rem;
+      height: 2.4rem;
+      padding: 0 0.8rem;
+
+      &__path {
+        @include ellipsisTextOverflow;
+
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      &__package {
+        color: var(--color-text-muted);
+      }
+
+      &__name {
+        font-weight: 500;
+        color: var(--color-text-primary);
+      }
+
+      &__also-changed {
+        flex: 0 0 auto;
+        padding: 0 0.5rem;
+        border: 0.1rem solid var(--color-status-warn);
+        border-radius: 0.2rem;
+        font-size: 1.1rem;
+        white-space: nowrap;
+        color: var(--color-text-primary);
+      }
+
+      &__classifier {
+        flex: 0 0 auto;
+        font-size: 1.2rem;
+        color: var(--color-text-muted);
+      }
+
+      &--deleted &__path {
+        text-decoration: line-through 0.1rem;
+      }
+
+      &--deleted &__name {
+        color: var(--color-text-muted);
+      }
+    }
+  }
+
+  // Creating a workspace that copies another, step by step
+  &__copy-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin: 0 1rem 1rem;
+    font-size: 1.4rem;
+    color: var(--color-text-primary);
+
+    &__step {
+      @include flexVCenter;
+
+      gap: 1rem;
+
+      svg {
+        flex: 0 0 auto;
+      }
+
+      &--done svg {
+        color: var(--color-status-success);
+      }
+
+      &--active svg {
+        color: var(--color-accent);
+        animation: spin 1s linear infinite;
+      }
+
+      &--failed svg {
+        color: var(--color-status-error);
+      }
+
+      &--pending {
+        color: var(--color-text-muted);
+      }
+    }
+  }
+
+  // The workspace was created, but copying into it failed
+  &__copy-failure {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin: 0 1rem 1.6rem;
+    padding: 1rem 1.2rem;
+    background: var(--color-status-error-bg);
+    border: 0.1rem solid var(--color-status-error);
+    font-size: 1.4rem;
+    line-height: 1.4;
+    color: var(--color-text-primary);
+
+    &__icon {
+      flex: 0 0 auto;
+      margin-top: 0.2rem;
+      color: var(--color-status-error);
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      min-width: 0;
+    }
+
+    &__title {
+      font-weight: 500;
+    }
+
+    &__message {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1.2rem;
+      overflow-wrap: anywhere;
+      color: var(--color-text-secondary);
+    }
+  }
+
+  &__action + &__action {
+    margin-left: 0.8rem;
+  }
+}
+
+// NOTE: the Workspace Source menu is portaled to the document's body, so the
+// parts of its options are styled outside of the modal
+.workspace-source-selector {
+  &__menu-list {
+    position: relative;
+    overflow-y: auto;
+    padding: 0.4rem 0;
+
+    .selector-input__group + .selector-input__group,
+    .selector-input--dark__group + .selector-input--dark__group {
+      border-top: 0.1rem solid var(--color-border-default);
+    }
+  }
+
+  &__group-label {
+    font-size: 1.1rem;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+  }
+}
+
+.workspace-source-option {
+  @include flexVCenter;
+
+  gap: 1rem;
+  min-width: 0;
+
+  &__icon {
+    @include flexCenter;
+
+    width: 2rem;
+    min-width: 2rem;
+  }
+
+  &__name {
+    white-space: nowrap;
+  }
+
+  &__hint {
+    @include ellipsisTextOverflow;
+
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+  }
+}
+
+.selector-input__option--is-selected .workspace-source-option__hint,
+.selector-input--dark__option--is-selected .workspace-source-option__hint {
+  color: inherit;
 }
 
 .workspace-setup__create-project-modal {
