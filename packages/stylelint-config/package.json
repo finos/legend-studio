@@ -1,6 +1,6 @@
 {
   "name": "@finos/stylelint-config-legend-studio",
-  "version": "3.0.63",
+  "version": "3.0.64",
   "description": "Legend Studio Stylelint config",
   "keywords": [
     "legend",
