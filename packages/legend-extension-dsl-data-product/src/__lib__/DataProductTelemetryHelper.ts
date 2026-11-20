@@ -337,6 +337,8 @@ export class DataProductTelemetryHelper {
       scalarFunctionSteps: number;
       functionsUnloaded: boolean;
       sqlSteps: number;
+      /** How many of its SQL are drawn as the steps of their SQL, not one box */
+      sqlOpened: number;
     },
   ): void {
     this.updateEventId();

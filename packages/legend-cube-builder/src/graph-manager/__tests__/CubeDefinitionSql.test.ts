@@ -15,7 +15,10 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { CubeLambdaReadErrorKind } from '@finos/legend-cube';
+import {
+  CubeLambdaReadErrorKind,
+  IngestDatasetSource,
+} from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   CUBE_DEFINITION_FLOW_LABEL,
@@ -27,13 +30,20 @@ import {
   type CubeDefinitionFunctionElement,
 } from '../CubeDefinitionFunctions.js';
 import {
+  CUBE_DEFINITION_SQL_OPEN_STEPS,
   describeCubeDefinitionUncheckedSql,
   findCubeDefinitionIngestDefinitions,
+  findCubeDefinitionSql,
+  getCubeDefinitionSqlFoldedAtFirst,
   readCubeDefinition,
   type CubeDefinitionFlowReading,
   type CubeDefinitionReading,
+  type CubeDefinitionReadOptions,
+  type CubeDefinitionSqlIsland,
 } from '../CubeDefinitionReader.js';
+import { CubeSqlStepKind } from '../CubeSqlStructure.js';
 import FIXTURE from './CubeDefinitionFunctions.json' with { type: 'json' };
+import TREES from './CubeSqlTrees.json' with { type: 'json' };
 
 // The engine's SQL island in a definition's flow, `#SQL{select … from …}#`:
 // one box, never a refusal. The JSON is as the engine's grammar writes an
@@ -96,8 +106,11 @@ const asFlow = (reading: CubeDefinitionReading): CubeDefinitionFlowReading => {
   }
   return reading;
 };
-const read = (lambda: PlainObject): CubeDefinitionFlowReading =>
-  asFlow(readCubeDefinition(lambda, { getIngestDefinition }));
+const read = (
+  lambda: PlainObject,
+  options: CubeDefinitionReadOptions = {},
+): CubeDefinitionFlowReading =>
+  asFlow(readCubeDefinition(lambda, { getIngestDefinition, ...options }));
 const stepsOf = (flow: CubeDefinitionFlowReading): string[] =>
   flow.steps.map(
     (step) =>
@@ -119,20 +132,24 @@ const functionOf = (
     content: { ...template.content, name, parameters, body },
   };
 };
+const loadFunctions = (
+  lambda: PlainObject,
+  elements: readonly CubeDefinitionFunctionElement[],
+): ReturnType<typeof loadCubeDefinitionFunctions> =>
+  loadCubeDefinitionFunctions(lambda, async (names) =>
+    elements.filter((element) =>
+      names.some((name) => element.path.startsWith(`${name}_`)),
+    ),
+  );
 const readWithFunctions = async (
   lambda: PlainObject,
   elements: readonly CubeDefinitionFunctionElement[],
+  options: CubeDefinitionReadOptions = {},
 ): Promise<CubeDefinitionFlowReading> =>
-  asFlow(
-    readCubeDefinition(lambda, {
-      functions: await loadCubeDefinitionFunctions(lambda, async (names) =>
-        elements.filter((element) =>
-          names.some((name) => element.path.startsWith(`${name}_`)),
-        ),
-      ),
-      getIngestDefinition,
-    }),
-  );
+  read(lambda, {
+    functions: await loadFunctions(lambda, elements),
+    ...options,
+  });
 
 describe('SQL in a definition, drawn as one box', () => {
   test('SQL alone is one step: its SQL as written, and what its text names', () => {
@@ -143,6 +160,7 @@ describe('SQL in a definition, drawn as one box', () => {
     expect(flow.uncheckedStepIds).toEqual([]);
     expect(flow.sqlIslands).toEqual([
       {
+        id: 'unknown101',
         stepId: 'unknown101',
         sql,
         dataSets: [{ ingestDefinition: INGEST, dataSet: 'ORDERS' }],
@@ -362,5 +380,252 @@ describe('SQL in the body of a user-defined function', () => {
     ]);
     // the function is the box: its SQL isn't a step of the flow
     expect(flow.sqlIslands).toEqual([]);
+  });
+});
+
+// With the engine's tree of its SQL, which a host asks the engine for, an
+// island is drawn as the steps of its SQL. The trees are the engine's own,
+// of the made-up SQL beside each.
+
+/** The engine's tree of each SQL of the fixture, as a host that asked for them gives them */
+const getSqlTree: CubeDefinitionReadOptions['getSqlTree'] = (sql) =>
+  Object.values(TREES).find((each) => each.sql === sql)?.tree;
+const JOINED_SQL = TREES['join-group-order-limit'].sql;
+const LET_SQL = TREES['var-let'].sql;
+const limitOf = (rows: PlainObject): PlainObject =>
+  call('limit', rows, { _type: 'integer', value: 5 });
+/** Each step of an island's SQL: its id, its kind, what it says, and its alias */
+const sqlStepsOf = (island: CubeDefinitionSqlIsland | undefined): string[] =>
+  (island?.steps ?? []).map((step) =>
+    [
+      step.stepId,
+      step.variant === undefined ? step.kind : `${step.kind}:${step.variant}`,
+      ...(step.text ? [step.text] : []),
+      ...(step.alias === undefined ? [] : [`as ${step.alias}`]),
+    ].join(' | '),
+  );
+
+describe("SQL in a definition, drawn as the steps of its SQL with the engine's tree", () => {
+  test('SQL is its sources, then its clauses in the order they run, its data sets typed', () => {
+    const flow = read(lambdaOf([sqlOf(JOINED_SQL)]), { getSqlTree });
+    expect(stepsOf(flow)).toEqual([
+      'ingestDataset101',
+      'ingestDataset102',
+      'unknown101 < ingestDataset101, ingestDataset102',
+      'unknown102 < unknown101',
+      'unknown103 < unknown102',
+      'unknown104 < unknown103',
+      'unknown105 < unknown104',
+      'unknown106 < unknown105',
+    ]);
+    expect(flow.outputStepId).toBe('unknown106');
+    const [island] = flow.sqlIslands;
+    expect(flow.sqlIslands).toHaveLength(1);
+    expect(island).toMatchObject({
+      id: 'sql1',
+      // the step the steps after it read
+      stepId: 'unknown106',
+      sql: JOINED_SQL,
+      dataSets: [
+        { ingestDefinition: INGEST, dataSet: 'ORDERS' },
+        { ingestDefinition: INGEST, dataSet: 'CUSTOMERS' },
+      ],
+    });
+    expect(sqlStepsOf(island)).toEqual([
+      `ingestDataset101 | dataSet | ${INGEST}.ORDERS | as o`,
+      `ingestDataset102 | dataSet | ${INGEST}.CUSTOMERS | as c`,
+      'unknown101 | join:INNER | on o.CUSTOMER_ID = c.CUSTOMER_ID',
+      "unknown102 | where | o.STATUS = 'ACTIVE'",
+      'unknown103 | groupBy | c.REGION',
+      'unknown104 | select | c.REGION, sum(o.AMOUNT) as TOTAL_AMOUNT, count(*) as ORDERS',
+      'unknown105 | orderBy | TOTAL_AMOUNT desc',
+      'unknown106 | limit | 10',
+    ]);
+    expect(island?.steps?.[5]?.columns).toEqual([
+      'REGION',
+      'TOTAL_AMOUNT',
+      'ORDERS',
+    ]);
+    // its data sets are steps as any other, typed by their definition
+    ['ingestDataset101', 'ingestDataset102'].forEach((id) => {
+      const node = flow.query.getNode(id);
+      expect(node).toBeInstanceOf(IngestDatasetSource);
+      expect((node as IngestDatasetSource).resolution.kind).toBe('resolved');
+    });
+    expect(flow.unknownDataSets).toEqual([]);
+    // Cube checks none of the SQL's steps: none is listed as unchecked
+    expect(flow.uncheckedStepIds).toEqual([]);
+    expect(describeCubeDefinitionUncheckedSql(flow)).toBeUndefined();
+  });
+
+  test('The Pure steps after it read its last step, unchecked, and the host is told', () => {
+    const flow = read(lambdaOf([limitOf(sqlOf(JOINED_SQL))]), { getSqlTree });
+    expect(stepsOf(flow).at(-1)).toBe('limit101 < unknown106');
+    expect(flow.uncheckedStepIds).toEqual(['limit101']);
+    expect(describeCubeDefinitionUncheckedSql(flow)).toBe(
+      CUBE_DEFINITION_FLOW_LABEL.SQL_UNCHECKED(1),
+    );
+  });
+
+  test('A data set whose definition the host has not is drawn by name, as in Pure', () => {
+    const flow = read(lambdaOf([sqlOf(TREES['union-all'].sql)]), {
+      getSqlTree,
+    });
+    expect(flow.unknownDataSets).toEqual([
+      { ingestDefinition: INGEST, dataSet: 'ARCHIVE' },
+    ]);
+    expect(sqlStepsOf(flow.sqlIslands[0]).slice(-3)).toEqual([
+      'unknown104 | set:union all',
+      'unknown105 | orderBy | AMOUNT',
+      'unknown106 | limit | 5',
+    ]);
+  });
+
+  test('Without its tree, or with SQL Cube has no steps for, it stays one box', () => {
+    const lambda = lambdaOf([sqlOf(JOINED_SQL)]);
+    expect(stepsOf(read(lambda))).toEqual(['unknown101']);
+    expect(stepsOf(read(lambda, { getSqlTree: () => undefined }))).toEqual([
+      'unknown101',
+    ]);
+    // a tree that isn't the engine's
+    expect(
+      read(lambda, { getSqlTree: () => ({ error: 'no' }) }).sqlIslands,
+    ).toMatchObject([{ id: 'unknown101', stepId: 'unknown101' }]);
+    const refused = read(lambdaOf([sqlOf(TREES['in-subquery'].sql)]), {
+      getSqlTree,
+    });
+    expect(stepsOf(refused)).toEqual(['unknown101']);
+    expect(refused.sqlIslands).toMatchObject([
+      {
+        id: 'unknown101',
+        stepId: 'unknown101',
+        closedMessage: 'a query inside an expression',
+      },
+    ]);
+    expect(refused.sqlIslands[0]?.steps).toBeUndefined();
+  });
+
+  test("A let it reads by name is read where it is: its steps are not the SQL's", () => {
+    const lambda = lambdaOf(
+      [
+        letOf('active', call('filter', dataSetOf('ORDERS'), IS_ACTIVE)),
+        sqlOf(LET_SQL),
+      ],
+      [variable('since')],
+    );
+    const flow = read(lambda, { getSqlTree });
+    expect(stepsOf(flow)).toEqual([
+      'ingestDataset101',
+      'filter101 < ingestDataset101',
+      'unknown101 < filter101',
+      'unknown102 < unknown101',
+      'unknown103 < unknown102',
+    ]);
+    expect(sqlStepsOf(flow.sqlIslands[0])).toEqual([
+      "unknown101 | where | a.ORDER_DATE > var('since')",
+      'unknown102 | groupBy | REGION',
+      'unknown103 | select | REGION, sum(AMOUNT) as TOTAL_AMOUNT',
+    ]);
+    // the parameter its SQL reads is wired to its last step
+    expect(flow.parameters.map((each) => [each.name, each.stepIds])).toEqual([
+      ['since', ['unknown103']],
+    ]);
+  });
+
+  test('A name it reads that no let binds is a step of its own', () => {
+    const flow = read(lambdaOf([sqlOf(LET_SQL)]), { getSqlTree });
+    expect(sqlStepsOf(flow.sqlIslands[0])[0]).toBe(
+      `unknown101 | ${CubeSqlStepKind.VARIABLE} | active | as a`,
+    );
+  });
+
+  test('Two islands are two containers, in the order the flow reads them', () => {
+    const flow = read(
+      lambdaOf([
+        call(
+          'concatenate',
+          sqlOf(TREES.star.sql),
+          sqlOf(TREES['in-subquery'].sql),
+        ),
+      ]),
+      { getSqlTree },
+    );
+    expect(
+      flow.sqlIslands.map((island) => [
+        island.id,
+        island.stepId,
+        island.steps?.length,
+      ]),
+    ).toEqual([
+      ['sql1', 'unknown101', 2],
+      ['unknown102', 'unknown102', undefined],
+    ]);
+  });
+
+  test("The host is told the SQL to ask the engine for, and the definitions its tree's data sets need", async () => {
+    const lambda = lambdaOf([
+      call('concatenate', sqlOf(JOINED_SQL), limitOf(sqlOf(JOINED_SQL))),
+    ]);
+    expect(findCubeDefinitionSql(lambda)).toEqual([JOINED_SQL]);
+    expect(findCubeDefinitionSql({ _type: 'string', value: 'x' })).toEqual([]);
+    expect(findCubeDefinitionIngestDefinitions(lambda)).toEqual([]);
+    expect(findCubeDefinitionIngestDefinitions(lambda, { getSqlTree })).toEqual(
+      [INGEST],
+    );
+    // SQL Cube has no steps for needs none
+    expect(
+      findCubeDefinitionIngestDefinitions(
+        lambdaOf([sqlOf(TREES['in-subquery'].sql)]),
+        { getSqlTree },
+      ),
+    ).toEqual([]);
+  });
+
+  test("In the body of a function, its container is in the call's", async () => {
+    const lambda = lambdaOf([limitOf(call('shop::orders::bySql'))]);
+    const elements = [
+      functionOf('shop::orders::bySql__Relation_1_', [], [sqlOf(JOINED_SQL)]),
+    ];
+    const functions = await loadFunctions(lambda, elements);
+    expect(findCubeDefinitionSql(lambda)).toEqual([]);
+    expect(findCubeDefinitionSql(lambda, { functions })).toEqual([JOINED_SQL]);
+    expect(
+      findCubeDefinitionIngestDefinitions(lambda, { functions, getSqlTree }),
+    ).toEqual([INGEST]);
+    const flow = read(lambda, { functions, getSqlTree });
+    expect(stepsOf(flow).at(-1)).toBe('limit101 < unknown106');
+    const [bySql] = flow.functionCalls;
+    // the call holds the SQL's container, and no step of its own
+    expect([bySql?.opened, bySql?.stepIds]).toEqual([true, []]);
+    expect(flow.sqlIslands).toMatchObject([
+      { id: 'sql1', stepId: 'unknown106', parentId: bySql?.id },
+    ]);
+    expect(flow.sqlIslands[0]?.steps).toHaveLength(8);
+  });
+
+  test('SQL of many steps starts folded', () => {
+    const islandOf = (id: string, count?: number): CubeDefinitionSqlIsland => ({
+      id,
+      stepId: id,
+      sql: 'select 1',
+      dataSets: [],
+      accessPoints: [],
+      ...(count === undefined
+        ? {}
+        : {
+            steps: Array.from({ length: count }, (_, index) => ({
+              stepId: `${id}-${index}`,
+              kind: CubeSqlStepKind.WHERE,
+              text: '',
+            })),
+          }),
+    });
+    expect(
+      getCubeDefinitionSqlFoldedAtFirst([
+        islandOf('box'),
+        islandOf('small', CUBE_DEFINITION_SQL_OPEN_STEPS),
+        islandOf('big', CUBE_DEFINITION_SQL_OPEN_STEPS + 1),
+      ]),
+    ).toEqual(['big']);
   });
 });

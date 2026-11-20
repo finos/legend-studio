@@ -6175,20 +6175,28 @@ ingest Overview).
 
 **Steps (SQL-ISLANDS.md §8, one PR each):**
 
-| Step | What                                                                                | Status |
-| ---- | ----------------------------------------------------------------------------------- | ------ |
-| SQ1  | The box: the IR node, the reader, the dashed step, the SQL under the flow (#5943)   | 🚧     |
-| SQ2  | The typed box: a host asks the engine for its columns; Studio wires it              | ⏳     |
-| SQ3  | The engine's route returning an island's translated Pure (finos/legend-engine)      | ⏳     |
-| SQ4  | The container: the loader, the translation read in place, nesting, the fallback box | ⏳     |
-| SQ5  | The reading rules the translation needs: `project`, `count(*)`, unions, `except`…   | ⏳     |
-| SQ6  | The editor: the SQL step, Import Pure, the guide, a demo video                      | ⏳     |
-| SQ7  | Later: the translation in the artifact; display rules; counting islands             | ⏳     |
+| Step | What                                                                                | Status  |
+| ---- | ----------------------------------------------------------------------------------- | ------- |
+| SQ1  | The box: the IR node, the reader, the dashed step, the SQL under the flow (#5943)   | 🚧      |
+| SQ1b | The SQL's clauses as steps, from the engine's tree of the SQL: no engine change     | 🚧      |
+| SQ2  | The typed box: a host asks the engine for its columns; Studio wires it              | ⏳      |
+| SQ3  | The engine's route returning an island's translated Pure (finos/legend-engine)      | on hold |
+| SQ4  | The container: the loader, the translation read in place, nesting, the fallback box | on hold |
+| SQ5  | The reading rules the translation needs: `project`, `count(*)`, unions, `except`…   | ⏳      |
+| SQ6  | The editor: the SQL step, Import Pure, the guide, a demo video                      | ⏳      |
+| SQ7  | Later: the translation in the artifact; display rules; counting islands             | ⏳      |
 
 **Settled with the user (2026-11-19):** two stages, the box first. SQ1 also fixes a bug found on the way: with a
 host's functions loaded, the ingest definition of a data set read inside a `let` wasn't found (in master since F2).
 
-**Open with the user (SQL-ISLANDS.md §9):** two stages or wait for the engine; whether to draft the engine route;
+**Settled with the user (2026-11-20):** draw the SQL's own structure, from the engine's parse of it, with the box
+as the fallback and no browser parser library (SQ1b, SQL-ISLANDS.md §7.1b). The user asked for "some kind of sql
+viewer on that box… instead of going to engine to get the pure and rerender". The engine's SQL grammar route,
+`sql/v1/grammar/grammarToJson`, returns the tree with no model. Cube draws the SQL's sources and its clauses as
+steps in a container, as written and unchecked. SQ3 and SQ4 go on hold: they are needed only for checked steps.
+
+**Open with the user (SQL-ISLANDS.md §9):** whether the deployed engines expose the SQL grammar route;
+two stages or wait for the engine; whether to draft the engine route;
 what real islands read (`i()`, `p()`), with two or three examples; SQL as text only in the editor, or a Convert to
 Steps action too.
 

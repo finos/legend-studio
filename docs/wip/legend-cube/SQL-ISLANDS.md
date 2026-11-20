@@ -25,10 +25,15 @@ run against anything internal. PLAN §11.34 holds the short version.
 - **Measured:** the engine translated 43 of 47 test queries (the other four name sources the open-source engine
   doesn't have). Cube's reader, unchanged, draws 30 of the 43. The other 13 use seven forms the reader has no rule
   for yet (§5).
+- **Built since (2026-11-20, SQ1b): the SQL's own clauses as steps, with no engine change.** The engine's SQL
+  grammar route already returns the SQL's tree. A host asks it, and Cube draws a container holding the SQL's
+  sources and its clauses in the order they run: joins, Where, Group by, Having, Select, Order by, Offset, Limit.
+  The steps say what the SQL says. They are not the Pure that runs, and Cube checks none of them (§7.1b).
 - **The recommendation, in two stages:**
   1. **A box, with no engine change.** The island is one step, "SQL", never a refusal. A click shows its SQL. The
      Pure steps around it are drawn as usual.
-  2. **A container, once the engine has the route.** The island opens like a user-defined function's call (§11.33):
+  2. **A container, once the engine has the route.** On hold since SQ1b: it is needed only if the steps inside
+     must be Cube's own, checked steps. The island opens like a user-defined function's call (§11.33):
      a frame with the SQL on top and the translated steps inside. A `func()` source nests that function's container.
      What Cube can't read stays a box.
 - **In the editable canvas an island is one step holding its SQL**, written back word for word. Its inside is a
@@ -175,9 +180,16 @@ Two smaller findings:
 | Option                                        | How                                                                                        | Engine change | Verdict                                                             |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------- | ------------------------------------------------------------------- |
 | A. One box                                    | The reader reads the island as one step holding its SQL.                                   | none          | **Stage 1.** Ends the refusal. Shows no steps.                      |
-| B. Open it from the engine's translation      | A route returns each island's `pureFunction`; Cube reads it as it reads a function's body. | one route     | **Stage 2.** The steps shown are the ones that run. Reuses F1–F3.   |
-| C. Translate the SQL in the browser           | Cube reads the parse tree (`parseToMetamodel`) and maps it to steps itself.                | none          | No: a second copy of `sqlToPure`, which would drift from what runs. |
+| B. Open it from the engine's translation      | A route returns each island's `pureFunction`; Cube reads it as it reads a function's body. | one route     | **Stage 2, on hold.** The steps shown are the ones that run.        |
+| C. Translate the SQL in the browser           | Cube reads the parse tree (`parseToMetamodel`) and maps it to Cube's own steps itself.     | none          | No: a second copy of `sqlToPure`, which would drift from what runs. |
 | D. Translate at build time, into the artifact | The data product's artifact carries each island's Pure.                                    | generation    | Later, if the route's model compile proves slow in Marketplace.     |
+| E. Draw the SQL's own clauses                 | Cube reads the engine's tree of the SQL and draws each clause as written, unchecked.       | none          | **Stage 1b, built.** Shows the SQL's structure. Claims no Pure.     |
+
+E came from the user (2026-11-20): "what about using some kind of sql viewer on that box… instead of going to engine
+to get the pure and rerender". It differs from C in what it claims. C would turn SQL into Cube's Filter, Group and
+Join steps, which must match what the engine runs. E draws a Where as a Where: the SQL's own words, with nothing
+checked. The browser parser libraries were measured and not used: on 49 test queries the engine's grammar parsed
+49, `node-sql-parser` 48 and `pgsql-ast-parser` 46, and each adds about 350 KB and a second tree to map.
 
 ## 7. The design
 
@@ -213,6 +225,37 @@ CUSTOMERS`) or `columns not known`. Its tooltip has the SQL's first 12 lines and
   the ingest definition of a data set read inside a `let` was not found, so the flow said "Couldn't load the columns
   of …" and left the steps unchecked. `findCubeDefinitionIngestDefinitions` walked the lets as an object, and they
   are a map. In master since F2.
+
+### 7.1b Stage 1b: the SQL's clauses as steps (built 2026-11-20)
+
+- **The tree.** The engine's SQL grammar parses any SQL with no model: `POST /api/sql/v1/grammar/grammarToJson`
+  (text in, the tree out, about 2 ms and 1 to 2 KB a query). It returns the same tree as
+  `sql/v1/execution/parseToMetamodel`, follows the Pure grammar routes (compressed requests, parser errors as 400),
+  and has a batch form. The open-source server registers it always (`Server.java`), so CI's engine has it.
+- **Loading.** A host finds the SQL a definition holds, the bodies of the functions it calls included
+  (`findCubeDefinitionSql`), asks the engine for each tree, and gives them to the reader (`getSqlTree`). The order
+  is: functions, SQL trees, ingest definitions (a tree's data sets need their definitions too).
+- **Reading.** Cube's protocol layer reads the tree into steps (`V1_CubeSqlTree.ts`), each saying what its clause
+  says, printed back as SQL from the tree. The reader reads those steps in the island's place: the core reader lets
+  a host answer a source with a relation of its own (`CubeSourceRelation`).
+  - An ingest data set, `i('definition.dataSet')`, is a step as in Pure, typed by its definition.
+  - A `let` read by name, `var('name')`, is read where it is: its steps stay outside the container.
+  - Any other source is a step named for what it is: Table, Access point, Function, CSV, Service.
+  - A `with` and a query in parentheses are drawn before the select that reads them, then a step with their name.
+  - `union`, `intersect` and `except` are one step with two inputs.
+- **Drawing.** A dashed frame with the SQL badge and the SQL's first words on top. Clauses are dashed steps, data
+  sets are solid. A click on a clause, or the frame's **</>**, shows the SQL. The frame folds to one box; SQL of
+  more than 12 steps starts folded.
+- **What it doesn't claim.** The steps are the SQL's own, in the order SQL runs them. Cube checks none of them, so
+  the island's columns still aren't known and the Pure steps after it are still unchecked (SQ2 is the fix).
+- **The fallback is SQ1's box:** no tree from the host, a request that failed, an engine without the route, or SQL
+  Cube has no steps for. Today those are a query inside an expression (`in (select …)`, `exists`), a recursive
+  `with`, a `window` clause and a window frame. The box's tooltip says which.
+- **Measured:** of the 47 test queries of §5, Cube draws 45 as steps; of the 21 kept as the tests' fixture, 16, the
+  other five being the refusals above, one of each.
+- **Hosts:** the Marketplace viewer and Studio's preview (the engine client), and Studio's ingest Overview (the
+  graph manager's new `parseSQL`).
+- **Not known:** whether every deployed engine exposes the grammar route. The open-source server does.
 
 ### 7.2 The engine route
 
@@ -272,17 +315,19 @@ POST /api/sql/v1/expression/toPure
 
 One reviewable PR each, checked the usual way.
 
-| Step | What                                                                                                                                                                               | Packages                                                         | Tests                                                                                                                                | Unlocks                                 |
-| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------- |
-| SQ1  | The box: the IR node, the flow's reader binding it (inputs from `var()`), the dashed step, the SQL under the flow, the sources it names through a legend-graph API.                | legend-graph, legend-cube, legend-cube-builder, dsl-data-product | The four cases of §2 drawn. A box's inputs. The sources named. An engine round trip of each case's grammar. Today's tests unchanged. | every flow that holds an island         |
-| SQ2  | The typed box: a host option that asks `lambdaRelationType`; Studio wires it.                                                                                                      | legend-cube-builder, Studio                                      | A typed box checks the steps after it. A failed request leaves the box untyped.                                                      | checked steps after a box, in Studio    |
-| SQ3  | The engine's route (§7.2), a PR to finos/legend-engine.                                                                                                                            | legend-engine                                                    | The 43 queries of §5 as the route's test. `var()` inside a lambda with a `let`.                                                      | SQ4                                     |
-| SQ4  | The container: the loader, the read order, the translation read in place, the frame, nesting a `func()` source, the fallback to SQ1's box. Marketplace and Studio wire the loader. | legend-cube-builder, dsl-data-product, Marketplace, Studio       | One test per source kind and per fallback. The 30 queries of §5 as fixtures. Loader order. The entry still loads none of the editor. | islands shown as steps                  |
-| SQ5  | The reading rules of §5, one small PR per form or two.                                                                                                                             | legend-cube                                                      | Each form from the engine's own output. An engine round trip per form.                                                               | the other 13 queries of §5              |
-| SQ6  | The editor's step (§7.5), Import Pure reading islands, the user guide's section and images, a demo video (the milestone rule).                                                     | legend-cube, legend-cube-builder, Analytics                      | Emitter and spec round trips keeping the text. Locked steps refuse edits.                                                            | editing cubes that hold SQL; §6.4, §8.1 |
-| SQ7  | Later: the translation in the artifact (option D); a display rule for the guards and the suffixes; counting islands in the coverage script.                                        |                                                                  |                                                                                                                                      |                                         |
+| Step | What                                                                                                                                                                               | Packages                                                                 | Tests                                                                                                                                | Unlocks                                 |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------- |
+| SQ1  | The box: the IR node, the flow's reader binding it (inputs from `var()`), the dashed step, the SQL under the flow, the sources it names through a legend-graph API.                | legend-graph, legend-cube, legend-cube-builder, dsl-data-product         | The four cases of §2 drawn. A box's inputs. The sources named. An engine round trip of each case's grammar. Today's tests unchanged. | every flow that holds an island         |
+| SQ1b | The SQL's clauses as steps (§7.1b): the engine's tree read into steps, the reader reading them in the island's place, the frame, the two hosts asking the grammar route.           | legend-graph, legend-cube, legend-cube-builder, dsl-data-product, Studio | 21 engine trees as a fixture, checked against the engine. One test per fallback. Both hosts with and without a tree.                 | an island's structure, drawn            |
+| SQ2  | The typed box: a host option that asks `lambdaRelationType`; Studio wires it.                                                                                                      | legend-cube-builder, Studio                                              | A typed box checks the steps after it. A failed request leaves the box untyped.                                                      | checked steps after a box, in Studio    |
+| SQ3  | The engine's route (§7.2), a PR to finos/legend-engine.                                                                                                                            | legend-engine                                                            | The 43 queries of §5 as the route's test. `var()` inside a lambda with a `let`.                                                      | SQ4                                     |
+| SQ4  | The container: the loader, the read order, the translation read in place, the frame, nesting a `func()` source, the fallback to SQ1's box. Marketplace and Studio wire the loader. | legend-cube-builder, dsl-data-product, Marketplace, Studio               | One test per source kind and per fallback. The 30 queries of §5 as fixtures. Loader order. The entry still loads none of the editor. | islands shown as steps                  |
+| SQ5  | The reading rules of §5, one small PR per form or two.                                                                                                                             | legend-cube                                                              | Each form from the engine's own output. An engine round trip per form.                                                               | the other 13 queries of §5              |
+| SQ6  | The editor's step (§7.5), Import Pure reading islands, the user guide's section and images, a demo video (the milestone rule).                                                     | legend-cube, legend-cube-builder, Analytics                              | Emitter and spec round trips keeping the text. Locked steps refuse edits.                                                            | editing cubes that hold SQL; §6.4, §8.1 |
+| SQ7  | Later: the translation in the artifact (option D); a display rule for the guards and the suffixes; counting islands in the coverage script.                                        |                                                                          |                                                                                                                                      |                                         |
 
-SQ1 needs nothing from anyone. SQ3 can be raised at the same time, since SQ4 waits for it to be released.
+SQ1 needs nothing from anyone. SQ3 and SQ4 are on hold since SQ1b: they are worth doing only if the steps inside
+an island must be Cube's own, checked steps. SQ2 gains from SQ1b as it is: it types the frame's last step.
 
 ## 9. Questions for the user
 
@@ -298,7 +343,16 @@ SQ1 needs nothing from anyone. SQ3 can be raised at the same time, since SQ4 wai
    because people change the function itself. An island has no definition elsewhere, so the action is more
    defensible here, but its result is the wordy Pure of §4.
 
+5. **Draw the SQL's own structure, from the engine's parse of it?** **Yes (the user, 2026-11-20):** the engine's
+   route first, the box as the fallback, no browser parser library. Built as SQ1b.
+6. **Do the deployed engines expose `POST /api/sql/v1/grammar/grammarToJson`?** The open-source server does. Where
+   one doesn't, every island stays a box, and a browser parser would become the main path.
+
 ## Evidence
+
+`../legend-studio-cube-functions-evidence/sql-structure/` (SQ1b): `cases.txt` and `capture-trees.mjs` (the fixture's
+trees, from the engine), `trees.json` (the 47 queries of §5), `gen-structure-mock.mjs` and `shoot-structure.mjs`
+(the mock and the screenshots), `shots/`.
 
 `../legend-studio-cube-functions-evidence/sql-island/` (its `README.md` says how to run each again):
 

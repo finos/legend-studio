@@ -5646,12 +5646,12 @@ describe('DataProductViewer', () => {
         expect(sqlStep?.textContent).toContain('names ORDERS');
         expect(
           within(definition).getByText(
-            "The SQL is shown as one step, with no columns known, so the steps after it aren't checked.",
+            "Cube doesn't check the SQL, so its columns aren't known and the steps after it aren't checked.",
           ),
         ).toBeDefined();
         expect(logEvent).toHaveBeenCalledWith(
           DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
-          expect.objectContaining({ steps: 2, sqlSteps: 1 }),
+          expect.objectContaining({ steps: 2, sqlSteps: 1, sqlOpened: 0 }),
         );
         expect(within(definition).queryByLabelText('SQL of a step')).toBeNull();
 
@@ -5671,6 +5671,80 @@ describe('DataProductViewer', () => {
           fireEvent.click(within(panel).getByText('Close'));
         });
         expect(within(definition).queryByLabelText('SQL of a step')).toBeNull();
+      });
+
+      test("draws the SQL as the steps of its SQL, from the engine's tree of it, and a click on one shows the SQL", async () => {
+        const reference = (name: string): PlainObject => ({
+          _type: 'qualifiedNameReference',
+          name: { parts: [name] },
+        });
+        const call = (name: string, values: PlainObject[]): PlainObject => ({
+          _type: 'functionCall',
+          arguments: values,
+          distinct: false,
+          name: { parts: [name] },
+          orderBy: [],
+        });
+        const { logEvent, dataProductViewerState } =
+          await setupDefinition(SQL_THEN_LIMIT);
+        // the engine's tree of the SQL, as its SQL parser writes it
+        const parse = createSpy(
+          dataProductViewerState.engineServerClient,
+          'SQLToJSON',
+        ).mockResolvedValue({
+          _type: 'query',
+          queryBody: {
+            _type: 'querySpecification',
+            from: [
+              {
+                _type: 'tableFunction',
+                functionCall: call('i', [
+                  {
+                    _type: 'stringLiteral',
+                    value: 'shop::ingest::OrdersIngest.ORDERS',
+                  },
+                ]),
+              },
+            ],
+            groupBy: [reference('STATUS')],
+            orderBy: [],
+            select: {
+              _type: 'select',
+              distinct: false,
+              selectItems: [
+                { _type: 'singleColumn', expression: reference('STATUS') },
+                {
+                  _type: 'singleColumn',
+                  alias: 'total',
+                  expression: call('sum', [reference('AMOUNT')]),
+                },
+              ],
+            },
+            windows: [],
+          },
+        });
+        const definition = await openDefinition();
+        // its data set, its Group by and its Select, then the limit
+        const steps = await findFlowNodes(definition, 4);
+        expect(parse.mock.calls).toEqual([[SQL]]);
+        expect(steps.map((step) => step.textContent)).toEqual([
+          expect.stringContaining('ORDERS'),
+          'Group bySTATUS',
+          'SelectSTATUS, total',
+          expect.stringContaining('Take first 10 row(s)'),
+        ]);
+        expect(logEvent).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+          expect.objectContaining({ steps: 4, sqlSteps: 1, sqlOpened: 1 }),
+        );
+        await act(async () => {
+          fireEvent.click(guaranteeNonNullable(steps[1]));
+        });
+        const panel = await within(definition).findByLabelText('SQL of a step');
+        await act(async () => {
+          fireEvent.click(within(panel).getByLabelText('Copy SQL'));
+        });
+        expect(writeText).toHaveBeenLastCalledWith(SQL);
       });
     });
   });

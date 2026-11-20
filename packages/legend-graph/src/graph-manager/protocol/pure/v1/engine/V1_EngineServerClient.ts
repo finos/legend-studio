@@ -160,6 +160,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
 
   DATABASE_SCHEMA_EXPLORATION = 'database schema exploration',
   DATABASE_RAW_SQL_EXECUTION = 'database raw SQL execution',
+  SQL_TO_JSON = 'transform SQL code to protocol',
 
   VALIDATE_FUNCTION_ACTIVATOR = 'validate function activator',
   RENDER_FUNCTION_ACTIVATOR_ARTIFACT = 'render function activator artifact',
@@ -1155,6 +1156,22 @@ export class V1_EngineServerClient extends AbstractServerClient {
       ),
       {},
       { [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN },
+    );
+
+  /**
+   * The engine's tree of an SQL query, its protocol JSON, as its SQL grammar
+   * reads it, with no model and no source information: what the SQL of an
+   * island, `#SQL{…}#`, says
+   */
+  SQLToJSON = (sql: string): Promise<PlainObject> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.SQL_TO_JSON),
+      `${this.baseUrl}/sql/v1/grammar/grammarToJson`,
+      sql,
+      {},
+      { [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN },
+      { returnSourceInformation: false },
+      { enableCompression: true },
     );
 
   // ------------------------------------------- Function ---------------------------------------

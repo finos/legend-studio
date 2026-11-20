@@ -188,4 +188,51 @@ describe(unitTest('An SQL island in a lambda'), () => {
       'other',
     ]);
   });
+
+  test('Is read as the steps the host gives in its place, the lets they read by name', () => {
+    // the host parsed the SQL: a Where on the rows of the let `all`
+    const where = func('#SQL.where', [variable('all')]);
+    const island = sqlAccessor(
+      "select * from var('all') where ID > 1 and D > var('since')",
+      ['all', 'since'],
+    );
+    const { query, stepIRs, parameterReads, unchecked } = readCubeQuery(
+      {
+        relation: limit(island),
+        lets: new Map([['all', ORDERS]]),
+        limitBesideFrom: false,
+        parameters: ['since'],
+      },
+      {
+        bindSource: (source) =>
+          source === island ? { relation: where } : bindSource(source),
+        bindCall: (call) =>
+          call === where
+            ? {
+                type: UnknownNode.TYPE,
+                inputs: [0],
+                create: (id) => new UnknownNode(id, 1, { kind: 'sqlClause' }),
+              }
+            : undefined,
+        expressions: NO_EXPRESSIONS,
+        forDrawing: true,
+      },
+    );
+    expect(query.nodes.map((node) => node.id)).toEqual([
+      'relational101',
+      'unknown101',
+      'limit101',
+    ]);
+    expect(
+      query.connections.map((connection) => connection.toString()),
+    ).toEqual([
+      'relational101 → unknown101 (in0)',
+      'unknown101 → limit101 (tds)',
+    ]);
+    // the host's step is read from the host's relation; the parameters the
+    // SQL reads are noted on its last step, whose columns aren't known
+    expect(stepIRs.get('unknown101')).toBe(where);
+    expect([...parameterReads.entries()]).toEqual([['unknown101', ['since']]]);
+    expect(unchecked).toEqual(['limit101']);
+  });
 });

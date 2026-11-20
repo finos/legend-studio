@@ -437,12 +437,23 @@ export class DataProductAccessPointState {
           );
         }
       }
+      // the engine's tree of the SQL it holds, `#SQL{…}#`, which Cube draws
+      // as steps; SQL with no tree is one box
+      const sqlTrees = (yield this.loadSqlTrees(
+        entry.findCubeDefinitionSql(lambda, { functions }),
+      )) as Map<string, PlainObject>;
+      const getSqlTree = (sql: string): PlainObject | undefined =>
+        sqlTrees.get(sql);
       const ingestDefinitions = (yield this.loadIngestDefinitions(
-        entry.findCubeDefinitionIngestDefinitions(lambda, { functions }),
+        entry.findCubeDefinitionIngestDefinitions(lambda, {
+          functions,
+          getSqlTree,
+        }),
       )) as Map<string, PlainObject>;
       const reading = entry.readCubeDefinition(lambda, {
         getIngestDefinition: (path) => ingestDefinitions.get(path),
         functions,
+        getSqlTree,
       });
       const telemetryService = this.apgState.applicationStore.telemetryService;
       if (reading.kind === 'flow') {
@@ -475,6 +486,8 @@ export class DataProductAccessPointState {
             scalarFunctionSteps: reading.scalarFunctions.size,
             functionsUnloaded,
             sqlSteps: reading.sqlIslands.length,
+            sqlOpened: reading.sqlIslands.filter((island) => island.steps)
+              .length,
           },
         );
       } else {
@@ -494,6 +507,36 @@ export class DataProductAccessPointState {
     } finally {
       this.readingDefinitionFlowState.complete();
     }
+  }
+
+  /**
+   * The engine's tree of each SQL, by the SQL, as its SQL parser reads it:
+   * one the engine fails to parse, or has no route for, is left out, and its
+   * SQL is drawn as one box
+   */
+  private async loadSqlTrees(
+    sqls: string[],
+  ): Promise<Map<string, PlainObject>> {
+    const trees = new Map<string, PlainObject>();
+    const client = this.apgState.dataProductViewerState.engineServerClient;
+    const loaded = await Promise.allSettled(
+      sqls.map((sql) => client.SQLToJSON(sql)),
+    );
+    loaded.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        trees.set(guaranteeNonNullable(sqls[index]), result.value);
+      } else {
+        this.apgState.applicationStore.logService.warn(
+          LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+          `Unable to parse the SQL of access point '${this.accessPoint.id}' for its flow: ${
+            result.reason instanceof Error
+              ? result.reason.message
+              : String(result.reason)
+          }`,
+        );
+      }
+    });
+    return trees;
   }
 
   /**

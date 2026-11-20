@@ -146,6 +146,16 @@ export interface CubeSourceStep {
 }
 
 /**
+ * A source the host reads as steps of its own, e.g. an SQL island whose SQL
+ * the host has parsed: the relation the reader reads in its place, made of
+ * what the host binds (`bindSource`, `bindCall`) and of the lambda's lets,
+ * read by name. The steps after the source read its last step.
+ */
+export interface CubeSourceRelation {
+  readonly relation: IR;
+}
+
+/**
  * A call the host reads as one step whose inputs are some of its parameters,
  * e.g. a user-defined function a definition's flow can't open, drawn as one
  * box: the relations it takes, read before it, as its inputs in order
@@ -170,9 +180,10 @@ export interface CubeExpressionCodec {
 export interface CubeQueryReadOptions {
   /**
    * The step of each source the lambda reads: an accessor, or a function's
-   * call. Throws a `CubeLambdaReadError` for a source the host can't bind.
+   * call; or the relation the host reads it as, in steps of its own. Throws
+   * a `CubeLambdaReadError` for a source the host can't bind.
    */
-  readonly bindSource: (source: IR) => CubeSourceStep;
+  readonly bindSource: (source: IR) => CubeSourceStep | CubeSourceRelation;
   readonly expressions: CubeExpressionCodec;
   /**
    * The step of a call the host reads as one, with the relations it takes as
@@ -298,6 +309,14 @@ export const isCubeLambdaSource = (ir: IR): boolean =>
   (ir.k === 'func' &&
     ir.name.includes('::') &&
     !RELATION_INPUTS.has(getCubeFunctionName(ir.name)));
+
+/**
+ * Whether what a let binds is rows, a relation, not a value such as a date:
+ * what an SQL island that names the let, `var('name')`, reads as an input
+ */
+export const isCubeRowsLet = (bound: IR | undefined): boolean =>
+  bound !== undefined &&
+  (bound.k === 'func' || bound.k === 'var' || isCubeLambdaSource(bound));
 
 /**
  * The sources a lambda's relation reads, in the order they are read: what the
@@ -815,11 +834,7 @@ class CubeQueryReader {
   private sqlInputsOf(ir: IR): IR[] {
     return ir.k === 'sqlAccessor'
       ? ir.variables.flatMap((name) => {
-          const bound = this.parts.lets.get(name);
-          return bound &&
-            (bound.k === 'func' ||
-              bound.k === 'var' ||
-              isCubeLambdaSource(bound))
+          return isCubeRowsLet(this.parts.lets.get(name))
             ? [{ k: 'var', name } as IR]
             : [];
         })
@@ -1047,6 +1062,15 @@ class CubeQueryReader {
         ir.variables
           .filter((name) => this.parts.lets.has(name))
           .forEach((name) => this.readLets.add(name));
+      }
+      if ('relation' in source) {
+        // read as the host's own steps: the steps after it read the source,
+        // as written, from the last of them
+        const last = this.readRelation(source.relation, lets);
+        const step = { id: last.id, ir };
+        return ir.k === 'sqlAccessor'
+          ? this.noteParameterReads(step, [ir])
+          : step;
       }
       const inputs = this.sqlInputsOf(ir).map((input) =>
         this.readRelation(input, lets),

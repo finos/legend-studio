@@ -4672,6 +4672,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  override async parseSQL(sql: string): Promise<PlainObject> {
+    return this.engine.transformSQLToJSON(sql);
+  }
+
   // --------------------------------------------- Function ---------------------------------------------
 
   async getAvailableFunctionActivatorConfigurations(

@@ -231,10 +231,19 @@ return reading.kind === 'flow' ? (
 - **Unknown columns:** a data set whose definition the host doesn't give, or Cube can't read, is drawn by its name,
   as any other, and the steps after it aren't checked (`unknownDataSets`, `uncheckedStepIds`).
 - **SQL:** the engine's SQL island, `#SQL{select … from …}#`, is one step: a dashed box showing its SQL's first
-  words. Cube doesn't read the SQL, so the box's columns aren't known and the steps after it aren't checked. A `let`
+  words. Cube doesn't check the SQL, so its columns aren't known and the steps after it aren't checked. A `let`
   its SQL reads by name (`var('name')`) is its input. `sqlIslands` lists each with its step, its SQL, and the ingest
   data sets and access points its text names (`i('…')`, `p('…')`), which may not be all it reads. A click on the box
   calls `onShowSql`, for the host to show the SQL in full. The editor has no step for SQL: Import Pure refuses it.
+- **SQL as steps:** with the engine's tree of its SQL, an island is a container of the steps its SQL says: its
+  sources, then its clauses in the order they run (joins, Where, Group by, Having, Select, Order by, Offset,
+  Limit). A host asks the engine's SQL grammar for the tree of each SQL `findCubeDefinitionSql(lambda, {functions})`
+  lists (`POST sql/v1/grammar/grammarToJson`, the SQL as text), and gives them as `getSqlTree` to
+  `findCubeDefinitionIngestDefinitions` and `readCubeDefinition`: an ingest data set of the SQL is a step as any
+  other, typed by its definition. The clauses are as the SQL says them: Cube checks none, so the steps after the
+  island stay unchecked. An island's `steps` lists them; `closedMessage` says why SQL the host gave the tree of is
+  one box all the same (a query inside an expression, a recursive `with`, a `window` clause). Without a tree, the
+  island is the box above. A click on a clause, or the container's button, calls `onShowSql`.
 - **Steps:** `steps`, each after the ones it reads, with its inputs and the relation it was read from (`ir`, which
   reads the lambda's `lets` by name): the Pure up to it.
 - **The canvas:** it fills its container and pans. Its controls, bottom right, zoom, as pinching does; the wheel

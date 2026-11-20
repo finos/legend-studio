@@ -711,6 +711,17 @@ export const findCubeIngestDefinitionsRead = (ir: unknown): string[] => {
   return paths;
 };
 
+/** The SQL of the islands, `#SQL{…}#`, the IR holds, each once, in the order it holds them */
+export const findCubeSqlRead = (ir: unknown): string[] => {
+  const found: string[] = [];
+  visitIR(ir, (node) => {
+    if (node.k === 'sqlAccessor' && !found.includes(node.sql)) {
+      found.push(node.sql);
+    }
+  });
+  return found;
+};
+
 /** The user-defined functions an expression calls, by name, e.g. a filter's condition calling `pkg::defaultDate()` */
 export const findCubeScalarFunctionCalls = (
   ir: IR,

@@ -1333,6 +1333,56 @@ describe("The Definition tab of a definition with a view of a data set's batch m
   );
 });
 
+const SIGNED_OFF_SQL = `select STATUS, count(*) as POSITIONS from i('${INGEST_PATH}.EOD_POSITIONS') group by STATUS`;
+/** The engine's tree of that SQL, as its SQL parser writes it */
+const SIGNED_OFF_SQL_TREE: PlainObject = {
+  _type: 'query',
+  queryBody: {
+    _type: 'querySpecification',
+    from: [
+      {
+        _type: 'tableFunction',
+        functionCall: {
+          _type: 'functionCall',
+          arguments: [
+            { _type: 'stringLiteral', value: `${INGEST_PATH}.EOD_POSITIONS` },
+          ],
+          distinct: false,
+          name: { parts: ['i'] },
+          orderBy: [],
+        },
+      },
+    ],
+    groupBy: [{ _type: 'qualifiedNameReference', name: { parts: ['STATUS'] } }],
+    orderBy: [],
+    select: {
+      _type: 'select',
+      distinct: false,
+      selectItems: [
+        {
+          _type: 'singleColumn',
+          expression: {
+            _type: 'qualifiedNameReference',
+            name: { parts: ['STATUS'] },
+          },
+        },
+        {
+          _type: 'singleColumn',
+          alias: 'POSITIONS',
+          expression: {
+            _type: 'functionCall',
+            arguments: [],
+            distinct: false,
+            name: { parts: ['count'] },
+            orderBy: [],
+          },
+        },
+      ],
+    },
+    windows: [],
+  },
+};
+
 /** A view written in SQL, `#SQL{…}#->filter(…)`, as the engine's grammar writes it; the SQL made up */
 const SIGNED_OFF_BY_SQL_VIEW: PlainObject = {
   name: 'SIGNED_OFF_BY_SQL',
@@ -1352,7 +1402,7 @@ const SIGNED_OFF_BY_SQL_VIEW: PlainObject = {
               _type: 'classInstance',
               type: 'SQL',
               value: {
-                sql: `select STATUS, count(*) as POSITIONS from i('${INGEST_PATH}.EOD_POSITIONS') group by STATUS`,
+                sql: SIGNED_OFF_SQL,
               },
             },
             {
@@ -1380,45 +1430,59 @@ const SIGNED_OFF_BY_SQL_VIEW: PlainObject = {
   },
 };
 
+/** Opens the Overview of the definition with that view added, on the view, the engine's SQL parser as given */
+const openSqlView = async (
+  parseSQL: (sql: string) => Promise<PlainObject>,
+): Promise<{ editorGroup: HTMLElement; panel: HTMLElement }> => {
+  const editorStore = TEST__provideMockedEditorStore();
+  const [ingest, ...others] = TEST_DATA.entities as PlainObject<Entity>[];
+  const content = ingest?.content as PlainObject;
+  const withSql = {
+    ...ingest,
+    content: {
+      ...content,
+      datasets: [
+        ...(content.datasets as PlainObject[]),
+        SIGNED_OFF_BY_SQL_VIEW,
+      ],
+    },
+  } as PlainObject<Entity>;
+  const renderResult = await TEST__setUpEditorWithDefaultSDLCData(editorStore, {
+    entities: [withSql, ...others],
+  });
+  const { graphManager } = editorStore.graphManagerState;
+  jest
+    .spyOn(graphManager, 'entitiesToPureCode')
+    .mockResolvedValue(DEFINITION_PURE);
+  jest.spyOn(graphManager, 'parseSQL').mockImplementation(parseSQL);
+  await act(async () => {
+    await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
+  });
+  const editorGroup = await waitFor(() =>
+    renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+  );
+  await findFlowNodes(
+    getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
+    5,
+  );
+  await pick(editorGroup, 'SIGNED_OFF_BY_SQL');
+  return {
+    editorGroup,
+    panel: getViewPanel(editorGroup, 'SIGNED_OFF_BY_SQL'),
+  };
+};
+
 describe('The Definition tab of a definition with a view written in SQL', () => {
   test(
     integrationTest(
-      "Draws the view's SQL as one step, then its filter, and says the filter isn't checked",
+      "Draws the view's SQL as one step when the engine can't parse it, then its filter, and says the filter isn't checked",
     ),
     async () => {
-      const editorStore = TEST__provideMockedEditorStore();
-      const [ingest, ...others] = TEST_DATA.entities as PlainObject<Entity>[];
-      const content = ingest?.content as PlainObject;
-      const withSql = {
-        ...ingest,
-        content: {
-          ...content,
-          datasets: [
-            ...(content.datasets as PlainObject[]),
-            SIGNED_OFF_BY_SQL_VIEW,
-          ],
-        },
-      } as PlainObject<Entity>;
-      const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-        editorStore,
-        { entities: [withSql, ...others] },
-      );
-      jest
-        .spyOn(editorStore.graphManagerState.graphManager, 'entitiesToPureCode')
-        .mockResolvedValue(DEFINITION_PURE);
-      await act(async () => {
-        await TEST__openElementFromExplorerTree(INGEST_PATH, renderResult);
-      });
-      const editorGroup = await waitFor(() =>
-        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
-      );
-      await findFlowNodes(
-        getViewPanel(editorGroup, 'POSITIONS_BY_LEGAL_ENTITY'),
-        5,
-      );
-
-      await pick(editorGroup, 'SIGNED_OFF_BY_SQL');
-      const panel = getViewPanel(editorGroup, 'SIGNED_OFF_BY_SQL');
+      const parseSQL = jest
+        .fn<(sql: string) => Promise<PlainObject>>()
+        .mockRejectedValue(new Error('no SQL route'));
+      const { editorGroup, panel } = await openSqlView(parseSQL);
+      expect(parseSQL.mock.calls).toEqual([[SIGNED_OFF_SQL]]);
       const [sql, filter] = await findFlowNodes(panel, 2);
       expect(sql?.textContent).toContain('SQL');
       expect(sql?.textContent).toContain('select STATUS, count(*)');
@@ -1426,7 +1490,7 @@ describe('The Definition tab of a definition with a view written in SQL', () => 
       expect(filter?.textContent).toContain('Filter');
       expect(
         within(panel).getByText(
-          "The SQL is shown as one step, with no columns known, so the steps after it aren't checked.",
+          "Cube doesn't check the SQL, so its columns aren't known and the steps after it aren't checked.",
         ),
       ).toBeDefined();
       await waitFor(() =>
@@ -1436,6 +1500,40 @@ describe('The Definition tab of a definition with a view written in SQL', () => 
       );
       // the data set its SQL names, as legend-graph finds it
       expect((await getMetadata(panel))['Data sets']).toBe('EOD_POSITIONS');
+    },
+  );
+
+  test(
+    integrationTest(
+      "Draws the view's SQL as the steps of its SQL, from the engine's tree of it",
+    ),
+    async () => {
+      const parseSQL = jest
+        .fn<(sql: string) => Promise<PlainObject>>()
+        .mockResolvedValue(SIGNED_OFF_SQL_TREE);
+      const { editorGroup, panel } = await openSqlView(parseSQL);
+      // its data set, its Group by and its Select, then the view's filter
+      const steps = await findFlowNodes(panel, 4);
+      expect(steps.map((step) => step.textContent)).toEqual([
+        expect.stringContaining('EOD_POSITIONS'),
+        'Group bySTATUS',
+        'SelectSTATUS, POSITIONS',
+        expect.stringContaining('Filter'),
+      ]);
+      // the data set is typed by the workspace's definition, as in Pure
+      expect(
+        within(panel).queryByText(/^Couldn't load the columns/),
+      ).toBeNull();
+      expect(
+        within(panel).getByText(
+          "Cube doesn't check the SQL, so its columns aren't known and the steps after it aren't checked.",
+        ),
+      ).toBeDefined();
+      await waitFor(() =>
+        expect(getViewRows(editorGroup)).toContain(
+          'SIGNED_OFF_BY_SQL | 4 steps',
+        ),
+      );
     },
   );
 });

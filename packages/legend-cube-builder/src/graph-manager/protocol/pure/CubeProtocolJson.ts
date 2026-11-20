@@ -40,6 +40,11 @@ import {
 } from './v1/V1_CubeLambdaReader.js';
 import { V1_readCubeExpression } from './v1/V1_CubeExpression.js';
 import { V1_findCubeSqlSources } from './v1/V1_CubeSqlIsland.js';
+import type { CubeSqlStep } from '../../CubeSqlStructure.js';
+import {
+  V1_CubeSqlTreeError,
+  V1_readCubeSqlTree,
+} from './v1/V1_CubeSqlTree.js';
 
 // Cube's readers of protocol JSON a host already has, which need no engine:
 // apart from the engine's clients (`CubeEngineBuilder`), so a page that only
@@ -77,6 +82,31 @@ export interface CubeSqlSources {
  */
 export const findCubeSqlSources = (sql: string): CubeSqlSources =>
   V1_findCubeSqlSources(sql);
+
+/** An island's SQL as steps; or what of it Cube has no step for, in words */
+export type CubeSqlTreeReading =
+  | {
+      /** Its last step, which reads the steps before it */
+      readonly last: CubeSqlStep;
+    }
+  | { readonly refused: string };
+
+/**
+ * The steps of the SQL of an island, read from the engine's tree of it, as
+ * its SQL grammar gives it: its clauses in the order they run, each
+ * saying what it says as SQL. Cube checks none of it. Never throws for a
+ * tree it can't read: it says what it has no step for.
+ */
+export const readCubeSqlTree = (tree: unknown): CubeSqlTreeReading => {
+  try {
+    return { last: V1_readCubeSqlTree(tree) };
+  } catch (error) {
+    if (error instanceof V1_CubeSqlTreeError) {
+      return { refused: error.message };
+    }
+    throw error;
+  }
+};
 
 /**
  * A user-defined function's element, its content (protocol JSON) as Depot or
