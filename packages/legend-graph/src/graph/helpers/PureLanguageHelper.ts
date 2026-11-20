@@ -29,6 +29,7 @@ import { formatDate } from '@finos/legend-shared';
 import type { PureModel } from '../PureModel.js';
 import type { FunctionAnalysisInfo } from './FunctionAnalysis.js';
 import type { GenericType } from '../metamodel/pure/packageableElements/domain/GenericType.js';
+import type { DerivedProperty } from '../metamodel/pure/packageableElements/domain/DerivedProperty.js';
 
 export enum PURE_ELEMENT_NAME {
   PROFILE = 'Profile',
@@ -138,6 +139,23 @@ export const generateFunctionCallString = (
   }
   return `${element.package?.path}${ELEMENT_PATH_DELIMITER}${element.functionName}(${lambdaString})`;
 };
+
+/**
+ * Generate the call string for a derived property, e.g. `employeeByName('')`,
+ * filling each parameter with a default value based on its type, similar to
+ * how we generate the call string for a function.
+ *
+ * NOTE: parameters of derived properties are kept in raw form in the graph,
+ * so their types need to be resolved by the caller; a type that cannot be
+ * resolved should be passed as `undefined` and a placeholder value is used.
+ */
+export const generateDerivedPropertyCallString = (
+  derivedProperty: DerivedProperty,
+  parameterTypes: (Type | undefined)[],
+): string =>
+  `${derivedProperty.name}(${parameterTypes
+    .map((paramType, i) => generateDefaultParameterValueForType(paramType, i))
+    .join(', ')})`;
 
 export const generateFunctionCallStringFromFunctionAnalysisInfo = (
   graph: PureModel,

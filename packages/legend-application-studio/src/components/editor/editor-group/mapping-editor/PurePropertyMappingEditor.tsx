@@ -20,6 +20,7 @@ import {
   type TransformDropTarget,
   CORE_DND_TYPE,
   TypeDragSource,
+  generateTypeTreeNodeLambdaPath,
 } from '../../../../stores/editor/utils/DnDUtils.js';
 import {
   type MappingElement,
@@ -39,7 +40,6 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   Enumeration,
   EnumerationMapping,
-  DerivedProperty,
   getEnumerationMappingsByEnumeration,
   getRawGenericType,
   EnumerationMappingExplicitReference,
@@ -352,13 +352,11 @@ export const PurePropertyMappingEditor = observer(
             let toAppend = '';
             if (dropType === CORE_DND_TYPE.TYPE_TREE_ENUM) {
               toAppend = `${dropItem.data?.parent.path}.${dropItem.data?.label}`;
-            } else {
-              if (dropItem.data?.id) {
-                toAppend = dropItem.data.id;
-              }
-              if (dropItem.data?.property instanceof DerivedProperty) {
-                toAppend += '()';
-              }
+            } else if (dropItem.data) {
+              toAppend = generateTypeTreeNodeLambdaPath(
+                dropItem.data,
+                purePropertyMappingState.editorStore,
+              );
             }
             if (toAppend) {
               purePropertyMappingState.setLambdaString(

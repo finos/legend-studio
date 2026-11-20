@@ -87,6 +87,7 @@ const getPropertyTypeTreeNodeData = (
     label: property.name,
     type: property.genericType.value.rawType,
     parent: parent.type,
+    parentNode: parent,
     dndType: CORE_DND_TYPE.TYPE_TREE_PRIMITIVE,
     property,
   };
