@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.19.31
+
+### Patch Changes
+
+- [#5939](https://github.com/finos/legend-studio/pull/5939) [`daa420d`](https://github.com/finos/legend-studio/commit/daa420d0b8d6f0e3423dcee4e914b25a8e3d28de) ([@kelly-thai](https://github.com/kelly-thai)) - Support the Data DNS watermark, `forDataDNSWatermark()`, in query builder: choose it in the query options next to the standard watermark, give it an environment (`PROD` or `QA`), a registry URI, a date and an optional milestone, and it round-trips with the query. The date is the business date parameter of the query, which the watermark follows, unless you enter a date of your own.
+
 ## 4.19.30
 
 ## 4.19.29

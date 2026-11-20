@@ -1,5 +1,11 @@
 # @finos/stylelint-config-legend-studio
 
+## 3.0.64
+
+### Patch Changes
+
+- [#5937](https://github.com/finos/legend-studio/pull/5937) [`842b4c6`](https://github.com/finos/legend-studio/commit/842b4c6496313c520dad97dced62bebd539b5522) ([@Divisha-Singh](https://github.com/Divisha-Singh)) - Bump versions so these packages are published (and their npm trusted publisher configurations validated); point `@finos/legend-extension-application-studio-depot-dashboard`'s `repository.url` at the GitHub repository.
+
 ## 3.0.63
 
 ### Patch Changes

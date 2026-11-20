@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.22.9
+
+### Patch Changes
+
+- [#5946](https://github.com/finos/legend-studio/pull/5946) [`88c5720`](https://github.com/finos/legend-studio/commit/88c5720c60c603c2d0d52fa89e5a35df6315abba) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add `accessibilityJurisdictions` to Data Product operational metadata (metamodel, V1 protocol, and Studio editor).
+
+- [#5947](https://github.com/finos/legend-studio/pull/5947) [`469a1db`](https://github.com/finos/legend-studio/commit/469a1db7453ed23b3e9b19a5cdba7a23f675a538) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Legend Cube reads every qualifier of an ingest data set, not only `|metadata`: `#I{…|incoming}#`, `#I{…|milestoned}#` and `#I{…|incomingMilestoned}#` too, as an incremental materialized view's function reads them, so Edit MatView, Import Pure and a definition's flow open it, and Save MatView keeps the qualifier (`IngestDatasetQualifier`). A qualifier it doesn't know is still refused. `milestoned` and `incomingMilestoned` are typed as the data set's rows are, as the engine types them; `incoming` by its append log (`CubeIngestDataSet.incomingSchema`): the digest when the write mode keeps one, `LAKE_BATCH_ID` and `LAKE_APPEND_TIME`, and `LAKE_IN_Z` and `LAKE_OUT_Z` when the data set keeps them. A host's `CubeIngestCatalog.resolveSchemas` reads each source's `qualifier` (`CubeIngestDataSetLocation`), by `getCubeIngestSourceSchema`. The Ingest tab still offers rows and batch metadata only.
+
+- [#5937](https://github.com/finos/legend-studio/pull/5937) [`842b4c6`](https://github.com/finos/legend-studio/commit/842b4c6496313c520dad97dced62bebd539b5522) ([@Divisha-Singh](https://github.com/Divisha-Singh)) - Support SingleStore computes: `SinglestoreComputeSpecification` (a required `clusterSize`, `S_00` to `S_64`) is read, written and change-tracked like the Snowflake and Databricks specifications, and the compute editor shows a cluster-size selector for it instead of the "not supported in form mode" message.
+
 ## 28.22.8
 
 ## 28.22.7
