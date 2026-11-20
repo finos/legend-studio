@@ -113,7 +113,7 @@ test(integrationTest('Test Function Activator '), async () => {
   ).toBeDefined();
   expect(getByText(editorGroupContent, 'Connection')).toBeDefined();
   expect(getByText(editorGroupContent, `SnowflakeConnection`)).toBeDefined();
-  expect(getByText(editorGroupContent, 'Activator Identifer')).toBeDefined();
+  expect(getByText(editorGroupContent, 'Activator Identifier')).toBeDefined();
   expect(getByText(editorGroupContent, `Description`)).toBeDefined();
 
   // Render Artifact test

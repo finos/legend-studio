@@ -275,7 +275,7 @@ export const SnowflakeM2MUdfFunctionActivatorEditor = observer(() => {
             <PanelFormTextField
               value={activator.udfName}
               isReadOnly={isReadOnly}
-              name="Activator Identifer"
+              name="Activator Identifier"
               placeholder="Specify the name of the UDF for this activator..."
               update={(value: string | undefined): void =>
                 editorState.updateUdfName(value ?? '')

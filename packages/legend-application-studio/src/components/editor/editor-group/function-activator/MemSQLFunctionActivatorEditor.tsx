@@ -275,7 +275,7 @@ export const MemSQLFunctionActivatorEditor = observer(() => {
             <PanelFormTextField
               value={activator.functionName}
               isReadOnly={isReadOnly}
-              name="Activator Identifer"
+              name="Activator Identifier"
               placeholder="Specify the name of the UDF for this activator..."
               update={(value: string | undefined): void =>
                 editorState.updateApplicationName(value ?? '')
