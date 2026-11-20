@@ -37,6 +37,7 @@ import { flowResult } from 'mobx';
 import { getCubeWarehouseErrorHint } from '../../../__lib__/LegendCubeDataProductLabels.js';
 import {
   CUBE_INGEST_METADATA_READS_LABEL,
+  CUBE_INGEST_QUALIFIER_READS_LABEL,
   getDataSetDriftWarning,
 } from '../../../__lib__/LegendCubeIngestLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
@@ -46,6 +47,7 @@ import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplicatio
 import {
   createFakeCubeIngestCatalog,
   FAKE_INGEST_ORDERS,
+  FAKE_INGEST_TRADES_INCOMING_SCHEMA,
   FAKE_INGEST_TRADES_SCHEMA,
   fakeIngestUrnOf,
 } from '../../../__test-utils__/FakeCubeIngestCatalog.js';
@@ -174,6 +176,113 @@ describe("A data set's batch metadata", () => {
     );
     // its columns, after the header
     expect(within(panel()).getAllByRole('row')).toHaveLength(10);
+  });
+});
+
+/** An ingest cube of what a qualifier reads of TRADES, saved with an older column */
+const qualifiedCube = (qualifier: IngestDatasetQualifier): CubeDocument =>
+  new CubeDocument({
+    context: ingestCube().context,
+    query: new Query(
+      [
+        new IngestDatasetSource(
+          'ingestDataset101',
+          {
+            ingestDefinitionUrn: fakeIngestUrnOf(FAKE_INGEST_ORDERS),
+            ingestDefinition: FAKE_INGEST_ORDERS,
+            dataSet: 'TRADES',
+            qualifier,
+          },
+          {
+            kind: 'resolved',
+            schema: new Schema([
+              new SchemaColumn('TRADE_ID', PrimitiveType.get('Integer'), false),
+            ]),
+          },
+        ),
+      ],
+      [],
+      'ingestDataset101',
+    ),
+  });
+
+describe("A data set's incoming rows", () => {
+  test('Are typed again through the catalog by its append log, and the panel says what they are and reads them again on Refresh', async () => {
+    const { host } = TEST__createCubeHost();
+    const ingest = createFakeCubeIngestCatalog();
+    const editorState = new CubeEditorState(
+      { ...host, ingestCatalog: ingest.catalog },
+      qualifiedCube(IngestDatasetQualifier.INCOMING),
+    );
+    await flowResult(editorState.reresolveSources());
+    const node = guaranteeType(
+      editorState.document.query.getNode('ingestDataset101'),
+      IngestDatasetSource,
+    );
+    expect(node.qualifier).toBe(IngestDatasetQualifier.INCOMING);
+    expect(node.schematize([])?.names()).toEqual(
+      FAKE_INGEST_TRADES_INCOMING_SCHEMA.names(),
+    );
+    // asked of the catalog, with what the source reads
+    expect(ingest.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(
+      ingest.resolveSchemas.mock.calls[0]?.[1].get('ingestDataset101'),
+    ).toMatchObject({
+      dataSet: 'TRADES',
+      qualifier: IngestDatasetQualifier.INCOMING,
+    });
+    await TEST__renderInCubeApplication(
+      <div style={{ display: 'flex' }}>
+        <div style={{ width: 800, height: 400 }}>
+          <CubeCanvas editorState={editorState} />
+        </div>
+      </div>,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.CANVAS,
+    );
+    const step = await TEST__findCanvasNode('ingestDataset101');
+    expect(step.textContent).toContain('TRADES incoming');
+    fireEvent.click(step);
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    expect(
+      within(panel()).getByText(
+        CUBE_INGEST_QUALIFIER_READS_LABEL[IngestDatasetQualifier.INCOMING],
+      ),
+    ).toBeTruthy();
+    // its columns, after the header
+    expect(within(panel()).getAllByRole('row')).toHaveLength(
+      FAKE_INGEST_TRADES_INCOMING_SCHEMA.columns.length + 1,
+    );
+    // unlike its batch metadata, they are its definition's to say
+    fireEvent.click(within(panel()).getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(ingest.resolveSchemas).toHaveBeenCalledTimes(2));
+    expect(
+      ingest.resolveSchemas.mock.calls[1]?.[1].get('ingestDataset101'),
+    ).toMatchObject({ qualifier: IngestDatasetQualifier.INCOMING });
+    expect(within(panel()).getAllByRole('row')).toHaveLength(
+      FAKE_INGEST_TRADES_INCOMING_SCHEMA.columns.length + 1,
+    );
+  });
+
+  test.each([
+    IngestDatasetQualifier.MILESTONED,
+    IngestDatasetQualifier.INCOMING_MILESTONED,
+  ])('And %s ones are typed as its rows are', async (qualifier) => {
+    const { host } = TEST__createCubeHost();
+    const ingest = createFakeCubeIngestCatalog();
+    const editorState = new CubeEditorState(
+      { ...host, ingestCatalog: ingest.catalog },
+      qualifiedCube(qualifier),
+    );
+    await flowResult(editorState.reresolveSources());
+    const node = guaranteeType(
+      editorState.document.query.getNode('ingestDataset101'),
+      IngestDatasetSource,
+    );
+    expect(node.qualifier).toBe(qualifier);
+    expect(node.schematize([])?.names()).toEqual(
+      FAKE_INGEST_TRADES_SCHEMA.names(),
+    );
   });
 });
 

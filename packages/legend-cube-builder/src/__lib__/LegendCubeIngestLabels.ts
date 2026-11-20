@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { SchemaDiff } from '@finos/legend-cube';
+import { IngestDatasetQualifier, type SchemaDiff } from '@finos/legend-cube';
 import { CubeDataProductEnvironmentType } from '../graph-manager/CubeDataProduct.js';
 import { getSchemaChangeList } from './LegendCubeLabels.js';
 
@@ -35,6 +35,18 @@ export const CUBE_INGEST_RECHECK_MESSAGE = {
 /** What a source of a data set's batch metadata, `#I{…|metadata}#`, reads, as its panel says */
 export const CUBE_INGEST_METADATA_READS_LABEL =
   'Its batch metadata: a row per batch the data set was sent in';
+
+/** What a source with each qualifier reads of its data set, as its panel says; its rows when it has none */
+export const CUBE_INGEST_QUALIFIER_READS_LABEL: Readonly<
+  Record<IngestDatasetQualifier, string>
+> = {
+  [IngestDatasetQualifier.METADATA]: CUBE_INGEST_METADATA_READS_LABEL,
+  [IngestDatasetQualifier.INCOMING]:
+    'Its incoming rows: those an incremental materialized view has not read yet, as they were appended',
+  [IngestDatasetQualifier.MILESTONED]: 'Its milestoned rows',
+  [IngestDatasetQualifier.INCOMING_MILESTONED]:
+    'Its incoming rows: those an incremental materialized view has not read yet, as milestoned',
+};
 
 /** The Ingest tab's choice of what to read of the data sets picked: their rows or their batch metadata */
 export const CUBE_INGEST_READ_LABEL = {

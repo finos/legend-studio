@@ -39,7 +39,7 @@ import {
   type LiteralValue,
   type RelationTypeColumn,
 } from '@finos/legend-cube';
-import { V1_IngestAccessorQualifier } from '@finos/legend-graph';
+import { isString } from '@finos/legend-shared';
 
 // V1 protocol lambda JSON → Cube IR (Import Pure, PLAN §11.18): the inverse
 // of `V1_serializeCubeLambda`, tolerant of the shapes the engine's grammar
@@ -57,7 +57,9 @@ export const V1_CUBE_LAMBDA_READER_MESSAGE = {
   ACCESSOR_PATH: (type: string): string =>
     `The accessor #${type}{…}# doesn't name what it reads.`,
   INGEST_QUALIFIER: (qualifier: string): string =>
-    `Cube reads an ingest data set's rows, #I{…}#, and its batch metadata, #I{…|metadata}#, not #I{…|${qualifier}}#.`,
+    `Cube reads an ingest data set's rows, #I{…}#, or with one of the qualifiers ${Object.values(
+      IngestDatasetQualifier,
+    ).join(', ')}, not #I{…|${qualifier}}#.`,
   DATA_PRODUCT_PARAMETERS:
     "Cube reads a data product's access points without parameters.",
   LET_NAME: 'A let must name what it binds.',
@@ -287,8 +289,8 @@ const accessorPath = (value: unknown, type: string): string[] => {
 /**
  * What an ingest accessor reads of its data set other than its rows, as
  * legend-graph reads it: its `accessorQualifier`, else, in JSON written
- * before there was one, its `metadata` flag. A qualifier Cube can't type,
- * e.g. `incoming`, is refused, so that saving the query never drops it.
+ * before there was one, its `metadata` flag. A qualifier Cube doesn't know is
+ * refused, so that saving the query never drops it.
  */
 const readIngestQualifier = (
   value: unknown,
@@ -296,19 +298,22 @@ const readIngestQualifier = (
   const json = isObject(value) ? value : {};
   const qualifier =
     json.accessorQualifier ??
-    (json.metadata === true ? V1_IngestAccessorQualifier.METADATA : undefined);
+    (json.metadata === true ? IngestDatasetQualifier.METADATA : undefined);
   if (qualifier === undefined) {
     return undefined;
   }
-  if (qualifier === V1_IngestAccessorQualifier.METADATA) {
-    return IngestDatasetQualifier.METADATA;
-  }
-  throw new CubeLambdaReadError(
-    CubeLambdaReadErrorKind.SOURCE,
-    V1_CUBE_LAMBDA_READER_MESSAGE.INGEST_QUALIFIER(
-      typeof qualifier === 'string' ? qualifier : JSON.stringify(qualifier),
-    ),
+  const known = Object.values(IngestDatasetQualifier).find(
+    (each) => each === qualifier,
   );
+  if (known === undefined) {
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      V1_CUBE_LAMBDA_READER_MESSAGE.INGEST_QUALIFIER(
+        isString(qualifier) ? qualifier : JSON.stringify(qualifier),
+      ),
+    );
+  }
+  return known;
 };
 
 /** A `classInstance`: a column, a column list, or an accessor */

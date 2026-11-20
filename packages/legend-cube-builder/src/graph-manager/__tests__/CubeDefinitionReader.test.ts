@@ -463,24 +463,145 @@ describe("Reading a definition of a data set's batch metadata", () => {
     );
   });
 
-  test("Refuses a qualifier Cube can't type, saying which, as a source", () => {
-    const reading = readCubeDefinition(
-      queryOf({
-        _type: 'classInstance',
-        type: 'I',
-        value: {
-          metadata: false,
-          accessorQualifier: 'incoming',
-          path: [INGEST_DEFINITION, 'EOD_POSITIONS'],
-        },
+  /** `#I{…EOD_POSITIONS|<qualifier>}#`, as legend-graph writes it */
+  const withQualifier = (qualifier: string): unknown =>
+    queryOf({
+      _type: 'classInstance',
+      type: 'I',
+      value: {
+        metadata: false,
+        accessorQualifier: qualifier,
+        path: [INGEST_DEFINITION, 'EOD_POSITIONS'],
+      },
+    });
+
+  /** The columns of the one source a definition reads, by what the host's definition says of it */
+  const columnsRead = (
+    lambda: unknown,
+    host: typeof withIngestDefinition = withIngestDefinition,
+  ): { qualifier: unknown; names: string[] } => {
+    const flow = asFlow(readCubeDefinition(lambda, host));
+    const source = flow.query.getNode(
+      flow.steps[0]?.id ?? '',
+    ) as IngestDatasetSource;
+    return {
+      qualifier: source.qualifier,
+      names: [
+        ...(buildSchemasAndValidity(flow.query)
+          .schemas.get(source.id)
+          ?.names() ?? []),
+      ],
+    };
+  };
+
+  /** The definition with a write mode, and EOD_POSITIONS with its preprocessors */
+  const withWriteMode = (
+    writeMode: string,
+    preprocessors: string[] = [],
+  ): typeof withIngestDefinition => {
+    const content = JSON.parse(
+      JSON.stringify(DEFINITIONS.ingestDefinitionContent),
+    ) as { writeMode?: unknown; datasets: PlainObject[] };
+    content.writeMode = { _type: writeMode };
+    content.datasets
+      .filter((each) => each.name === 'EOD_POSITIONS')
+      .forEach((each) => {
+        each.preprocessors = preprocessors.map((_type) => ({ _type }));
+      });
+    return {
+      getIngestDefinition: (path: string): PlainObject | undefined =>
+        path === INGEST_DEFINITION ? (content as PlainObject) : undefined,
+    };
+  };
+
+  test.each([
+    IngestDatasetQualifier.MILESTONED,
+    IngestDatasetQualifier.INCOMING_MILESTONED,
+  ])(
+    "Reads a data set's %s rows as a source typed as its rows are, as the engine types them",
+    (qualifier) => {
+      const rows = columnsRead(queryOf(EOD_POSITIONS));
+      expect(rows.qualifier).toBeUndefined();
+      expect(columnsRead(withQualifier(qualifier))).toEqual({
+        qualifier,
+        names: rows.names,
+      });
+      // batch-milestoned, as the engine types the rows
+      const milestoned = withWriteMode('batch_milestoned');
+      expect(columnsRead(withQualifier(qualifier), milestoned).names).toEqual(
+        columnsRead(queryOf(EOD_POSITIONS), milestoned).names,
+      );
+    },
+  );
+
+  test("Reads a data set's incoming rows as a source typed by its append log, whatever its write mode", () => {
+    const rows = columnsRead(queryOf(EOD_POSITIONS)).names;
+    const incoming = withQualifier(IngestDatasetQualifier.INCOMING);
+    // no write mode, and append only: the batch and when it was appended
+    [withIngestDefinition, withWriteMode('append_only')].forEach((host) =>
+      expect(columnsRead(incoming, host)).toEqual({
+        qualifier: IngestDatasetQualifier.INCOMING,
+        names: [...rows, 'LAKE_BATCH_ID', 'LAKE_APPEND_TIME'],
       }),
-      withIngestDefinition,
     );
-    expect(reading).toEqual({
+    // batch milestoned: its digest first, but not its batches in and out,
+    // which its milestoned rows have
+    expect(
+      columnsRead(incoming, withWriteMode('batch_milestoned')).names,
+    ).toEqual([...rows, 'LAKE_DIGEST', 'LAKE_BATCH_ID', 'LAKE_APPEND_TIME']);
+    expect(
+      columnsRead(incoming, withWriteMode('batch_milestoned_business_temporal'))
+        .names,
+    ).toEqual([...rows, 'LAKE_DIGEST', 'LAKE_BATCH_ID', 'LAKE_APPEND_TIME']);
+    // no digest when it overwrites on snapshot
+    expect(
+      columnsRead(
+        incoming,
+        withWriteMode('batch_milestoned', ['OverwriteOnSnapshot']),
+      ).names,
+    ).toEqual([...rows, 'LAKE_BATCH_ID', 'LAKE_APPEND_TIME']);
+    // the times it is in the lake from and until, when it keeps them
+    expect(
+      columnsRead(
+        incoming,
+        withWriteMode('append_only', ['IncludeInZOutZTimestamp']),
+      ).names,
+    ).toEqual([
+      ...rows,
+      'LAKE_BATCH_ID',
+      'LAKE_APPEND_TIME',
+      'LAKE_IN_Z',
+      'LAKE_OUT_Z',
+    ]);
+  });
+
+  test("Needs a definition for every qualifier but a data set's batch metadata", () => {
+    [
+      undefined,
+      ...Object.values(IngestDatasetQualifier).filter(
+        (each) => each !== IngestDatasetQualifier.METADATA,
+      ),
+    ].forEach((qualifier) =>
+      expect(
+        findCubeDefinitionIngestDefinitions(
+          qualifier === undefined
+            ? queryOf(EOD_POSITIONS)
+            : withQualifier(qualifier),
+        ),
+      ).toEqual([INGEST_DEFINITION]),
+    );
+    expect(
+      findCubeDefinitionIngestDefinitions(queryOf(EOD_POSITIONS_METADATA)),
+    ).toEqual([]);
+  });
+
+  test("Refuses a qualifier Cube doesn't know, saying which, as a source", () => {
+    expect(
+      readCubeDefinition(withQualifier('sideways'), withIngestDefinition),
+    ).toEqual({
       kind: 'refused',
       reason: CubeLambdaReadErrorKind.SOURCE,
-      message:
-        "Cube reads an ingest data set's rows, #I{…}#, and its batch metadata, #I{…|metadata}#, not #I{…|incoming}#.",
+      message: expect.stringContaining('not #I{…|sideways}#'),
     });
   });
 });
