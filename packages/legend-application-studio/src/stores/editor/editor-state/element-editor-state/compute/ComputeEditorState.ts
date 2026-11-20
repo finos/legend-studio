@@ -19,6 +19,7 @@ import { guaranteeType } from '@finos/legend-shared';
 import {
   Compute,
   type PackageableElement,
+  SinglestoreComputeSpecification,
   SnowflakeComputeSpecification,
 } from '@finos/legend-graph';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -48,6 +49,7 @@ export class ComputeEditorState extends ElementEditorState {
     makeObservable(this, {
       compute: computed,
       snowflakeSpecification: computed,
+      singlestoreSpecification: computed,
       applyFieldEdit: action,
     });
   }
@@ -64,6 +66,12 @@ export class ComputeEditorState extends ElementEditorState {
   get snowflakeSpecification(): SnowflakeComputeSpecification | undefined {
     const spec = this.compute.specification;
     return spec instanceof SnowflakeComputeSpecification ? spec : undefined;
+  }
+
+  /** `undefined` unless the compute is a SingleStore compute. */
+  get singlestoreSpecification(): SinglestoreComputeSpecification | undefined {
+    const spec = this.compute.specification;
+    return spec instanceof SinglestoreComputeSpecification ? spec : undefined;
   }
 
   applyFieldEdit = (mutate: () => void): void => {
