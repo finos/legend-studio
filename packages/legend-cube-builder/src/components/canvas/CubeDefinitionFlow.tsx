@@ -38,10 +38,14 @@ import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   countCubeDefinitionCallSteps,
   getCubeDefinitionCallsFoldedAtFirst,
+  getCubeDefinitionSqlFoldedAtFirst,
   type CubeDefinitionFlowReading,
   type CubeDefinitionFunctionContainer,
   type CubeDefinitionScalarFunction,
+  type CubeDefinitionSqlIsland,
+  type CubeDefinitionSqlStep,
 } from '../../graph-manager/CubeDefinitionReader.js';
+import { CubeSqlStepKind } from '../../graph-manager/CubeSqlStructure.js';
 import {
   buildCubeCanvasContainerNodes,
   buildCubeCanvasEdges,
@@ -71,6 +75,19 @@ import {
   describeCubeDefinitionCall,
   printCubeDefinitionCall,
 } from './CubeDefinitionFlowFunctions.js';
+import {
+  CUBE_DEFINITION_SQL_BOX_TYPE,
+  CUBE_DEFINITION_SQL_FRAME_TYPE,
+  CubeDefinitionSqlBadge,
+  CubeDefinitionSqlBox,
+  CubeDefinitionSqlFrame,
+  type CubeDefinitionSqlNode,
+  describeCubeDefinitionSql,
+  describeCubeDefinitionSqlStep,
+  getCubeDefinitionSqlNames,
+  getCubeDefinitionSqlStepLabel,
+  printCubeDefinitionSql,
+} from './CubeDefinitionFlowSql.js';
 import {
   CubeCanvasInputHandles,
   CubeCanvasNodeLabel,
@@ -105,6 +122,14 @@ type CubeDefinitionStepData = {
   readonly readsParameters: boolean;
   /** The call of a user-defined function it is, drawn as one box */
   readonly closedCall?: CubeDefinitionFunctionContainer | undefined;
+  /** The SQL, `#SQL{…}#`, it is, drawn as one box */
+  readonly sqlIsland?: CubeDefinitionSqlIsland | undefined;
+  /** The SQL it is a step of, for SQL drawn as steps */
+  readonly sqlOf?: CubeDefinitionSqlIsland | undefined;
+  /** Whether it is a clause of SQL, as the SQL says it, which Cube doesn't check */
+  readonly isSqlClause?: boolean | undefined;
+  /** Whether a click on it shows its SQL */
+  readonly showsSql?: boolean | undefined;
   /** The user-defined functions its expressions call */
   readonly scalarFunctions?:
     | readonly CubeDefinitionScalarFunction[]
@@ -125,7 +150,8 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
 ) => {
   const { node, icon, title, detail, tooltip, isOutput } = props.data;
   const { isSelected, isSelectable, readsParameters } = props.data;
-  const { closedCall, scalarFunctions } = props.data;
+  const { closedCall, sqlIsland, showsSql, scalarFunctions } = props.data;
+  const { isSqlClause } = props.data;
   return (
     <>
       <CubeCanvasInputHandles node={node} connectable={false} />
@@ -144,7 +170,8 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
             'legend-cube__node relative flex h-full w-full items-center gap-2 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
             {
               'legend-cube__node--function border-dashed': closedCall,
-              'cursor-pointer': isSelectable,
+              'legend-cube__node--sql border-dashed': sqlIsland ?? isSqlClause,
+              'cursor-pointer': isSelectable || showsSql,
               'legend-cube__node--selected ring-2 ring-[var(--color-accent)]':
                 isSelected,
             },
@@ -153,14 +180,26 @@ const CubeDefinitionStep: React.FC<NodeProps<CubeDefinitionStepNode>> = (
           aria-current={isSelected}
           data-testid={LEGEND_CUBE_TEST_ID.CANVAS_NODE}
         >
-          {closedCall ? (
+          {(closedCall ?? sqlIsland) ? (
             <>
-              <FunctionIcon
-                className="shrink-0 text-lg text-[var(--color-text-secondary)]"
-                aria-hidden={true}
-              />
+              {closedCall ? (
+                <FunctionIcon
+                  className="shrink-0 text-lg text-[var(--color-text-secondary)]"
+                  aria-hidden={true}
+                />
+              ) : (
+                <CubeDefinitionSqlBadge />
+              )}
               <span className="flex min-w-0 flex-col leading-tight">
-                <span className="truncate font-mono font-medium">{title}</span>
+                <span
+                  className={clsx('font-mono font-medium', {
+                    truncate: closedCall,
+                    // SQL: its first words, on two lines
+                    'line-clamp-2 break-words text-sm': !closedCall,
+                  })}
+                >
+                  {title}
+                </span>
                 <span className="truncate text-sm text-[var(--color-text-muted)]">
                   {detail}
                 </span>
@@ -196,6 +235,8 @@ const NODE_TYPES = {
   [CUBE_DEFINITION_PARAMETER_TYPE]: CubeDefinitionParameterBox,
   [CUBE_DEFINITION_FUNCTION_FRAME_TYPE]: CubeDefinitionFunctionFrame,
   [CUBE_DEFINITION_FUNCTION_BOX_TYPE]: CubeDefinitionFunctionBox,
+  [CUBE_DEFINITION_SQL_FRAME_TYPE]: CubeDefinitionSqlFrame,
+  [CUBE_DEFINITION_SQL_BOX_TYPE]: CubeDefinitionSqlBox,
 };
 const EDGE_TYPES = { [CUBE_CANVAS_EDGE_TYPE]: CubeCanvasEdge };
 const PRO_OPTIONS = { hideAttribution: true };
@@ -205,6 +246,25 @@ const describeStep = (node: QueryNode): string =>
   node instanceof IngestDatasetSource
     ? node.describeDataSet()
     : node.describe();
+
+/** The SQL drawn as steps that a step is a step of, with its step of it */
+const findSqlStep = (
+  islands: readonly CubeDefinitionSqlIsland[],
+  stepId: string,
+):
+  | {
+      readonly island: CubeDefinitionSqlIsland;
+      readonly step: CubeDefinitionSqlStep;
+    }
+  | undefined => {
+  for (const island of islands) {
+    const step = island.steps?.find((each) => each.stepId === stepId);
+    if (step) {
+      return { island, step };
+    }
+  }
+  return undefined;
+};
 
 export interface CubeDefinitionFlowProps {
   /** The definition's steps, as `readCubeDefinition` read them */
@@ -226,8 +286,15 @@ export interface CubeDefinitionFlowProps {
     | ((call: CubeDefinitionFunctionContainer) => void)
     | undefined;
   /**
-   * The calls folded to one box when the flow opens; by default, those
-   * holding more than `CUBE_DEFINITION_CALL_OPEN_STEPS` steps
+   * Shows the SQL of an island, `#SQL{…}#`: when its box is clicked, or,
+   * for SQL drawn as steps, one of its clauses or its container's button
+   */
+  readonly onShowSql?: ((island: CubeDefinitionSqlIsland) => void) | undefined;
+  /**
+   * The calls, and the SQL drawn as steps, folded to one box when the flow
+   * opens, by id; by default, the calls holding more than
+   * `CUBE_DEFINITION_CALL_OPEN_STEPS` steps and the SQL of more than
+   * `CUBE_DEFINITION_SQL_OPEN_STEPS`
    */
   readonly initiallyFolded?: readonly string[] | undefined;
 }
@@ -235,14 +302,20 @@ export interface CubeDefinitionFlowProps {
 const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
   const { flow, selectedStepId, onSelectStep, colorMode, onShowFunction } =
     props;
+  const { onShowSql } = props;
   const { query } = flow;
   const registry = useMemo(() => createNodeRegistry(), []);
   // each opened call a container; folding is the viewer's own
   const [folded, setFolded] = useState<ReadonlySet<string>>(
     () =>
       new Set(
-        props.initiallyFolded ??
-          getCubeDefinitionCallsFoldedAtFirst(flow.functionCalls),
+        props.initiallyFolded ?? [
+          ...getCubeDefinitionCallsFoldedAtFirst(
+            flow.functionCalls,
+            flow.sqlIslands,
+          ),
+          ...getCubeDefinitionSqlFoldedAtFirst(flow.sqlIslands),
+        ],
       ),
   );
   const toggle = (callId: string): void =>
@@ -254,9 +327,10 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
       return next;
     });
   const calls = flow.functionCalls;
+  const { sqlIslands } = flow;
   const containers = useMemo(
-    (): StepContainer[] =>
-      calls
+    (): StepContainer[] => [
+      ...calls
         .filter((call) => call.opened)
         .map((call) => ({
           id: call.id,
@@ -265,7 +339,24 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
           folded: folded.has(call.id),
           ...(call.parentId !== undefined ? { parentId: call.parentId } : {}),
         })),
-    [calls, folded],
+      // SQL drawn as steps: a container of them
+      ...sqlIslands.flatMap((island) =>
+        island.steps
+          ? [
+              {
+                id: island.id,
+                title: CUBE_DEFINITION_FLOW_LABEL.SQL,
+                steps: island.steps.map((step) => step.stepId),
+                folded: folded.has(island.id),
+                ...(island.parentId !== undefined
+                  ? { parentId: island.parentId }
+                  : {}),
+              },
+            ]
+          : [],
+      ),
+    ],
+    [calls, sqlIslands, folded],
   );
   const layout = useMemo(
     () => layoutCubeCanvas(query, containers),
@@ -274,7 +365,7 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
   const { positions, lanes } = layout;
   /** How many steps each call holds, the calls in it included */
   const countOf = (callId: string): number =>
-    countCubeDefinitionCallSteps(calls, callId);
+    countCubeDefinitionCallSteps(calls, callId, sqlIslands);
   const isSelectable = onSelectStep !== undefined;
   const steps = useMemo(
     (): CubeDefinitionStepNode[] =>
@@ -285,15 +376,42 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
           (call) => !call.opened && call.stepIds.includes(node.id),
         );
         const closed = closedCall ? describeClosedCall(closedCall) : undefined;
+        // SQL as one box; or a step of SQL drawn as steps
+        const sqlIsland = sqlIslands.find(
+          (island) => !island.steps && island.stepId === node.id,
+        );
+        const sqlNames = sqlIsland ? getCubeDefinitionSqlNames(sqlIsland) : [];
+        const sqlStep = findSqlStep(sqlIslands, node.id);
+        // a data set is a step as any other; a clause is as the SQL says it
+        const sqlClause =
+          sqlStep && sqlStep.step.kind !== CubeSqlStepKind.DATA_SET
+            ? getCubeDefinitionSqlStepLabel(sqlStep.step)
+            : undefined;
         const scalarFunctions = flow.scalarFunctions.get(node.id);
         const label = closedCall
           ? {
               title: printCubeDefinitionCall(closedCall),
               detail: closed?.line,
             }
-          : getCubeCanvasNodeLabel(node, definition?.label, {
-              namesUnresolvedSources: true,
-            });
+          : sqlIsland
+            ? {
+                title: printCubeDefinitionSql(sqlIsland),
+                detail: sqlNames.length
+                  ? CUBE_DEFINITION_FLOW_LABEL.SQL_NAMES(sqlNames)
+                  : CUBE_DEFINITION_FLOW_LABEL.SQL_COLUMNS_UNKNOWN,
+              }
+            : (sqlClause ??
+              getCubeCanvasNodeLabel(node, definition?.label, {
+                namesUnresolvedSources: true,
+              }));
+        // a data set of SQL: the name its clauses call it by, before its definition's
+        const alias = sqlClause ? undefined : sqlStep?.step.alias;
+        const detail =
+          alias === undefined
+            ? label.detail
+            : [CUBE_DEFINITION_FLOW_LABEL.SQL_AS(alias), label.detail]
+                .filter((each) => each !== undefined)
+                .join(' · ');
         const isUnknown =
           node instanceof IngestDatasetSource &&
           node.resolution.kind !== 'resolved';
@@ -311,15 +429,44 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
           type: CUBE_DEFINITION_STEP_TYPE,
           data: {
             node,
-            icon: definition?.icon,
+            icon: sqlClause ? sqlClause.icon : definition?.icon,
             title: label.title,
-            detail: label.detail,
+            detail,
             ...(closedCall ? { closedCall } : {}),
+            ...(sqlIsland
+              ? { sqlIsland, showsSql: onShowSql !== undefined }
+              : {}),
+            ...(sqlStep
+              ? {
+                  sqlOf: sqlStep.island,
+                  isSqlClause: sqlClause !== undefined,
+                  showsSql: onShowSql !== undefined,
+                }
+              : {}),
             ...(scalarFunctions ? { scalarFunctions } : {}),
             tooltip: [
               ...(closedCall
                 ? [describeCubeDefinitionCall(closedCall), closed?.why ?? '']
-                : [describeStep(node)]),
+                : sqlIsland
+                  ? describeCubeDefinitionSql(
+                      sqlIsland,
+                      onShowSql !== undefined,
+                    )
+                  : sqlStep && sqlClause
+                    ? describeCubeDefinitionSqlStep(
+                        sqlStep.step,
+                        onShowSql !== undefined,
+                      )
+                    : [
+                        describeStep(node),
+                        ...(sqlStep?.step.alias === undefined
+                          ? []
+                          : [
+                              CUBE_DEFINITION_FLOW_LABEL.SQL_ALIAS(
+                                sqlStep.step.alias,
+                              ),
+                            ]),
+                      ]),
               ...(scalarFunctions
                 ? scalarFunctions.map((each) =>
                     CUBE_DEFINITION_FLOW_LABEL.CALLS_FUNCTION(
@@ -343,40 +490,66 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
           },
         };
       }),
-    [query, positions, registry, flow, calls, selectedStepId, isSelectable],
+    [
+      query,
+      positions,
+      registry,
+      flow,
+      calls,
+      sqlIslands,
+      selectedStepId,
+      isSelectable,
+      onShowSql,
+    ],
   );
   const functionNodes = useMemo(
-    (): CubeDefinitionFunctionNode[] =>
-      buildCubeCanvasContainerNodes(layout.containers).flatMap((flowNode) => {
-        const call = calls.find(
-          (each) => each.id === flowNode.data.place.container.id,
-        );
-        return call
-          ? [
+    (): (CubeDefinitionFunctionNode | CubeDefinitionSqlNode)[] =>
+      buildCubeCanvasContainerNodes(layout.containers).flatMap(
+        (flowNode): (CubeDefinitionFunctionNode | CubeDefinitionSqlNode)[] => {
+          const { place } = flowNode.data;
+          const island = sqlIslands.find(
+            (each) => each.steps && each.id === place.container.id,
+          );
+          if (island) {
+            return [
               {
                 ...flowNode,
-                type: flowNode.data.place.container.folded
-                  ? CUBE_DEFINITION_FUNCTION_BOX_TYPE
-                  : CUBE_DEFINITION_FUNCTION_FRAME_TYPE,
-                data: {
-                  place: flowNode.data.place,
-                  call,
-                  stepCount: countOf(call.id),
-                  onToggle: toggle,
-                  onShowFunction,
-                },
+                type: place.container.folded
+                  ? CUBE_DEFINITION_SQL_BOX_TYPE
+                  : CUBE_DEFINITION_SQL_FRAME_TYPE,
+                data: { place, island, onToggle: toggle, onShowSql },
               },
-            ]
-          : [];
-      }),
+            ];
+          }
+          const call = calls.find((each) => each.id === place.container.id);
+          return call
+            ? [
+                {
+                  ...flowNode,
+                  type: flowNode.data.place.container.folded
+                    ? CUBE_DEFINITION_FUNCTION_BOX_TYPE
+                    : CUBE_DEFINITION_FUNCTION_FRAME_TYPE,
+                  data: {
+                    place: flowNode.data.place,
+                    call,
+                    stepCount: countOf(call.id),
+                    onToggle: toggle,
+                    onShowFunction,
+                  },
+                },
+              ]
+            : [];
+        },
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [layout, calls, onShowFunction],
+    [layout, calls, sqlIslands, onShowFunction, onShowSql],
   );
   const nodes = useMemo(
     (): (
       | CubeDefinitionStepNode
       | CubeDefinitionParameterNode
       | CubeDefinitionFunctionNode
+      | CubeDefinitionSqlNode
     )[] => [
       // frames first, behind the steps
       ...functionNodes,
@@ -405,7 +578,8 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
     <ReactFlow<
       | CubeDefinitionStepNode
       | CubeDefinitionParameterNode
-      | CubeDefinitionFunctionNode,
+      | CubeDefinitionFunctionNode
+      | CubeDefinitionSqlNode,
       CubeCanvasFlowEdge | Edge
     >
       nodes={nodes}
@@ -429,11 +603,17 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
           if (flowNode.data.closedCall && onShowFunction) {
             onShowFunction(flowNode.data.closedCall);
           }
+          // SQL: its text, which the box cuts; a step of SQL shows all of it
+          const island = flowNode.data.sqlIsland ?? flowNode.data.sqlOf;
+          if (island && onShowSql) {
+            onShowSql(island);
+          }
           onSelectStep?.(flowNode.id);
         }
       }}
       // React Flow's own keyboard help speaks of moving nodes, which the flow
-      // doesn't do; Enter and Space pick the focused step instead
+      // doesn't do; Enter and Space pick the focused step instead, or show
+      // its SQL
       disableKeyboardA11y={true}
       edgesFocusable={false}
       onKeyDown={(event) => {
@@ -444,14 +624,25 @@ const CubeDefinitionFlowCanvas: React.FC<CubeDefinitionFlowProps> = (props) => {
             ? target.dataset.id
             : undefined;
         if (
-          stepId !== undefined &&
-          query.getNode(stepId) !== undefined &&
-          onSelectStep &&
-          (event.key === 'Enter' || event.key === ' ')
+          stepId === undefined ||
+          query.getNode(stepId) === undefined ||
+          (event.key !== 'Enter' && event.key !== ' ')
         ) {
-          event.preventDefault();
-          onSelectStep(stepId);
+          return;
         }
+        // as a click does: a step that is SQL shows its SQL
+        const island = onShowSql
+          ? (sqlIslands.find((each) => !each.steps && each.stepId === stepId) ??
+            findSqlStep(sqlIslands, stepId)?.island)
+          : undefined;
+        if (!onSelectStep && !island) {
+          return;
+        }
+        event.preventDefault();
+        if (island) {
+          onShowSql?.(island);
+        }
+        onSelectStep?.(stepId);
       }}
       colorMode={colorMode ?? 'light'}
       // its arrowheads in its edges' colour (`--xy-edge-stroke`, Cube's stylesheet)

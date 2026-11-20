@@ -83,12 +83,16 @@ describe('The definition flow entry', () => {
       'components/canvas/CubeDefinitionFlow.tsx',
       'components/canvas/CubeDefinitionFlowFunctions.tsx',
       'components/canvas/CubeDefinitionFlowParameters.tsx',
+      // SQL drawn as the steps of its SQL
+      'components/canvas/CubeDefinitionFlowSql.tsx',
       'definition-flow.ts',
       'graph-manager/CubeDataProduct.ts',
       'graph-manager/CubeDefinitionFunctions.ts',
       'graph-manager/CubeDefinitionReader.ts',
       'graph-manager/CubeIngest.ts',
       'graph-manager/CubeIngestCatalog.ts',
+      // the steps of an island's SQL
+      'graph-manager/CubeSqlStructure.ts',
       'graph-manager/protocol/pure/CubeProtocolJson.ts',
       'graph-manager/protocol/pure/v1/V1_CubeExpression.ts',
       'graph-manager/protocol/pure/v1/V1_CubeFunctionDefinition.ts',
@@ -97,6 +101,10 @@ describe('The definition flow entry', () => {
       'graph-manager/protocol/pure/v1/V1_CubeLambdaSerializer.ts',
       // the columns a user-defined function declares (PLAN §11.33)
       'graph-manager/protocol/pure/v1/V1_CubeRelationTypeAdapter.ts',
+      // what the SQL of an island, `#SQL{…}#`, names in its text
+      'graph-manager/protocol/pure/v1/V1_CubeSqlIsland.ts',
+      // its steps, read from the engine's tree of it
+      'graph-manager/protocol/pure/v1/V1_CubeSqlTree.ts',
     ]);
   });
 

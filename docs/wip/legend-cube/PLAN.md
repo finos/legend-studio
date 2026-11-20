@@ -1245,6 +1245,10 @@ service is read is still to be written (user, 2026-10-12).
     invalid with "Cube can't read services yet", and nothing runs;
   - its parameters, which SQL passes by name (`service('/pattern', name => 'value')`);
   - what it runs on: the service's own execution, or a runtime the cube picks.
+  - **Checked 2026-11-19 (§11.34):** the open-source island refuses `service()` ("No function matches the given name
+    "service""). Its sources are `tb()`, `func()`, `var()` and `csv()`, plus what an engine build adds. The
+    `service('/…')` of `testTranspile.pure` is the SQL REST API's. So this route needs an engine that adds a
+    `service()` source to the island, or the REST API.
 - **The earlier outline** (copying the service's lambda, converting TDS with
   `POST /api/pure/v1/compilation/autofix/transformTdsToRelation/lambda` ✅, binding parameters with `let`, and
   saving `{gav, servicePath, executionKey?, parameterValues}` with a hash) is set aside for the SQL route.
@@ -1819,7 +1823,8 @@ start of M1.8b.
 | Generating from a DAG         | One function call per node, as structured JSON  | Text emitter, quoting, aliasing                                                                                                        |
 | Precedent                     | Legend Data Cube                                | Studio SQL playgrounds only                                                                                                            |
 
-Legend SQL stays useful as a future optional "SQL source" leaf node.
+Legend SQL stays useful as a future optional "SQL source" leaf node. §11.34 plans it: one step holding an
+island's SQL.
 
 ### 8.2 Pipeline
 
@@ -6136,6 +6141,64 @@ change the function itself); a call holding more than 5 steps starts folded.
 **Also settled (2026-11-14):** no request for functions in the data product artifact for now; the two bugs found are
 fixed first, as finos/legend-studio#5908 (Cube's Function source picker) and #5909 (legend-graph's lookup behind the
 ingest Overview).
+
+### 11.34 `#SQL{…}#` in the definition flow (research, 2026-11-19)
+
+**Ask:** the user, on 2026-11-19: research how to show queries written with the engine's SQL island,
+`#SQL{select … from …}#`, in the flow, and add it to the plan. Research and a plan only. The guide is
+`SQL-ISLANDS.md`. Evidence: `../legend-studio-cube-functions-evidence/sql-island/`.
+
+**Findings:**
+
+- Today one island anywhere refuses the whole flow, as `source`: the reader has no case for the `SQL` class
+  instance. Import Pure refuses it the same way.
+- To compile an island the engine translates its SQL to a relation function, the Pure Cube reads: `where` is
+  `filter`, a CTE is a `let`, a `func()` source is a call, a `var()` source is the variable. That Pure is what runs.
+- No engine route returns it. `lambdaRelationType` returns the island's columns; `parseToMetamodel` the SQL's parse
+  tree; `/api/sql/v1/execution/lambda` serves the REST API's sources, not the island's.
+- Measured with the engine's own compiler on 47 queries: 43 translated, and Cube's reader, unchanged, draws 30 of
+  them. The other 13 use seven forms: `project`, `count(*)` in a `groupBy`, `union` and `unionAll`, `except`,
+  `slice(20, 20 + 10)`, a cross join, `#TDS{}`.
+- The open-source engine has no `i()`, `p()` or `service()` source for the island, so the measurement used tables.
+  §6.4's plan to read a service through the island depends on a source this engine doesn't have.
+
+**Recommended:**
+
+- Stage 1, no engine change: the island is one box holding its SQL, never a refusal. A click shows the SQL. The
+  steps after it are drawn unchecked, or checked where the host asks the engine for the box's columns.
+- Stage 2, after one small engine route that returns each island's translated Pure: the island opens as a container
+  (§11.33's frame), the SQL on top and the steps inside, a `func()` source nested as that function's container. What
+  Cube can't read stays a box.
+- Not a translation of the SQL in the browser: it would copy the engine's `sqlToPure` and drift from what runs.
+- In the editor, one step holding the SQL, written back word for word, its inside a locked drawing. It is also
+  §8.1's "SQL source" leaf and the node §6.4 needs.
+
+**Steps (SQL-ISLANDS.md §8, one PR each):**
+
+| Step | What                                                                                | Status  |
+| ---- | ----------------------------------------------------------------------------------- | ------- |
+| SQ1  | The box: the IR node, the reader, the dashed step, the SQL under the flow (#5943)   | 🚧      |
+| SQ1b | The SQL's clauses as steps, from the engine's tree of the SQL (#5948)               | 🚧      |
+| SQ2  | The typed box: a host asks the engine for its columns; Studio wires it              | ⏳      |
+| SQ3  | The engine's route returning an island's translated Pure (finos/legend-engine)      | on hold |
+| SQ4  | The container: the loader, the translation read in place, nesting, the fallback box | on hold |
+| SQ5  | The reading rules the translation needs: `project`, `count(*)`, unions, `except`…   | ⏳      |
+| SQ6  | The editor: the SQL step, Import Pure, the guide, a demo video                      | ⏳      |
+| SQ7  | Later: the translation in the artifact; display rules; counting islands             | ⏳      |
+
+**Settled with the user (2026-11-19):** two stages, the box first. SQ1 also fixes a bug found on the way: with a
+host's functions loaded, the ingest definition of a data set read inside a `let` wasn't found (in master since F2).
+
+**Settled with the user (2026-11-20):** draw the SQL's own structure, from the engine's parse of it, with the box
+as the fallback and no browser parser library (SQ1b, SQL-ISLANDS.md §7.1b). The user asked for "some kind of sql
+viewer on that box… instead of going to engine to get the pure and rerender". The engine's SQL grammar route,
+`sql/v1/grammar/grammarToJson`, returns the tree with no model. Cube draws the SQL's sources and its clauses as
+steps in a container, as written and unchecked. SQ3 and SQ4 go on hold: they are needed only for checked steps.
+
+**Open with the user (SQL-ISLANDS.md §9):** whether the deployed engines expose the SQL grammar route;
+two stages or wait for the engine; whether to draft the engine route;
+what real islands read (`i()`, `p()`), with two or three examples; SQL as text only in the editor, or a Convert to
+Steps action too.
 
 ## 12. G. Risks and open questions
 

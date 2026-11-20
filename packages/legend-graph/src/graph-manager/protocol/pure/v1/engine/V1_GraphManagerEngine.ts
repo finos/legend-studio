@@ -445,6 +445,9 @@ export interface V1_GraphManagerEngine {
     plugins: PureProtocolProcessorPlugin[],
   ) => Promise<string>;
 
+  /** The engine's tree of an SQL query, as its SQL grammar reads it, with no model */
+  transformSQLToJSON: (sql: string) => Promise<PlainObject>;
+
   // ------------------------------------------- Function -------------------------------------------
 
   getAvailableFunctionActivators: () => Promise<V1_FunctionActivatorInfo[]>;

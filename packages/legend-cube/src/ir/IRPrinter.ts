@@ -220,6 +220,8 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
       return `#P{${ir.path.join('.')}}#`;
     case 'ingestAccessor':
       return `#I{${ir.path.join('.')}${ir.qualifier === undefined ? '' : `|${ir.qualifier}`}}#`;
+    case 'sqlAccessor':
+      return `#SQL{${ir.sql}}#`;
     case 'elementPtr':
       return ir.path;
     case 'genericType':

@@ -93,6 +93,11 @@ export class DataProductAccessPointState {
         readonly error?: string | undefined;
       }
     | undefined;
+  /**
+   * The SQL of a step of the flow that is SQL, `#SQL{…}#`, which the
+   * Definition panel shows under the flow, in place of a function's Pure
+   */
+  shownSql: string | undefined;
 
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
@@ -114,6 +119,9 @@ export class DataProductAccessPointState {
       functionElements: false,
       showFunction: flow,
       hideFunction: action,
+      shownSql: observable,
+      showSql: action,
+      hideSql: action,
       isCollapsed: computed,
       entitlementsDataProductDetails: computed,
       unsupportedLakehouseComputeTarget: computed,
@@ -429,12 +437,23 @@ export class DataProductAccessPointState {
           );
         }
       }
+      // the engine's tree of the SQL it holds, `#SQL{…}#`, which Cube draws
+      // as steps; SQL with no tree is one box
+      const sqlTrees = (yield this.loadSqlTrees(
+        entry.findCubeDefinitionSql(lambda, { functions }),
+      )) as Map<string, PlainObject>;
+      const getSqlTree = (sql: string): PlainObject | undefined =>
+        sqlTrees.get(sql);
       const ingestDefinitions = (yield this.loadIngestDefinitions(
-        entry.findCubeDefinitionIngestDefinitions(lambda, { functions }),
+        entry.findCubeDefinitionIngestDefinitions(lambda, {
+          functions,
+          getSqlTree,
+        }),
       )) as Map<string, PlainObject>;
       const reading = entry.readCubeDefinition(lambda, {
         getIngestDefinition: (path) => ingestDefinitions.get(path),
         functions,
+        getSqlTree,
       });
       const telemetryService = this.apgState.applicationStore.telemetryService;
       if (reading.kind === 'flow') {
@@ -466,6 +485,9 @@ export class DataProductAccessPointState {
             }, {}),
             scalarFunctionSteps: reading.scalarFunctions.size,
             functionsUnloaded,
+            sqlSteps: reading.sqlIslands.length,
+            sqlOpened: reading.sqlIslands.filter((island) => island.steps)
+              .length,
           },
         );
       } else {
@@ -485,6 +507,36 @@ export class DataProductAccessPointState {
     } finally {
       this.readingDefinitionFlowState.complete();
     }
+  }
+
+  /**
+   * The engine's tree of each SQL, by the SQL, as its SQL parser reads it:
+   * one the engine fails to parse, or has no route for, is left out, and its
+   * SQL is drawn as one box
+   */
+  private async loadSqlTrees(
+    sqls: string[],
+  ): Promise<Map<string, PlainObject>> {
+    const trees = new Map<string, PlainObject>();
+    const client = this.apgState.dataProductViewerState.engineServerClient;
+    const loaded = await Promise.allSettled(
+      sqls.map((sql) => client.SQLToJSON(sql)),
+    );
+    loaded.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        trees.set(guaranteeNonNullable(sqls[index]), result.value);
+      } else {
+        this.apgState.applicationStore.logService.warn(
+          LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+          `Unable to parse the SQL of access point '${this.accessPoint.id}' for its flow: ${
+            result.reason instanceof Error
+              ? result.reason.message
+              : String(result.reason)
+          }`,
+        );
+      }
+    });
+    return trees;
   }
 
   /**
@@ -561,6 +613,7 @@ export class DataProductAccessPointState {
   }): GeneratorFn<void> {
     const { path } = call;
     const content = path ? this.functionElements.get(path) : undefined;
+    this.shownSql = undefined;
     this.shownFunction = { ...call, pure: undefined };
     if (!path || !content) {
       this.shownFunction = {
@@ -585,6 +638,19 @@ export class DataProductAccessPointState {
 
   hideFunction(): void {
     this.shownFunction = undefined;
+  }
+
+  /**
+   * Shows the SQL of a step that is SQL under the flow, as written: the
+   * flow's box shows only its first words
+   */
+  showSql(sql: string): void {
+    this.shownFunction = undefined;
+    this.shownSql = sql.trim();
+  }
+
+  hideSql(): void {
+    this.shownSql = undefined;
   }
 
   /** Forgets its definition's flow, to read it again */

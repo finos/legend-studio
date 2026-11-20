@@ -18,10 +18,13 @@ import {
   CubeLambdaReadError,
   CubeLambdaReadErrorKind,
   findCubeLambdaSources,
+  func,
   FunctionSource,
   getCubeRelationInputCount,
+  ingestAccessor,
   IngestDatasetQualifier,
   IngestDatasetSource,
+  isCubeRowsLet,
   printIR,
   readCubeQuery,
   resolveCubeType,
@@ -29,8 +32,10 @@ import {
   TypeFamily,
   UnknownNode,
   UNRESOLVED,
+  variable,
   type CubeCallStep,
   type CubeLambdaParts,
+  type CubeSourceRelation,
   type CubeSourceStep,
   type CubeType,
   type IR,
@@ -38,7 +43,10 @@ import {
   type Schema,
 } from '@finos/legend-cube';
 import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
-import { CUBE_DEFINITION_FLOW_MESSAGE } from '../__lib__/LegendCubeDefinitionFlowLabels.js';
+import {
+  CUBE_DEFINITION_FLOW_LABEL,
+  CUBE_DEFINITION_FLOW_MESSAGE,
+} from '../__lib__/LegendCubeDefinitionFlowLabels.js';
 import type { CubeIngestDataSet } from './CubeIngestCatalog.js';
 import {
   CUBE_DEFINITION_INPUT_STAND_IN,
@@ -46,6 +54,7 @@ import {
   getCubeCallRelationIndexes,
   findCubeIngestDefinitionsRead,
   findCubeScalarFunctionCalls,
+  findCubeSqlRead,
   isCubeUserFunctionName,
   type CubeDefinitionExpansion,
   type CubeDefinitionFunctionClosedReason,
@@ -54,12 +63,19 @@ import {
 } from './CubeDefinitionFunctions.js';
 import {
   CUBE_EXPRESSION_CODEC,
+  findCubeSqlSources,
   getCubeIngestMetadataSchema,
   readCubeIngestDataSets,
   readCubeLambdaJson,
   readCubeLambdaParameters,
+  readCubeSqlTree,
   type CubeLambdaParameterDeclaration,
 } from './protocol/pure/CubeProtocolJson.js';
+import {
+  CubeSqlStepKind,
+  listCubeSqlSteps,
+  type CubeSqlStep,
+} from './CubeSqlStructure.js';
 
 // A data product's access point definition, its lambda, read into steps to
 // be drawn read-only (`CubeDefinitionFlow`): in the browser, with no engine,
@@ -144,28 +160,37 @@ export interface CubeDefinitionFunctionContainer {
  */
 export const CUBE_DEFINITION_CALL_OPEN_STEPS = 5;
 
-/** How many steps an opened call holds, the steps of the calls in it included */
+/**
+ * How many steps an opened call holds, the steps of the calls in it
+ * included, and those of the SQL in it that is drawn as steps
+ */
 export const countCubeDefinitionCallSteps = (
   calls: readonly CubeDefinitionFunctionContainer[],
   callId: string,
+  sqlIslands: readonly CubeDefinitionSqlIsland[] = [],
 ): number =>
   (calls.find((call) => call.id === callId)?.stepIds.length ?? 0) +
+  sqlIslands
+    .filter((island) => island.parentId === callId)
+    .reduce((total, island) => total + (island.steps?.length ?? 0), 0) +
   calls
     .filter((call) => call.parentId === callId)
     .reduce(
-      (total, call) => total + countCubeDefinitionCallSteps(calls, call.id),
+      (total, call) =>
+        total + countCubeDefinitionCallSteps(calls, call.id, sqlIslands),
       0,
     );
 
 /** The opened calls that start folded: those holding more than `CUBE_DEFINITION_CALL_OPEN_STEPS` steps */
 export const getCubeDefinitionCallsFoldedAtFirst = (
   calls: readonly CubeDefinitionFunctionContainer[],
+  sqlIslands: readonly CubeDefinitionSqlIsland[] = [],
 ): string[] =>
   calls
     .filter(
       (call) =>
         call.opened &&
-        countCubeDefinitionCallSteps(calls, call.id) >
+        countCubeDefinitionCallSteps(calls, call.id, sqlIslands) >
           CUBE_DEFINITION_CALL_OPEN_STEPS,
     )
     .map((call) => call.id);
@@ -177,6 +202,76 @@ export interface CubeDefinitionScalarFunction {
   readonly signature: string;
   readonly origin: string | undefined;
 }
+
+/** A step of an island's SQL: a source it reads, or a clause, as the SQL writes it */
+export interface CubeDefinitionSqlStep {
+  readonly stepId: string;
+  readonly kind: CubeSqlStepKind;
+  /** What it says, as SQL: a Where's condition, a Select's columns, a join's `on …` */
+  readonly text: string;
+  /** What kind it is of its kind: a join's type, a set operation's words, a source's function */
+  readonly variant?: string | undefined;
+  /** The name the SQL after it calls a source by */
+  readonly alias?: string | undefined;
+  /** A Select's columns, by the names its rows give them */
+  readonly columns?: readonly string[] | undefined;
+}
+
+/**
+ * The engine's SQL island in a definition, `#SQL{select … from …}#`. With
+ * the engine's tree of its SQL, which the host gives (`getSqlTree`), a
+ * container of the steps its clauses are, as the SQL writes them: Cube checks
+ * none of them. Without it, or with SQL Cube has no steps for, one step, a
+ * box.
+ */
+export interface CubeDefinitionSqlIsland {
+  /** Its id: its container's, when its SQL is drawn as steps */
+  readonly id: string;
+  /** Its step: its box; drawn as steps, the last of them, whose rows it gives */
+  readonly stepId: string;
+  /** Its SQL, as written */
+  readonly sql: string;
+  /**
+   * The ingest data sets its SQL names, `i('definition.dataSet')`: what its
+   * text names, which may not be all it reads
+   */
+  readonly dataSets: readonly CubeDefinitionDataSet[];
+  /** The access points its SQL names, `p('dataProduct.accessPoint')` */
+  readonly accessPoints: readonly {
+    /** The data product's path */
+    readonly dataProduct: string;
+    /** The access point's id */
+    readonly accessPoint: string;
+  }[];
+  /**
+   * Its SQL as steps, each after the steps it reads: its sources, then its
+   * clauses in the order they run; `undefined` for an island drawn as one box
+   */
+  readonly steps?: readonly CubeDefinitionSqlStep[] | undefined;
+  /** The call of a user-defined function whose body it is in, when it is drawn as steps */
+  readonly parentId?: string | undefined;
+  /**
+   * What of its SQL Cube has no step for, in words, for an island the host
+   * gave the tree of that is one box all the same
+   */
+  readonly closedMessage?: string | undefined;
+}
+
+/**
+ * How many steps an island's SQL may be drawn as and still start open: SQL
+ * of more starts folded to one box, to keep a flow readable
+ */
+export const CUBE_DEFINITION_SQL_OPEN_STEPS = 12;
+
+/** The islands drawn as steps that start folded: those of more than `CUBE_DEFINITION_SQL_OPEN_STEPS` steps */
+export const getCubeDefinitionSqlFoldedAtFirst = (
+  islands: readonly CubeDefinitionSqlIsland[],
+): string[] =>
+  islands
+    .filter(
+      (island) => (island.steps?.length ?? 0) > CUBE_DEFINITION_SQL_OPEN_STEPS,
+    )
+    .map((island) => island.id);
 
 /** A definition Cube can draw */
 export interface CubeDefinitionFlowReading {
@@ -202,7 +297,27 @@ export interface CubeDefinitionFlowReading {
     string,
     readonly CubeDefinitionScalarFunction[]
   >;
+  /**
+   * Its SQL, `#SQL{…}#`, in the flow's order: each a container of its
+   * clauses' steps, or one box; its columns aren't known either way, so the
+   * steps after it are read unchecked
+   */
+  readonly sqlIslands: readonly CubeDefinitionSqlIsland[];
 }
+
+/**
+ * What a host says above a flow whose SQL, `#SQL{…}#`, has steps after it:
+ * that those steps aren't checked, as the SQL's columns aren't known;
+ * `undefined` for a flow with no SQL, or none with a step after it
+ */
+export const describeCubeDefinitionUncheckedSql = (
+  reading: CubeDefinitionFlowReading,
+): string | undefined => {
+  const count = reading.sqlIslands.filter(
+    (island) => island.stepId !== reading.outputStepId,
+  ).length;
+  return count ? CUBE_DEFINITION_FLOW_LABEL.SQL_UNCHECKED(count) : undefined;
+};
 
 /** A definition Cube can't draw, and why: a host shows its Pure instead */
 export interface CubeDefinitionRefusal {
@@ -236,6 +351,14 @@ export interface CubeDefinitionReadOptions {
    * (PLAN §11.33)
    */
   readonly functions?: CubeDefinitionFunctions | undefined;
+  /**
+   * The engine's tree of the SQL of an island the definition holds
+   * (`findCubeDefinitionSql`), as its SQL grammar gives it (`POST
+   * sql/v1/grammar/grammarToJson`): the island is drawn as a container
+   * of its clauses' steps; `undefined` for SQL the host has no tree of, drawn
+   * as one box
+   */
+  readonly getSqlTree?: ((sql: string) => unknown) | undefined;
 }
 
 const refusalOf = (error: CubeLambdaReadError): CubeDefinitionRefusal => ({
@@ -350,11 +473,106 @@ const bindClosedCall = (
       };
 };
 
+/** An island read as the steps of its SQL: each relation Cube reads in its place, with its step */
+interface SqlRead {
+  /** The island, as the lambda holds it */
+  readonly source: IR;
+  readonly sql: string;
+  readonly stepOf: ReadonlyMap<IR, CubeSqlStep>;
+}
+
+/** How the SQL of a definition's islands is read as steps, from the trees the host gave */
+interface SqlBinder {
+  /**
+   * The relation an island is read as: its sources, an ingest data set as
+   * any other, a let by its name, and one call per clause, each a step
+   * (`bindCall`); `undefined` for SQL the host gave no tree of, or Cube has
+   * no steps for
+   */
+  readonly relationOf: (
+    source: Extract<IR, { readonly k: 'sqlAccessor' }>,
+  ) => IR | undefined;
+  /** The step of a clause of an island's SQL, its inputs the steps it reads */
+  readonly bindCall: (
+    call: Extract<IR, { readonly k: 'func' }>,
+  ) => CubeCallStep | undefined;
+  /** The islands read as steps, each time one was read */
+  readonly reads: readonly SqlRead[];
+  /** What of an island's SQL Cube has no step for, by the SQL */
+  readonly refusals: ReadonlyMap<string, string>;
+}
+
+/** The function a clause of an island's SQL is, in the relation Cube reads in the island's place: no Pure's */
+const SQL_STEP_FUNCTION = '#SQL';
+
+const createSqlBinder = (
+  options: Pick<CubeDefinitionReadOptions, 'getSqlTree'>,
+  lets: ReadonlyMap<string, IR>,
+): SqlBinder => {
+  const reads: SqlRead[] = [];
+  const refusals = new Map<string, string>();
+  const clauses = new Map<IR, CubeSqlStep>();
+  return {
+    relationOf: (source) => {
+      const tree = options.getSqlTree?.(source.sql);
+      if (tree === undefined) {
+        return undefined;
+      }
+      const reading = readCubeSqlTree(tree);
+      if ('refused' in reading) {
+        refusals.set(source.sql, reading.refused);
+        return undefined;
+      }
+      const stepOf = new Map<IR, CubeSqlStep>();
+      const relationOf = (step: CubeSqlStep): IR => {
+        if (step.kind === CubeSqlStepKind.DATA_SET && step.dataSet) {
+          const dataSet = ingestAccessor(step.dataSet);
+          stepOf.set(dataSet, step);
+          return dataSet;
+        }
+        // a let that binds rows is read by its name, as any step reads one
+        if (
+          step.kind === CubeSqlStepKind.VARIABLE &&
+          step.variable !== undefined &&
+          isCubeRowsLet(lets.get(step.variable))
+        ) {
+          return variable(step.variable);
+        }
+        const call = func(SQL_STEP_FUNCTION, step.inputs.map(relationOf));
+        stepOf.set(call, step);
+        clauses.set(call, step);
+        return call;
+      };
+      const relation = relationOf(reading.last);
+      reads.push({ source, sql: source.sql, stepOf });
+      return relation;
+    },
+    bindCall: (call) => {
+      const step = clauses.get(call);
+      return step
+        ? {
+            type: UnknownNode.TYPE,
+            inputs: step.inputs.map((_input, index) => index),
+            create: (id) =>
+              new UnknownNode(id, step.inputs.length, {
+                kind: 'sqlClause',
+                clause: step.kind,
+                text: step.text,
+              }),
+          }
+        : undefined;
+    },
+    reads,
+    refusals,
+  };
+};
+
 /** The step each source reads as: an ingest data set, typed from its definition when the host has it */
 const createBindSource = (
   options: Pick<CubeDefinitionReadOptions, 'getIngestDefinition'>,
   unknownDataSets: CubeDefinitionDataSet[],
-): ((source: IR) => CubeSourceStep) => {
+  sql?: SqlBinder,
+): ((source: IR) => CubeSourceStep | CubeSourceRelation) => {
   // each ingest definition's data sets, typed once; none for one the host
   // doesn't have or Cube can't read, whose data sets are drawn by name
   const dataSets = new Map<string, readonly CubeIngestDataSet[]>();
@@ -375,7 +593,23 @@ const createBindSource = (
     return dataSets.get(ingestDefinition)?.find((each) => each.name === dataSet)
       ?.schema;
   };
-  return (source: IR): CubeSourceStep => {
+  return (source: IR): CubeSourceStep | CubeSourceRelation => {
+    if (source.k === 'sqlAccessor') {
+      // the steps of its SQL, with the engine's tree of it
+      const relation = sql?.relationOf(source);
+      if (relation) {
+        return { relation };
+      }
+      // one step of unknown columns, the lets its SQL reads as its inputs
+      return {
+        type: UnknownNode.TYPE,
+        create: (id, inputCount) =>
+          new UnknownNode(id, inputCount ?? 0, {
+            kind: 'sql',
+            sql: source.sql,
+          }),
+      };
+    }
     if (source.k !== 'ingestAccessor') {
       throw new CubeLambdaReadError(
         CubeLambdaReadErrorKind.SOURCE,
@@ -426,9 +660,13 @@ const createBindSource = (
 const expand = (
   parts: CubeLambdaParts,
   functions: CubeDefinitionFunctions,
-  options: Pick<CubeDefinitionReadOptions, 'getIngestDefinition'>,
+  options: Pick<
+    CubeDefinitionReadOptions,
+    'getIngestDefinition' | 'getSqlTree'
+  >,
 ): CubeDefinitionExpansion =>
   expandCubeDefinitionFunctions(parts, functions, (body) => {
+    const sql = createSqlBinder(options, new Map());
     readCubeQuery(
       {
         relation: body,
@@ -437,8 +675,9 @@ const expand = (
         ...(parts.parameters ? { parameters: parts.parameters } : {}),
       },
       {
-        bindSource: createBindSource(options, []),
-        bindCall: (call) => bindClosedCall(undefined, call),
+        bindSource: createBindSource(options, [], sql),
+        bindCall: (call) =>
+          sql.bindCall(call) ?? bindClosedCall(undefined, call),
         expressions: CUBE_EXPRESSION_CODEC,
         forDrawing: true,
       },
@@ -453,28 +692,157 @@ const expand = (
  */
 export const findCubeDefinitionIngestDefinitions = (
   lambda: unknown,
-  options: Pick<CubeDefinitionReadOptions, 'functions'> = {},
+  options: Pick<CubeDefinitionReadOptions, 'functions' | 'getSqlTree'> = {},
 ): string[] => {
   try {
     const parts = splitCubeLambda(readCubeLambdaJson(lambda), {
       readsParameters: true,
     });
+    // those the SQL of its islands reads, for SQL the host has the tree of
+    // and Cube draws as steps
+    const readBySql = (islands: readonly string[]): string[] =>
+      islands.flatMap((sql) => {
+        const tree = options.getSqlTree?.(sql);
+        const reading = tree === undefined ? undefined : readCubeSqlTree(tree);
+        return reading && 'last' in reading
+          ? listCubeSqlSteps(reading.last).flatMap((step) =>
+              step.kind === CubeSqlStepKind.DATA_SET && step.dataSet
+                ? [step.dataSet[0]]
+                : [],
+            )
+          : [];
+      });
     if (options.functions) {
-      // the bodies of the functions it calls may read some too
-      return findCubeIngestDefinitionsRead(
-        expand(parts, options.functions, {}).parts,
-      );
+      // the bodies of the functions it calls may read some too; its lets
+      // are a map, which the walk doesn't open
+      const expanded = expand(parts, options.functions, {}).parts;
+      const read = [expanded.relation, ...expanded.lets.values()];
+      return [
+        ...new Set([
+          ...findCubeIngestDefinitionsRead(read),
+          ...readBySql(findCubeSqlRead(read)),
+        ]),
+      ];
     }
     const sources = findCubeLambdaSources(parts);
     return [
-      ...new Set(
-        sources.flatMap((source) =>
+      ...new Set([
+        ...sources.flatMap((source) =>
           source.k === 'ingestAccessor' && source.qualifier === undefined
             ? [source.path[0]]
             : [],
         ),
-      ),
+        ...readBySql(
+          sources.flatMap((source) =>
+            source.k === 'sqlAccessor' ? [source.sql] : [],
+          ),
+        ),
+      ]),
     ];
+  } catch (error) {
+    if (error instanceof CubeLambdaReadError) {
+      return [];
+    }
+    throw error;
+  }
+};
+
+/** What an island's SQL names in its text */
+const namedBySql = (
+  sql: string,
+): Pick<CubeDefinitionSqlIsland, 'dataSets' | 'accessPoints'> => {
+  const named = findCubeSqlSources(sql);
+  return {
+    dataSets: named.dataSets.map(([ingestDefinition, dataSet]) => ({
+      ingestDefinition,
+      dataSet,
+    })),
+    accessPoints: named.accessPoints.map(([dataProduct, accessPoint]) => ({
+      dataProduct,
+      accessPoint,
+    })),
+  };
+};
+
+/** The definition's islands as read, in the flow's order: each one box, or the steps of its SQL */
+const readSqlIslands = (
+  query: Query,
+  stepIRs: ReadonlyMap<string, IR>,
+  sql: SqlBinder,
+  expansion: CubeDefinitionExpansion | undefined,
+): CubeDefinitionSqlIsland[] => {
+  const order = new Map(query.nodes.map((node, index) => [node.id, index]));
+  const boxes = query.nodes.flatMap((node): CubeDefinitionSqlIsland[] => {
+    const ir = stepIRs.get(node.id);
+    if (ir?.k !== 'sqlAccessor') {
+      return [];
+    }
+    const closedMessage = sql.refusals.get(ir.sql);
+    return [
+      {
+        id: node.id,
+        stepId: node.id,
+        sql: ir.sql,
+        ...namedBySql(ir.sql),
+        ...(closedMessage === undefined ? {} : { closedMessage }),
+      },
+    ];
+  });
+  const opened = sql.reads.flatMap((read, index): CubeDefinitionSqlIsland[] => {
+    const steps = query.nodes.flatMap((node): CubeDefinitionSqlStep[] => {
+      const ir = stepIRs.get(node.id);
+      const step = ir ? read.stepOf.get(ir) : undefined;
+      return step
+        ? [
+            {
+              stepId: node.id,
+              kind: step.kind,
+              text: step.text,
+              ...(step.variant === undefined ? {} : { variant: step.variant }),
+              ...(step.alias === undefined ? {} : { alias: step.alias }),
+              ...(step.columns === undefined ? {} : { columns: step.columns }),
+            },
+          ]
+        : [];
+    });
+    const last = steps.at(-1);
+    const parentId = expansion?.callOf.get(read.source);
+    return last
+      ? [
+          {
+            id: `sql${index + 1}`,
+            stepId: last.stepId,
+            sql: read.sql,
+            ...namedBySql(read.sql),
+            steps,
+            ...(parentId === undefined ? {} : { parentId }),
+          },
+        ]
+      : [];
+  });
+  return [...boxes, ...opened].sort(
+    (a, b) => (order.get(a.stepId) ?? 0) - (order.get(b.stepId) ?? 0),
+  );
+};
+
+/**
+ * The SQL of the islands, `#SQL{…}#`, a definition holds, each once, in the
+ * order it holds them, those of the functions it calls included: what a host
+ * asks the engine to parse before reading the definition (`getSqlTree`), so
+ * its SQL is drawn as steps; none when Cube can't read the definition
+ */
+export const findCubeDefinitionSql = (
+  lambda: unknown,
+  options: Pick<CubeDefinitionReadOptions, 'functions'> = {},
+): string[] => {
+  try {
+    const split = splitCubeLambda(readCubeLambdaJson(lambda), {
+      readsParameters: true,
+    });
+    const parts = options.functions
+      ? expand(split, options.functions, {}).parts
+      : split;
+    return findCubeSqlRead([parts.relation, ...parts.lets.values()]);
   } catch (error) {
     if (error instanceof CubeLambdaReadError) {
       return [];
@@ -506,11 +874,12 @@ export const readCubeDefinition = (
       : undefined;
     const parts = expansion?.parts ?? split;
     const unknownDataSets: CubeDefinitionDataSet[] = [];
+    const sql = createSqlBinder(options, parts.lets);
     const { query, unchecked, stepIRs, parameterReads } = readCubeQuery(parts, {
-      bindSource: createBindSource(options, unknownDataSets),
-      ...(expansion
-        ? { bindCall: (call) => bindClosedCall(expansion, call) }
-        : {}),
+      bindSource: createBindSource(options, unknownDataSets, sql),
+      bindCall: (call) =>
+        sql.bindCall(call) ??
+        (expansion ? bindClosedCall(expansion, call) : undefined),
       expressions: CUBE_EXPRESSION_CODEC,
       forDrawing: true,
     });
@@ -607,6 +976,7 @@ export const readCubeDefinition = (
       query,
       functionCalls,
       scalarFunctions,
+      sqlIslands: readSqlIslands(query, stepIRs, sql, expansion),
     };
   } catch (error) {
     if (error instanceof CubeLambdaReadError) {

@@ -23,6 +23,7 @@ import {
   type Schema,
 } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
+import { CUBE_DEFINITION_FLOW_MESSAGE } from '../__lib__/LegendCubeDefinitionFlowLabels.js';
 import {
   CUBE_EXPRESSION_CODEC,
   readCubeFunctionDefinition,
@@ -313,10 +314,18 @@ const freeVariables = (ir: IR): Set<string> =>
 
 class Capture extends Error {}
 
+/** An SQL island reads a name by `var('name')`, in its text, where no value can be put */
+class SqlReadsValue extends Error {
+  constructor(readonly variable: string) {
+    super();
+  }
+}
+
 /**
  * The IR with each free variable the values name put in its place; a lambda
  * that binds a name hides it. Throws `Capture` when a value put in would read
- * a name a lambda round it binds.
+ * a name a lambda round it binds, and `SqlReadsValue` when an SQL island
+ * reads one of the names: its SQL is text, which Cube doesn't rewrite.
  */
 const substitute = (ir: IR, values: ReadonlyMap<string, IR>): IR => {
   const walk = (node: IR, bound: ReadonlySet<string>): IR => {
@@ -364,6 +373,15 @@ const substitute = (ir: IR, values: ReadonlyMap<string, IR>): IR => {
         return { ...node, specs: node.specs.map((spec) => walk(spec, bound)) };
       case 'let':
         return { ...node, value: walk(node.value, bound) };
+      case 'sqlAccessor': {
+        const read = node.variables.find(
+          (name) => !bound.has(name) && values.has(name),
+        );
+        if (read !== undefined) {
+          throw new SqlReadsValue(read);
+        }
+        return node;
+      }
       default:
         return node;
     }
@@ -404,7 +422,8 @@ const readsRows = (ir: IR | undefined): boolean =>
   ir?.k === 'var' ||
   ir?.k === 'ingestAccessor' ||
   ir?.k === 'storeAccessor' ||
-  ir?.k === 'dataProductAccessor';
+  ir?.k === 'dataProductAccessor' ||
+  ir?.k === 'sqlAccessor';
 
 /**
  * The indexes of a call's values that are relations, its inputs: the
@@ -606,6 +625,12 @@ export const expandCubeDefinitionFunctions = (
       if (error instanceof Capture) {
         return closed(CubeDefinitionFunctionClosedReason.CAPTURE);
       }
+      if (error instanceof SqlReadsValue) {
+        return closed(
+          CubeDefinitionFunctionClosedReason.NOT_DRAWABLE,
+          CUBE_DEFINITION_FLOW_MESSAGE.SQL_READS_VALUE(error.variable),
+        );
+      }
       throw error;
     }
     if ([...given.values()].some((input) => countOf(body, input) !== 1)) {
@@ -684,6 +709,17 @@ export const findCubeIngestDefinitionsRead = (ir: unknown): string[] => {
     }
   });
   return paths;
+};
+
+/** The SQL of the islands, `#SQL{…}#`, the IR holds, each once, in the order it holds them */
+export const findCubeSqlRead = (ir: unknown): string[] => {
+  const found: string[] = [];
+  visitIR(ir, (node) => {
+    if (node.k === 'sqlAccessor' && !found.includes(node.sql)) {
+      found.push(node.sql);
+    }
+  });
+  return found;
 };
 
 /** The user-defined functions an expression calls, by name, e.g. a filter's condition calling `pkg::defaultDate()` */

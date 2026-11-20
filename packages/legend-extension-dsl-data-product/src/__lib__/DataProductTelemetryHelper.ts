@@ -322,7 +322,8 @@ export class DataProductTelemetryHelper {
    * how long it took from opening the definition, and the calls of
    * user-defined functions in it (PLAN §11.33): how many Cube opened into
    * containers, how many it drew as one box, by why, how many steps call
-   * one in an expression, and whether the functions couldn't be loaded
+   * one in an expression, and whether the functions couldn't be loaded;
+   * and how many of its steps are SQL, `#SQL{…}#`, each drawn as one box
    */
   static logEvent_ShowAccessPointDefinitionFlow(
     telemetryService: TelemetryService,
@@ -335,6 +336,9 @@ export class DataProductTelemetryHelper {
       functionCallsClosed: Record<string, number>;
       scalarFunctionSteps: number;
       functionsUnloaded: boolean;
+      sqlSteps: number;
+      /** How many of its SQL are drawn as the steps of their SQL, not one box */
+      sqlOpened: number;
     },
   ): void {
     this.updateEventId();
