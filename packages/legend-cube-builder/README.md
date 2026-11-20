@@ -95,6 +95,8 @@ example is built in code, so a new one needs no saved spec; add it to `CUBE_EXAM
 
 ## Documentation
 
+- [Architecture](../../docs/technical/legend-cube-architecture.md): the two packages, the cube document and its spec,
+  and how a cube becomes the lambda the engine runs, and back, in diagrams.
 - [Hosting the page](./docs/hosting.md): what a host gives the page, the shortcuts, the stylesheet, and the dev loop.
 - [Testing](./docs/testing.md): the test groups, the fake engine, and the tests against a real engine.
 - [Demo](./docs/demo/README.md): a walkthrough on the sample data, its [fast notes](./docs/demo/DEMO-FAST-NOTES.md), and
