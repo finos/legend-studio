@@ -41,6 +41,15 @@ export class VariableExpression extends ValueSpecification implements Hashable {
       this.name,
       this.multiplicity,
       this.genericType?.ownerReference.valueForSerialization ?? '',
+      // NOTE: type arguments (e.g. the relation type in `Relation<(a:Integer)>`) and type
+      // variable values (e.g. the `10` in `Varchar(10)`) are only hashed when present so
+      // the hash of every other variable stays unchanged
+      this.genericType?.value.typeArguments?.length
+        ? hashArray(this.genericType.value.typeArguments.map((t) => t.value))
+        : undefined,
+      this.genericType?.value.typeVariableValues?.length
+        ? hashArray(this.genericType.value.typeVariableValues)
+        : undefined,
     ]);
   }
 

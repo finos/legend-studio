@@ -23,6 +23,7 @@ import type { V1_RawLambda } from '../../../model/rawValueSpecification/V1_RawLa
 import type { V1_RawVariable } from '../../../model/rawValueSpecification/V1_RawVariable.js';
 import type { V1_RawPrimitiveInstanceValue } from '../../../model/rawValueSpecification/V1_RawPrimitiveInstanceValue.js';
 import { RawPrimitiveInstanceValue } from '../../../../../../../graph/metamodel/pure/rawValueSpecification/RawPrimitiveInstanceValue.js';
+import { V1_buildRawGenericTypeVariableValues } from './helpers/V1_DomainBuilderHelper.js';
 
 export class V1_RawValueSpecificationBuilder
   implements V1_RawValueSpecificationVisitor<RawValueSpecification>
@@ -51,6 +52,11 @@ export class V1_RawValueSpecificationBuilder
         valueSpecification.multiplicity.upperBound,
       ),
       type,
+      undefined,
+      V1_buildRawGenericTypeVariableValues(
+        valueSpecification.genericType,
+        this.context,
+      ),
     );
   }
 

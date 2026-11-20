@@ -25,6 +25,7 @@ import {
 } from './RawValueSpecification.js';
 import type { GenericTypeReference } from '../packageableElements/domain/GenericTypeReference.js';
 import { RelationType } from '../packageableElements/relation/RelationType.js';
+import type { ValueSpecification } from '../valueSpecification/ValueSpecification.js';
 
 export class RawVariableExpression
   extends RawValueSpecification
@@ -37,18 +38,24 @@ export class RawVariableExpression
   multiplicity: Multiplicity;
 
   typeArguments: GenericTypeReference[] | undefined;
+  /**
+   * Type variable values of the type, e.g. the `10` in `Varchar(10)`
+   */
+  typeVariableValues: ValueSpecification[] | undefined;
 
   constructor(
     name: string,
     multiplicity: Multiplicity,
     type: PackageableElementReference<Type>,
     typeArguments?: GenericTypeReference[] | undefined,
+    typeVariableValues?: ValueSpecification[] | undefined,
   ) {
     super();
     this.name = name;
     this.multiplicity = multiplicity;
     this.type = type;
     this.typeArguments = typeArguments;
+    this.typeVariableValues = typeVariableValues;
   }
 
   get hashCode(): string {
@@ -63,6 +70,11 @@ export class RawVariableExpression
           return rawType instanceof RelationType ? undefined : rawType.path;
         }) ?? [],
       ),
+      // NOTE: type variable values (e.g. the `10` in `Varchar(10)`) are only hashed
+      // when present so the hash of every other variable stays unchanged
+      this.typeVariableValues?.length
+        ? hashArray(this.typeVariableValues)
+        : undefined,
     ]);
   }
 
