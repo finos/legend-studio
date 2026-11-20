@@ -62,7 +62,6 @@ import {
   prettyCONSTName,
 } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
-import { useAuth } from 'react-oidc-context';
 import {
   ArrowUpFromBracketIcon,
   CheckIcon,
@@ -85,6 +84,10 @@ import {
   renderOrganizationalScopeConsumer,
 } from '../../../utils/LakehouseUtils.js';
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
+import {
+  NO_AUTH_PROVIDER_REASON,
+  useOptionalAuth,
+} from '../../useOptionalAuth.js';
 
 import {
   ActionAlertActionType,
@@ -205,8 +208,10 @@ const TimelineStepLinks = (props: {
   onCopyToClipboard: (text: string, field: string) => void;
   onEscalate: () => void;
   isEscalating: boolean;
+  hasAuthProvider: boolean;
 }): React.ReactNode => {
-  const { step, onCopyToClipboard, onEscalate, isEscalating } = props;
+  const { step, onCopyToClipboard, onEscalate, isEscalating, hasAuthProvider } =
+    props;
   const { label } = step;
 
   const renderLinks = (): React.ReactNode => {
@@ -311,6 +316,8 @@ const TimelineStepLinks = (props: {
   let escalateTitle: string;
   if (isEscalating) {
     escalateTitle = 'Escalating...';
+  } else if (label.isEscalatable && !hasAuthProvider) {
+    escalateTitle = `Cannot escalate request: ${NO_AUTH_PROVIDER_REASON}`;
   } else if (label.isEscalatable) {
     escalateTitle = 'Escalate request';
   } else if (label.isEscalated) {
@@ -326,7 +333,7 @@ const TimelineStepLinks = (props: {
         <span title={escalateTitle}>
           <IconButton
             onClick={onEscalate}
-            disabled={!label.isEscalatable || isEscalating}
+            disabled={!label.isEscalatable || !hasAuthProvider || isEscalating}
             className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
           >
             <ArrowUpFromBracketIcon />
@@ -349,9 +356,9 @@ const RequestEscalationModal = (props: {
 }) => {
   const { open, onClose, viewerState, selectedUser, refresh } = props;
 
-  const auth = useAuth();
-  const tokenRef = useRef(auth.user?.access_token);
-  tokenRef.current = auth.user?.access_token;
+  const auth = useOptionalAuth();
+  const tokenRef = useRef(auth?.user?.access_token);
+  tokenRef.current = auth?.user?.access_token;
 
   if (!selectedUser) {
     return (
@@ -612,9 +619,11 @@ export const DataAccessRequestContent = observer(
       isReadOnly,
       dataProductEnvironment,
     } = props;
-    const auth = useAuth();
-    const tokenRef = useRef(auth.user?.access_token);
-    tokenRef.current = auth.user?.access_token;
+    const auth = useOptionalAuth();
+    const tokenRef = useRef(auth?.user?.access_token);
+    tokenRef.current = auth?.user?.access_token;
+    // escalating or closing a request needs the signed-in user's token
+    const hasAuthProvider = auth !== undefined;
     const isInitialized = viewerState.initializationState.hasCompleted;
 
     const targetUsers = viewerState.targetUsers;
@@ -882,6 +891,7 @@ export const DataAccessRequestContent = observer(
                     onCopyToClipboard={onCopyToClipboard}
                     onEscalate={() => setShowEscalationModal(true)}
                     isEscalating={viewerState.escalatingState.isInProgress}
+                    hasAuthProvider={hasAuthProvider}
                   />
                 </TimelineOppositeContent>
                 <TimelineSeparator>
@@ -1013,7 +1023,9 @@ export const DataAccessRequestContent = observer(
                 title={
                   viewerState.status === DataAccessRequestStatus.CLOSED
                     ? 'Request is already closed'
-                    : 'Close Request'
+                    : !hasAuthProvider
+                      ? `Cannot close request: ${NO_AUTH_PROVIDER_REASON}`
+                      : 'Close Request'
                 }
               >
                 <IconButton
@@ -1021,7 +1033,8 @@ export const DataAccessRequestContent = observer(
                   disabled={
                     viewerState.initializationState.isInProgress ||
                     viewerState.invalidatingState.isInProgress ||
-                    viewerState.status === DataAccessRequestStatus.CLOSED
+                    viewerState.status === DataAccessRequestStatus.CLOSED ||
+                    !hasAuthProvider
                   }
                   className="marketplace-lakehouse-entitlements__data-access-request-viewer__footer__request-details__close-request-btn"
                 >
