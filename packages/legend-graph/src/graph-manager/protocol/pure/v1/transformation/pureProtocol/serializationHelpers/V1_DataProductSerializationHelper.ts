@@ -482,6 +482,7 @@ export const V1_SupportInfoModelSchema = createModelSchema(V1_SupportInfo, {
 export const V1_DataProductOperationalMetadataModelSchema = createModelSchema(
   V1_DataProductOperationalMetadata,
   {
+    accessibilityJurisdictions: optional(list(primitive())),
     coverageRegions: optionalCustomList(
       (json) => (json as string).toLowerCase(),
       (json) => (json as unknown as string).toUpperCase(),
