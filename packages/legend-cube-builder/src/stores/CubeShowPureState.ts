@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { needsDatabaseType } from '@finos/legend-cube';
+import { type IR, needsDatabaseType } from '@finos/legend-cube';
 import type { GeneratorFn } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
+  type CubeCheckedPure,
   CubeEngineError,
   CubeEngineErrorKind,
 } from '../graph-manager/CubeEngine.js';
@@ -31,7 +32,10 @@ import type { CubeRunStat } from './CubeRunStatsState.js';
  * rows), as Legend Query's own Show Pure does: only a Take or Drop the user
  * added shows (user, 2026-10-10). For display only: the text is never parsed
  * back (PLAN §8.7). It also shows a run's lambda from the Runs panel as it
- * ran, its row limit included, for debugging (PLAN §11.16).
+ * ran, its row limit included, for debugging (PLAN §11.16). The engine's text
+ * is checked by parsing it back, and the parentheses its writer drops put
+ * back (EXPRESSION-EDITOR.md, §2.4): copied into Import Pure, it reads as the
+ * query.
  */
 export class CubeShowPureState {
   readonly editorState: CubeEditorState;
@@ -40,6 +44,8 @@ export class CubeShowPureState {
   /** The run shown, by its label; `undefined` for the cube's query */
   run: string | undefined;
   text: string | undefined;
+  /** The text reads otherwise than the query in a place Cube couldn't put the parentheses back */
+  readsDifferently = false;
   /** Why the engine couldn't render the query; shown in the dialog */
   error: CubeEngineError | undefined;
   isRendering = false;
@@ -51,6 +57,7 @@ export class CubeShowPureState {
       isOpen: observable,
       run: observable,
       text: observable,
+      readsDifferently: observable,
       error: observable.ref,
       isRendering: observable,
       open: flow,
@@ -90,13 +97,12 @@ export class CubeShowPureState {
           runtime,
         );
       }
-      return host.engine.renderPure(
-        emitter.emitExecutionLambda({
-          runtime,
-          mapping: context?.mapping,
-          databaseType,
-        }),
-      );
+      const lambda = emitter.emitExecutionLambda({
+        runtime,
+        mapping: context?.mapping,
+        databaseType,
+      });
+      return { lambda, text: await host.engine.renderPure(lambda) };
     });
   }
 
@@ -111,9 +117,10 @@ export class CubeShowPureState {
       return;
     }
     const request = this.start(run.label);
-    yield* this.render(request, () =>
-      this.editorState.host.engine.renderPure(lambda),
-    );
+    yield* this.render(request, async () => ({
+      lambda,
+      text: await this.editorState.host.engine.renderPure(lambda),
+    }));
   }
 
   private start(run: string | undefined): number {
@@ -121,20 +128,34 @@ export class CubeShowPureState {
     this.isOpen = true;
     this.run = run;
     this.text = undefined;
+    this.readsDifferently = false;
     this.error = undefined;
     this.isRendering = true;
     return request;
   }
 
-  /** Renders the text, unless the dialog was closed or opened again meanwhile */
+  /**
+   * Takes the rendered text, then checks it, unless the dialog was closed or
+   * opened again meanwhile
+   */
   private *render(
     request: number,
-    rendering: () => Promise<string | undefined>,
+    rendering: () => Promise<{ lambda: IR; text: string } | undefined>,
   ): GeneratorFn<void> {
     try {
-      const text = (yield rendering()) as string | undefined;
-      if (request === this.request && text !== undefined) {
-        this.text = text;
+      const rendered = (yield rendering()) as
+        | { lambda: IR; text: string }
+        | undefined;
+      if (request !== this.request || rendered === undefined) {
+        return;
+      }
+      const checked = (yield this.editorState.host.engine.checkPure(
+        rendered.lambda,
+        rendered.text,
+      )) as CubeCheckedPure;
+      if (request === this.request) {
+        this.text = checked.text;
+        this.readsDifferently = checked.readsAsLambda === false;
       }
     } catch (error) {
       if (request === this.request) {
@@ -159,6 +180,7 @@ export class CubeShowPureState {
     this.isRendering = false;
     this.run = undefined;
     this.text = undefined;
+    this.readsDifferently = false;
     this.error = undefined;
   }
 }

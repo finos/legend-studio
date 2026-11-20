@@ -27,6 +27,7 @@ import { observer } from 'mobx-react-lite';
 import {
   CUBE_PENDING_LABEL,
   CUBE_RUN_PURE_NOTE,
+  CUBE_SHOW_PURE_READS_DIFFERENTLY,
 } from '../../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CUBE_PRIMARY_BUTTON_DARK_MODE } from '../CubeDialogTheme.js';
@@ -63,6 +64,14 @@ export const CubeShowPureDialog = observer(
               {showPure.isRendering && (
                 <div className="text-base text-[var(--color-text-secondary)]">
                   {CUBE_PENDING_LABEL.RENDERING_QUERY}
+                </div>
+              )}
+              {text !== undefined && showPure.readsDifferently && (
+                <div
+                  className="rounded-sm border border-[var(--color-status-warn)] bg-[var(--color-status-warn-bg)] p-2 text-base text-[var(--color-status-warn)]"
+                  role="status"
+                >
+                  {CUBE_SHOW_PURE_READS_DIFFERENTLY}
                 </div>
               )}
               {text !== undefined && (
