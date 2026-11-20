@@ -6178,7 +6178,7 @@ ingest Overview).
 | Step | What                                                                                | Status  |
 | ---- | ----------------------------------------------------------------------------------- | ------- |
 | SQ1  | The box: the IR node, the reader, the dashed step, the SQL under the flow (#5943)   | 🚧      |
-| SQ1b | The SQL's clauses as steps, from the engine's tree of the SQL: no engine change     | 🚧      |
+| SQ1b | The SQL's clauses as steps, from the engine's tree of the SQL (#5948)               | 🚧      |
 | SQ2  | The typed box: a host asks the engine for its columns; Studio wires it              | ⏳      |
 | SQ3  | The engine's route returning an island's translated Pure (finos/legend-engine)      | on hold |
 | SQ4  | The container: the loader, the translation read in place, nesting, the fallback box | on hold |

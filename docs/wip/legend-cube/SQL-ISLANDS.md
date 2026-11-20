@@ -344,7 +344,7 @@ an island must be Cube's own, checked steps. SQ2 gains from SQ1b as it is: it ty
    defensible here, but its result is the wordy Pure of §4.
 
 5. **Draw the SQL's own structure, from the engine's parse of it?** **Yes (the user, 2026-11-20):** the engine's
-   route first, the box as the fallback, no browser parser library. Built as SQ1b.
+   route first, the box as the fallback, no browser parser library. Built as SQ1b, finos/legend-studio#5948.
 6. **Do the deployed engines expose `POST /api/sql/v1/grammar/grammarToJson`?** The open-source server does. Where
    one doesn't, every island stays a box, and a browser parser would become the main path.
 
