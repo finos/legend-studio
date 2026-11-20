@@ -286,6 +286,15 @@ export class TDSResultModifierValueSpecificationBuilder extends ResultModifierVa
 }
 
 export class TypedResultModifierValueSpecificationBuilder extends ResultModifierValueSpecificationBuilder {
+  // a typed lambda can also end with window columns, written as extend(over(...), ~[...]),
+  // or, for a relation source, with select(~[...])
+  override get supportedResultModifiersFunctions(): string[] {
+    return [
+      ...super.supportedResultModifiersFunctions,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_EXTEND,
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_SELECT,
+    ];
+  }
   override get limitFunctionName(): string {
     return QUERY_BUILDER_SUPPORTED_FUNCTIONS.RELATION_LIMIT;
   }
@@ -317,10 +326,10 @@ export class TypedResultModifierValueSpecificationBuilder extends ResultModifier
 export const appendResultSetModifier = (
   resultModifierState: QueryResultSetModifierState,
   lambdaFunction: LambdaFunction,
-  isTyped: boolean,
+  useRelation: boolean,
   options?: ResultModifierValueSpecOptions | undefined,
 ): LambdaFunction => {
-  const builder = isTyped
+  const builder = useRelation
     ? new TypedResultModifierValueSpecificationBuilder(
         resultModifierState.tdsState.queryBuilderState.graphManagerState,
       )
