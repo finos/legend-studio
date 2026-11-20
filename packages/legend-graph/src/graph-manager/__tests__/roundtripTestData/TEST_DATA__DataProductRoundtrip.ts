@@ -22,6 +22,7 @@
 //    icon: LibraryIcon('react-icons', 'UpArrow')
 //    deliveryFrequency: DAILY
 //    coverageRegions: [APAC, NAMR]
+//    accessibilityJurisdictions: [US, CHINA]
 //    accessPoints: [
 //       ap ('Description'): LH(Snowflake, |1)classification1
 //    ]
@@ -75,6 +76,7 @@ export const TEST_DATA__DATAPRODUCT_DELIVERY = [
         },
       ],
       operationalMetadata: {
+        accessibilityJurisdictions: ['US', 'CHINA'],
         coverageRegions: ['apac', 'namr'],
         updateFrequency: 'daily',
       },

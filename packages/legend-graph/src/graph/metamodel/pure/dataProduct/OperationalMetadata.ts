@@ -34,13 +34,20 @@ export enum Region {
   NAMR = 'NAMR',
 }
 
+export enum DataJurisdiction {
+  US = 'US',
+  CHINA = 'CHINA',
+}
+
 export class OperationalMetadata implements Hashable {
+  accessibilityJurisdictions: DataJurisdiction[] | undefined;
   coverageRegions: Region[] | undefined;
   updateFrequency: DeliveryFrequency | undefined;
 
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.OPERATIONAL_METADATA,
+      hashArray(this.accessibilityJurisdictions ?? []),
       hashArray(this.coverageRegions ?? []),
       this.updateFrequency ?? '',
     ]);

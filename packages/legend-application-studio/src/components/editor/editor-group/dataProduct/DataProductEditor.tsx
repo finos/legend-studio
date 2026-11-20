@@ -135,6 +135,7 @@ import {
   DataProductLink,
   observer_DataProductLink,
   Region,
+  DataJurisdiction,
   DeliveryFrequency,
   AppDirOwner,
   AppDirNode,
@@ -173,6 +174,8 @@ import {
   dataProduct_setOperationalMetadataIfAbsent,
   operationalMetadata_deleteCoverageRegion,
   operationalMetadata_addCoverageRegion,
+  operationalMetadata_addAccessibilityJurisdiction,
+  operationalMetadata_deleteAccessibilityJurisdiction,
   operationalMetadata_setUpdateFrequency,
   dataProduct_setOwner,
   appDirOwner_setProduction,
@@ -3141,6 +3144,39 @@ const OperationalTab = observer(
       }
     };
 
+    const getAccessibilityJurisdictionOptions =
+      (): EnumOption<DataJurisdiction>[] => {
+        const existing =
+          product.operationalMetadata?.accessibilityJurisdictions ?? [];
+        return (Object.values(DataJurisdiction) as DataJurisdiction[])
+          .filter((jurisdiction) => !existing.includes(jurisdiction))
+          .map((jurisdiction) => ({
+            label: jurisdiction,
+            value: jurisdiction,
+          }));
+      };
+
+    const handleAddJurisdiction = (
+      val: EnumOption<DataJurisdiction> | null,
+    ): void => {
+      dataProduct_setOperationalMetadataIfAbsent(product);
+      if (product.operationalMetadata && val) {
+        operationalMetadata_addAccessibilityJurisdiction(
+          product.operationalMetadata,
+          val.value,
+        );
+      }
+    };
+
+    const handleRemoveJurisdiction = (jurisdiction: DataJurisdiction): void => {
+      if (product.operationalMetadata) {
+        operationalMetadata_deleteAccessibilityJurisdiction(
+          product.operationalMetadata,
+          jurisdiction,
+        );
+      }
+    };
+
     const handleUpdateFrequencyChange = (
       val: EnumOption<DeliveryFrequency> | null,
     ): void => {
@@ -3201,6 +3237,47 @@ const OperationalTab = observer(
             options={getCoverageRegionOptions()}
             onChange={handleAddRegion}
             placeholder={CHOOSE_REGION}
+            darkMode={true}
+            disabled={isReadOnly}
+          />
+        </div>
+        <div className="data-product-editor__operational-input">
+          <div
+            className="panel__content__form__section__header__label"
+            style={{ justifyContent: 'space-between', width: '45rem' }}
+          >
+            Accessibility Jurisdictions
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Select the jurisdictions this Data Product may be made accessible
+            in. Leave empty for no restriction.
+          </div>
+          <div className="panel__content__form__section__list__id-list">
+            {product.operationalMetadata?.accessibilityJurisdictions?.map(
+              (jurisdiction) => (
+                <div
+                  className="panel__content__form__section__list__item"
+                  key={jurisdiction}
+                >
+                  {jurisdiction}
+                  <button
+                    className="panel__content__form__section__list__item__remove-btn"
+                    disabled={dataProductEditorState.isReadOnly}
+                    onClick={() => handleRemoveJurisdiction(jurisdiction)}
+                    tabIndex={-1}
+                    title="Remove Jurisdiction"
+                  >
+                    <TimesIcon />
+                  </button>
+                </div>
+              ),
+            )}
+          </div>
+          <CustomSelectorInput<EnumOption<DataJurisdiction>>
+            className="panel__content__form__section__dropdown"
+            options={getAccessibilityJurisdictionOptions()}
+            onChange={handleAddJurisdiction}
+            placeholder="Add Accessibility Jurisdiction..."
             darkMode={true}
             disabled={isReadOnly}
           />

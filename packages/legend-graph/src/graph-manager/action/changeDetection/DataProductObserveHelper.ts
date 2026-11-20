@@ -132,6 +132,7 @@ export const observe_OperationalMetadata = skipObserved(
     makeObservable(metamodel, {
       updateFrequency: observable,
       coverageRegions: observable,
+      accessibilityJurisdictions: observable,
     });
     return metamodel;
   },

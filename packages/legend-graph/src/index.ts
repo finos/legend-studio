@@ -214,6 +214,7 @@ export {
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProduct,
   V1_DataProductRegion,
+  V1_DataJurisdiction,
   V1_DeliveryFrequency,
   V1_DataProductOperationalMetadata,
   V1_DataProductDiagram,
@@ -798,6 +799,7 @@ export * from './graph-manager/action/changeDetection/AvailabilityObserveHelper.
 
 // ------------------------------------- Data Product --------------------------------------------
 export {
+  DataJurisdiction,
   DeliveryFrequency,
   OperationalMetadata,
   Region,
