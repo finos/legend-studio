@@ -36,6 +36,7 @@
   --color-dark-grey-300: #595959;
   --color-dark-grey-350: #606060; // vscode
   --color-dark-grey-400: #737373;
+  --color-dark-grey-450: #808080; // secondary text on light surfaces (3:1 on light-grey-150)
   --color-dark-grey-500: #9a9a9a;
   --color-navy-300: #45456b;
   --color-navy-500: #34345f;
@@ -95,6 +96,8 @@
   --color-green-200: #014321;
   --color-lime-50: #a5ea81;
   --color-lime-75: #aad468;
+  --color-lime-500: #439319; // lime-50's hue, dark enough for icons on light surfaces
+  --color-lime-600: #668d28; // lime-75's hue, dark enough for icons on light surfaces
   --color-lime-150: #6a9955; // vscode
   --color-green-neon-100: #2cca72;
   --color-medium-green-0: #7bffc8;
@@ -104,6 +107,7 @@
   --color-medium-green-450: #139077;
   --color-medium-green-500: #11846d;
   --color-teal-50: #16b8bf;
+  --color-teal-300: #118e94; // teal-50's hue, dark enough for icons on light surfaces
   --color-light-blue-0: #deebff;
   --color-light-blue-10: #9cddfe; // vscode
   --color-light-blue-20: #7fdbff;
