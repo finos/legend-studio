@@ -25,7 +25,9 @@ import {
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
 import {
+  ALL_CASES,
   addFilterCondition,
+  chooseConditionOperator,
   expectColumnValues,
   getFilterPanel,
   openDataSpaceQuery,
@@ -82,6 +84,15 @@ const openDatePicker = async (page: Page): Promise<void> => {
   await expect(page.getByRole('radio', { name: 'Today' })).toBeVisible();
 };
 
+/** Set the (only) date filter condition to the absolute date `date`. */
+const setAbsoluteDate = async (page: Page, date: string): Promise<void> => {
+  await openDatePicker(page);
+  await page.getByRole('radio', { name: 'Absolute Date' }).check();
+  await page.locator('input[type="date"]').fill(date);
+  await page.keyboard.press('Escape');
+  await expect(getFilterPanel(page).getByText(`"${date}"`)).toBeVisible();
+};
+
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
   await mockEnrichedModel(page);
@@ -128,11 +139,7 @@ test('a chosen enum value reaches the lambda as an enum reference', async ({
 
 test('a date filter can compare against an absolute date', async ({ page }) => {
   await projectAndFilterOn(page, 'Date');
-  await openDatePicker(page);
-  await page.getByRole('radio', { name: 'Absolute Date' }).check();
-  await page.locator('input[type="date"]').fill('2021-04-05');
-  await page.keyboard.press('Escape');
-  await expect(getFilterPanel(page).getByText('"2021-04-05"')).toBeVisible();
+  await setAbsoluteDate(page, '2021-04-05');
 
   const condition = await runAndCaptureFilterCondition(page);
 
@@ -160,4 +167,107 @@ test('a date filter can compare against a relative date', async ({ page }) => {
   expect(condition.function).toBe('equal');
   expect(asProperty(at(condition.parameters, 0)).property).toBe('date');
   asFunction(at(condition.parameters, 1), 'meta::pure::functions::date::today');
+});
+
+/**
+ * The other comparisons a date filter offers, against an absolute date: each
+ * must reach the lambda as that comparison, and select the rows on its side
+ * of the date — one row is reported a day, from 2021-04-01 to 2021-04-08.
+ */
+const DATE_COMPARISON_CASES: {
+  operator: string;
+  function: string;
+  negated?: boolean;
+  cases: string[];
+}[] = [
+  {
+    operator: 'is not',
+    function: 'equal',
+    negated: true,
+    cases: ALL_CASES.filter((cases) => cases !== '95'),
+  },
+  { operator: '<', function: 'lessThan', cases: ['250', '301', '180', '420'] },
+  {
+    operator: '<=',
+    function: 'lessThanEqual',
+    cases: ['250', '301', '180', '420', '95'],
+  },
+  { operator: '>', function: 'greaterThan', cases: ['512', '77', '640'] },
+  {
+    operator: '>=',
+    function: 'greaterThanEqual',
+    cases: ['95', '512', '77', '640'],
+  },
+];
+
+for (const comparison of DATE_COMPARISON_CASES) {
+  test(`a date filter can compare with '${comparison.operator}' against an absolute date`, async ({
+    page,
+  }) => {
+    await projectAndFilterOn(page, 'Date');
+    await chooseConditionOperator(
+      page,
+      getFilterPanel(page),
+      comparison.operator,
+    );
+    await setAbsoluteDate(page, '2021-04-05');
+
+    const filterCondition = await runAndCaptureFilterCondition(page);
+    const condition = comparison.negated
+      ? asFunction(at(asFunction(filterCondition, 'not').parameters, 0))
+      : filterCondition;
+
+    // filter: `x | $x.date <comparison> %2021-04-05`
+    expect(condition.function).toBe(comparison.function);
+    expect(asProperty(at(condition.parameters, 0)).property).toBe('date');
+    const dateValue = at(condition.parameters, 1);
+    expect(dateValue._type).toBe('strictDate');
+    expect(getValue(dateValue)).toBe('2021-04-05');
+    await expectColumnValues(page, 'Cases', comparison.cases);
+  });
+}
+
+test('a boolean filter compares against false until its box is ticked', async ({
+  page,
+}) => {
+  await projectAndFilterOn(page, 'Last Reported Flag');
+
+  // filter: `x | $x.lastReportedFlag == false`, the editor's default
+  let condition = await runAndCaptureFilterCondition(page);
+  expect(condition.function).toBe('equal');
+  expect(asProperty(at(condition.parameters, 0)).property).toBe(
+    'lastReportedFlag',
+  );
+  expect(at(condition.parameters, 1)._type).toBe('boolean');
+  expect(getValue(at(condition.parameters, 1))).toBe(false);
+  await expectColumnValues(page, 'Cases', ['301', '420', '512', '640']);
+
+  // ticking the box compares against true instead
+  await getFilterPanel(page).getByRole('checkbox').click();
+  condition = await runAndCaptureFilterCondition(page);
+  expect(condition.function).toBe('equal');
+  expect(getValue(at(condition.parameters, 1))).toBe(true);
+  await expectColumnValues(page, 'Cases', ['250', '180', '95', '77']);
+});
+
+test("a boolean filter's 'is not' keeps the rows of the other value", async ({
+  page,
+}) => {
+  await projectAndFilterOn(page, 'Last Reported Flag');
+  await chooseConditionOperator(page, getFilterPanel(page), 'is not');
+  await getFilterPanel(page).getByRole('checkbox').click();
+
+  // filter: `x | !($x.lastReportedFlag == true)`
+  const condition = asFunction(
+    at(
+      asFunction(await runAndCaptureFilterCondition(page), 'not').parameters,
+      0,
+    ),
+  );
+  expect(condition.function).toBe('equal');
+  expect(asProperty(at(condition.parameters, 0)).property).toBe(
+    'lastReportedFlag',
+  );
+  expect(getValue(at(condition.parameters, 1))).toBe(true);
+  await expectColumnValues(page, 'Cases', ['301', '420', '512', '640']);
 });
