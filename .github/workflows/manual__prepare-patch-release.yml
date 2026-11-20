@@ -1,0 +1,55 @@
+name: (Manual) Prepare Patch Release
+
+# Patches a past release with fixes that are already on the default branch.
+# See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#patch-releases
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release to patch (e.g. 13.281.0)'
+        required: true
+      commits:
+        description: 'Commits on master to cherry-pick, oldest first (space or comma separated SHAs)'
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  prepare-patch-release:
+    # There is currently no way to limit workflow dispatch to only allow default branch
+    # so we need to restrict it here
+    # See https://github.community/t/limit-branch-for-workflow-dispatch/122099
+    if: github.ref == 'refs/heads/master' && github.repository == 'finos/legend-studio'
+    name: Prepare Patch Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+        with:
+          # fetch all Git history and tags to find the release commit and cherry-pick the fixes
+          fetch-depth: 0
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+      - name: Setup Yarn cache
+        uses: actions/cache@v4.2.3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v4.3.0
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: yarn
+      - name: Cherry-pick fixes and open PR into the release branch
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+          COMMITS: ${{ github.event.inputs.commits }}
+          MAIN_PACKAGE: '@finos/legend-application-studio-bootstrap'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node ./scripts/release/preparePatchRelease.js

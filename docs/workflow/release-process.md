@@ -5,7 +5,7 @@ This repository is a [monorepo](../technical/monorepo.md) contains `library` pac
 - [Versioning](#versioning)
 - [Standard releases](#standard-releases)
 - [Iteration releases](#iteration-releases)
-- [Recovery releases](#recovery-releases)
+- [Patch releases](#patch-releases)
 - [Snapshot releases (!)](<#snapshot-releases-(!)>)
 - [Manual releases (!)](<#manual-releases-(!)>)
 
@@ -15,9 +15,7 @@ By `versioning` we mean how we determine the applications' version in a release.
 
 - Bumping the first number `x` (i.e. `major`) represents a [standard release](#standard-releases): a release that is scheduled, following a relatively fixed cycle, with `Github milestone` used for planning. e.g. 1.0.0, 2.0.0, 3.0.0, etc.
 - Bumping the second number `y` (i.e. `minor`) represents an [iteration release](#iteration-releases): a release that happens between `standard releases` to provide new features/bug fixes. e.g. 1.1.0, 1.2.0, 1.3.0, etc.
-- Bumping the third number `z` (i.e. `patch`) represents a [recovery release](#recovery-releases): a release, branching off from `standard releases`, that introduces exclusively bug fixes for a past `standard release`. e.g. 1.0.1, 2.0.1, 2.0.2, etc.
-
-> Since `recovery releases` branch off `standard releases`, versions like `x.y.1` where `y !== 0` should never really exist, e.g. `1.2.1`, `1.2.2` are invalid.
+- Bumping the third number `z` (i.e. `patch`), always as a prerelease, represents a [patch release](#patch-releases): a release, branching off any past `standard` or `iteration` release, that introduces exclusively bug fixes for it. e.g. 13.281.1-patch.0, 13.281.1-patch.1, 14.0.1-patch.0, etc.
 
 [changesets/action](https://github.com/changesets/action) will accumulate all the changesets in the development cycle and keep open a PR with the code for bumping versions. **Merging this PR will conclude `versioning` process and will automatically trigger the release process**. The following sections will each type of releases cn be initiated.
 
@@ -56,33 +54,54 @@ An `iteration release` follows these specifications:
 - Being cut from the `default branch`
 - **NOT** following a fixed cycle of development
 - **NOT** having a corresponding [Github release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
-- **NOT** having a corresponding tag
-- **NOT** having a corresponding `release branch`
+- Having a corresponding tag (e.g. `v13.282.0`)
+- **NOT** having a corresponding `release branch`: one is created when the release needs a [patch](#patch-releases)
 
-To initiate a `standard release`:
+To initiate an `iteration release`:
 
 - Run the workflow [(Manual) Prepare New Release](https://github.com/finos/legend-studio/actions/workflows/manual__prepare-new-release.yml) with bump type `minor`
 - Merge the `Iteration Release x.y.0` PR
 
 > ⚠️ Note: before mergining make sure the PR is up-to-date with the latest change merged, sometimes, it can take a while for this PR to get updated. Merging this PR before it gets updated could result in a failed release and we would have to re-release.
 
-## Recovery releases
+## Patch releases
 
-A `recovery release` is meant to patch an old `standard release` with bug fixes; therefore we hardly need to do this. It follows these specifications:
+> Before patching, roll forward if you can: merge the fix into the `default branch` and cut the next [iteration release](#iteration-releases). If a deployment is broken right now, redeploy the previous release's Docker image (e.g. `finos/legend-studio:13.281.0`) while the fix rolls forward. Patch only when a deployment needs the fix but can't take what the `default branch` holds.
 
-- Corresponding to a`patch` version bump (e.g. 1.0.1, 2.0.1, 2.0.2)
-- Being cut from a `release branch` (e.g. `release/1.0.0`)
-- **NOT** following a fixed cycle of development: often coming right after a `standard release` to path bugs
-- **NOT** having a corresponding [Github release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases)
-- **NOT** having a corresponding tag
-- **NOT** having a corresponding `release branch`
+A `patch release` brings bug fixes, already merged into the `default branch`, to a past release. It follows these specifications:
 
-To initiate a `recovery release`:
+- Patching any past `standard` or `iteration` release (e.g. `13.281.0`)
+- Being cut from that release's `release branch` (e.g. `release/13.281.0`), created from the release's commit the first time it is patched
+- Being a prerelease of the next `patch` version, using changesets' [prerelease mode](https://github.com/changesets/changesets/blob/main/docs/prereleases.md) with tag `patch`: e.g. `13.281.1-patch.0`, then `13.281.1-patch.1` for the next patch on the same branch. Libraries get the same suffix (e.g. `@finos/legend-graph@32.10.1-patch.0`), so they never collide with versions the `default branch` has already published, and are published under the NPM dist-tag `patch`, so `latest` never moves back
+- Taking only `patch` changesets
+- Having a corresponding tag (e.g. `v13.281.1-patch.0`) and a [Github release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases) marked as a prerelease
+- **NOT** being merged or cherry-picked back to the `default branch`: the fixes are already there
 
-- Merge the `Recovery Release x.y.z` PR
-- `cherry pick` the commits on the release branch onto the default branch. **Note: please do not merge the release branch back onto the default branch!**. To do this, you can follow [this guide](https://stackoverflow.com/a/3933416). In particular, you can cherry pick between the 2 release commit on this branch (e.g. between `1.0.0` and `1.0.1`) using Git command like `git cherry-pick A..B`, then create a PR against default branch for this. The `cherry-pick` PR name **must follow** the format `Cherry-picking changes in version $VERSION` (e.g. `Cherry-picking changes in version 4.0.0`) or else the pipeline will fail. Check out [these](https://github.com/finos/legend-studio/pull/494) [examples](https://github.com/finos/legend-studio/pull/518). Future patch releases for the same `standard release` will be done on the same release branch. For example, `4.0.2` will be done on top of `4.0.1` on branch `release/1.4.0`.
+To initiate a `patch release`:
 
-> Note that cherry-picking the patch changes back onto the default branch is a **must**, otherwise, we might risk publishing packages with the same versions on NPM when cutting releases on the `default branch`. Also, please note that since the changesets have been consumed as part of the patch release, **there should not be any changeset files added**, if the PR name follows the convention, changeset checks will be skipped, if you made a mistake, you must update the PR name and [repush](https://github.community/t/when-changing-the-pr-title-github-event-pull-request-title-wont-pick-up-the-new-title/171784/2) to skip the changeset check, re-running jobs is not enough.
+- Merge each fix into the `default branch` as its own PR with a `patch` changeset. If a fix reached the `default branch` inside a larger PR (e.g. a merge of a development branch), redo it as its own PR, or the patch release carries everything else in that PR too.
+- Run the workflow [(Manual) Prepare Patch Release](https://github.com/finos/legend-studio/actions/workflows/manual__prepare-patch-release.yml) with the release to patch (e.g. `13.281.0`) and the fix commits on the `default branch`, oldest first. It creates the `release branch` if needed, enters prerelease mode, cherry-picks the commits (bringing their changesets along) and opens a `Prepare Patch Release vx.y.z-patch.n` PR into the `release branch`.
+- Review and merge that PR. The release workflow then opens the `Patch Release vx.y.z-patch.n` PR.
+- Merge the `Patch Release` PR to publish.
+
+`release/*` branches are protected: PRs into them need an approving review, the `verification/cla-signed` check and a linear history, so squash or rebase them.
+
+If the workflow can't prepare the patch release (e.g. a cherry-pick conflicts), do the same by hand and open the PR into the `release branch` yourself:
+
+```sh
+# the commit the release was published from: its tag, or the `chore: bump versions and release` commit with that version
+git push <finos-remote> <release-commit>:refs/heads/release/13.281.0  # first patch of this release only
+git switch -c patch-13.281.0 <finos-remote>/release/13.281.0
+yarn changeset:cli pre enter patch  # first patch of this release only
+git add .changeset/pre.json && git commit -m "chore: enter prerelease mode for patch releases of v13.281.0"
+git cherry-pick -x <fix-commit> ...  # resolve conflicts if any
+```
+
+> The release workflow refuses to create a release PR on a `release branch` that is not in prerelease mode `patch`, or whose changesets ask for more than `patch`; and on the `default branch` when it is in prerelease mode.
+>
+> A `release branch` runs its own copy of the release workflow and scripts, i.e. the ones of the release it was cut from. Releases cut before this process existed still work with the steps above, but their older workflow names the PR `Recovery Release` and does not tag the release. Two kinds of older releases need their `.github/workflows/release.yml` updated on the `release branch`, with a PR, before they can be patched: releases cut before 2025-01-23, which use a Github action that is no longer allowed, and releases up to `13.282.0` if the `NPM_TOKEN` secret is gone, since they publish with it rather than [trusted publishing](https://docs.npmjs.com/trusted-publishers). The workflow token can't push workflow changes, so a person has to open that PR.
+>
+> PRs opened by workflows (e.g. `Prepare Patch Release`) don't start CI checks on their own. Close and reopen the PR to run them.
 
 ## Snapshot releases (!)
 

@@ -3,12 +3,12 @@ name: Release
 on:
   push:
     branches:
-      # Default branch is meant for standard releases, i.e. minor version bumps (e.g. 1.6.0, 1.7.0)
+      # Default branch is meant for standard and iteration releases, i.e. major and minor version bumps (e.g. 14.0.0, 13.282.0)
       - master
-      # Release branches are meant for recovery releases, i.e. patch version bumps (e.g. 1.6.1, 1.7.1)
+      # Release branches are meant for patch releases, i.e. prerelease patch version bumps (e.g. 13.281.1-patch.0)
       - 'release/**'
 
-# This job is shared by both standard and recovery release processes
+# This job is shared by the standard, iteration and patch release processes
 # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md
 jobs:
   release:
@@ -52,9 +52,10 @@ jobs:
         # Prevent `changeset`'s default behavior to create Git tags and publish Github release
         #
         # Conclude the release with the following actions:
-        # 1. Create a tag for the release and publish a Github release for that tag
-        # 2. Create the release branch for the latest release tag
-        # 3. Create a new release milestone and move over open issues in the current milestone and close the current milestone.
+        # 1. Create a tag for every release at the commit it was published from
+        # 2. Publish a Github release for standard and patch releases
+        # 3. For a standard release, create the release branch from the release tag, create a new release milestone,
+        #    move over open issues in the current milestone and close the current milestone.
         # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md
       - name: Conclude new release
         if: steps.changesets.outputs.published == 'true'
