@@ -382,6 +382,50 @@ const TRADES_INGEST_WITH_BATCHES_VIEW: PlainObject<Entity> = {
   },
 };
 
+/** TradesIngest with an incremental view Cube wrote of TRADES's incoming rows: the batches after the tenth */
+const TRADES_INGEST_WITH_INCOMING_VIEW: PlainObject<Entity> = {
+  ...TRADES_INGEST,
+  content: {
+    ...(TRADES_INGEST.content as PlainObject),
+    datasets: [
+      ...((TRADES_INGEST.content as PlainObject).datasets as object[]),
+      {
+        name: 'INCOMING_TRADES',
+        primaryKey: ['TRADE_ID'],
+        privacyClassification: { sensitivity: 'DP10' },
+        source: {
+          _type: 'FunctionSource',
+          function: serializeCubeLambdaForHost(
+            lambda(
+              [],
+              [
+                func('filter', [
+                  ingestAccessor(
+                    [INGEST_PATH, 'TRADES'],
+                    undefined,
+                    undefined,
+                    IngestDatasetQualifier.INCOMING,
+                  ),
+                  lambda(
+                    ['row'],
+                    [
+                      func('greaterThan', [
+                        // a column of its append log, which TRADES's rows lack
+                        columnAccess('row', 'LAKE_BATCH_ID'),
+                        literal({ kind: 'integer', value: '10' }),
+                      ]),
+                    ],
+                  ),
+                ]),
+              ],
+            ),
+          ),
+        },
+      },
+    ],
+  },
+};
+
 const setUp = async (
   entities: PlainObject<Entity>[],
 ): Promise<{
@@ -983,6 +1027,61 @@ describe('Legend Cube in Studio', () => {
       expect(saved.source.function.body[0]?.parameters[0]?.value).toEqual(
         TRADES_METADATA_ACCESSOR,
       );
+    },
+  );
+
+  test(
+    integrationTest(
+      "Edit MatView reads an incremental view of a data set's incoming rows into its steps, and Save MatView keeps the qualifier the view reads it with",
+    ),
+    async () => {
+      const { editorStore, renderResult } = await setUp([
+        TRADES_INGEST_WITH_INCOMING_VIEW,
+        LAKEHOUSE_RUNTIME,
+      ]);
+      await openIngestDefinition(renderResult);
+      const editorGroup = await waitFor(() =>
+        renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+      );
+      await editMatViewInCube(editorGroup, 'INCOMING_TRADES');
+      await renderResult.findByText(
+        `Edit MatView INCOMING_TRADES of ${INGEST_PATH} with Cube`,
+      );
+      // the incoming rows, then the filter on a column only they have, and
+      // nothing to say: Cube writes them back the same
+      await waitFor(() =>
+        expect(getCubeCanvasNodes(renderResult)).toHaveLength(2),
+      );
+      expect(
+        getCubeCanvasNodes(renderResult).map((node) => node.textContent),
+      ).toEqual(
+        expect.arrayContaining([expect.stringContaining('TRADES incoming')]),
+      );
+      expect(
+        renderResult.queryByTestId(LEGEND_CUBE_TEST_ID.LAMBDA_IMPORT),
+      ).toBeNull();
+      const saveMatView = await renderResult.findByRole('button', {
+        name: 'Save MatView',
+      });
+      await waitFor(() =>
+        expect((saveMatView as HTMLButtonElement).disabled).toBe(false),
+      );
+      fireEvent.click(saveMatView);
+      await renderResult.findByText(
+        'Saved materialized view INCOMING_TRADES of TradesIngest',
+      );
+      const saved = (
+        ingestOf(editorStore).content.datasets as PlainObject[]
+      ).at(-1) as {
+        source: { function: { body: { parameters: { value: unknown }[] }[] } };
+      };
+      // the filter's input: the incoming rows still, with the qualifier the
+      // engine types them by, and not the flag it routes batch metadata by
+      expect(saved.source.function.body[0]?.parameters[0]?.value).toEqual({
+        path: [INGEST_PATH, 'TRADES'],
+        metadata: false,
+        accessorQualifier: 'incoming',
+      });
     },
   );
 

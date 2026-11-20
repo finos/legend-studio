@@ -57,6 +57,15 @@ const COORDINATES_REQUIRED = `An ingest data set source needs an ingest definiti
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0;
 
+/** What a source with each qualifier reads of its data set, in words; its rows when it has none */
+const READS_OF_QUALIFIER: Readonly<Record<IngestDatasetQualifier, string>> = {
+  [IngestDatasetQualifier.METADATA]: 'Batch metadata of data set',
+  [IngestDatasetQualifier.INCOMING]: 'Incoming rows of data set',
+  [IngestDatasetQualifier.MILESTONED]: 'Milestoned rows of data set',
+  [IngestDatasetQualifier.INCOMING_MILESTONED]:
+    'Incoming milestoned rows of data set',
+};
+
 /** A qualifier Cube reads, or none for the data set's rows */
 const readIngestDatasetQualifier = (
   value: unknown,
@@ -164,9 +173,11 @@ export class IngestDatasetSource extends SourceNode {
   /** What it reads, in words, whether or not its columns are known */
   describeDataSet(): string {
     const dataSet = `"${this.dataSet}" from ingest definition "${this.ingestDefinitionName}"`;
-    return this.readsMetadata
-      ? `Batch metadata of data set ${dataSet}`
-      : `Data set ${dataSet}`;
+    return `${
+      this.qualifier === undefined
+        ? 'Data set'
+        : READS_OF_QUALIFIER[this.qualifier]
+    } ${dataSet}`;
   }
 
   /** A new source, with the same id and coordinates, and this resolution */
