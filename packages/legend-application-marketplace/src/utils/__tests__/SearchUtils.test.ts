@@ -262,7 +262,7 @@ describe('generatePathForDataProductSearchResult', () => {
 
     const path = generatePathForDataProductSearchResult(result);
     expect(path).toBeDefined();
-    expect(path).toContain('my::DataSpace');
+    expect(path).toContain('my%3A%3ADataSpace');
   });
 });
 
@@ -531,7 +531,7 @@ describe('generatePathForDataProductSearchResult', () => {
       'com::example::MyProduct',
     );
     expect(generatePathForDataProductSearchResult(result)).toBe(
-      '/dataspace/com.example:my-artifact:1.0.0/com::example::MyProduct',
+      '/dataspace/com.example%3Amy-artifact%3A1.0.0/com%3A%3Aexample%3A%3AMyProduct',
     );
   });
 
@@ -546,7 +546,7 @@ describe('generatePathForDataProductSearchResult', () => {
       'https://marketplace.example.com/dataProduct/legacy/com.example:my-artifact:1.0.0/com%3A%3Aexample%3A%3AMyProduct',
     );
     expect(generatePathForDataProductSearchResult(result)).toBe(
-      '/dataspace/com.example:my-artifact:1.0.0/com::example::MyProduct',
+      '/dataspace/com.example%3Amy-artifact%3A1.0.0/com%3A%3Aexample%3A%3AMyProduct',
     );
   });
 
@@ -559,7 +559,7 @@ describe('generatePathForDataProductSearchResult', () => {
       'https://marketplace.example.com/dataProduct/com.example:my-artifact:1.0.0/com%3A%3Aexample%3A%3AMyProduct',
     );
     expect(generatePathForDataProductSearchResult(result)).toBe(
-      '/dataProduct/com.example:my-artifact:1.0.0/com::example::MyProduct',
+      '/dataProduct/com.example%3Amy-artifact%3A1.0.0/com%3A%3Aexample%3A%3AMyProduct',
     );
   });
 
@@ -572,7 +572,7 @@ describe('generatePathForDataProductSearchResult', () => {
       undefined,
     );
     expect(generatePathForDataProductSearchResult(result)).toBe(
-      '/dataspace/org.test:artifact:2.0.0/org::test::Product',
+      '/dataspace/org.test%3Aartifact%3A2.0.0/org%3A%3Atest%3A%3AProduct',
     );
   });
 
@@ -585,7 +585,7 @@ describe('generatePathForDataProductSearchResult', () => {
       'not-a-url',
     );
     expect(generatePathForDataProductSearchResult(result)).toBe(
-      '/dataspace/org.test:artifact:2.0.0/org::test::Product',
+      '/dataspace/org.test%3Aartifact%3A2.0.0/org%3A%3Atest%3A%3AProduct',
     );
   });
 

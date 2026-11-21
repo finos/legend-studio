@@ -216,7 +216,7 @@ test(
     );
     expect(mockWriteText).toHaveBeenCalledWith(
       expect.stringContaining(
-        'test-group:test-artifact:test-version/domain::COVIDDatapace/template/templateQuery',
+        'test-group%3Atest-artifact%3Atest-version/domain%3A%3ACOVIDDatapace/template/templateQuery',
       ),
     );
 
