@@ -17,6 +17,8 @@
 import {
   LogEvent,
   assertErrorThrown,
+  isObject,
+  isString,
   returnUndefOnError,
 } from '@finos/legend-shared';
 import { GRAPH_MANAGER_EVENT } from '../../../../../../../../__lib__/GraphManagerEvent.js';
@@ -24,6 +26,7 @@ import type { PackageableElement } from '../../../../../../../../graph/metamodel
 import type { PackageableElementReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/PackageableElementReference.js';
 import { RawLambda } from '../../../../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import { isValidFullPath } from '../../../../../../../../graph/MetaModelUtils.js';
+import { PRIMITIVE_TYPE } from '../../../../../../../../graph/MetaModelConst.js';
 import { V1_RawLambda } from '../../../../model/rawValueSpecification/V1_RawLambda.js';
 import type { V1_AppliedFunction } from '../../../../model/valueSpecification/application/V1_AppliedFunction.js';
 import type { V1_AppliedProperty } from '../../../../model/valueSpecification/application/V1_AppliedProperty.js';
@@ -393,6 +396,46 @@ const V1_resolveLambdaElementPaths = (
 };
 
 /**
+ * The keys under which raw lambda JSON holds the element paths that
+ * {@link V1_ValueSpecificationPathResolver} may rewrite: element pointers,
+ * enum values and generic types (`fullPath`), legacy hacked units
+ * (`unitType`), properties and graph fetch trees (`class`, `subType`).
+ *
+ * NOTE: keep this in sync with the resolver: a path it rewrites under any
+ * other key would be skipped by {@link V1_hasPathsToResolve}
+ */
+const RESOLVABLE_PATH_KEYS = new Set([
+  'fullPath',
+  'unitType',
+  'class',
+  'subType',
+  'subTypeClass',
+]);
+const PRIMITIVE_TYPE_NAMES = new Set<string>(Object.values(PRIMITIVE_TYPE));
+
+/**
+ * The resolver only rewrites paths that aren't full paths and that resolve
+ * to another element, which primitive types never do. When a raw lambda has
+ * no such path, which is the case for lambdas saved from Studio, resolving
+ * would round-trip it through the protocol model for nothing.
+ */
+const V1_hasPathsToResolve = (value: unknown): boolean => {
+  if (Array.isArray(value)) {
+    return value.some(V1_hasPathsToResolve);
+  }
+  if (isObject(value)) {
+    return Object.entries(value).some(([key, item]) =>
+      isString(item)
+        ? RESOLVABLE_PATH_KEYS.has(key) &&
+          !isValidFullPath(item) &&
+          !PRIMITIVE_TYPE_NAMES.has(item)
+        : V1_hasPathsToResolve(item),
+    );
+  }
+  return false;
+};
+
+/**
  * This method will traverse through the lambda protocol model tree
  * and **with best effort** try to rewrite the lambda so all shortened
  * paths inside the lambda are fully resolved.
@@ -411,7 +454,11 @@ export const V1_buildRawLambdaWithResolvedPaths = (
   rawLambda.parameters = parameters ?? [];
   rawLambda.body = body ?? [];
   let resolved = rawLambda;
-  if (context.enableRawLambdaAutoPathResolution) {
+  if (
+    context.enableRawLambdaAutoPathResolution &&
+    (V1_hasPathsToResolve(rawLambda.body) ||
+      V1_hasPathsToResolve(rawLambda.parameters))
+  ) {
     resolved = V1_resolveLambdaElementPaths(rawLambda, context);
   }
   return new RawLambda(resolved.parameters, resolved.body);
