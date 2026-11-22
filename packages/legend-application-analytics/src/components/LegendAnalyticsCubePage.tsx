@@ -14,16 +14,57 @@
  * limitations under the License.
  */
 
+import { useParams } from '@finos/legend-application/browser';
 import { CubeEditor } from '@finos/legend-cube-builder';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  LEGEND_ANALYTICS_ROUTE_PATTERN_TOKEN,
+  type LegendAnalyticsCubePathParams,
+} from '../__lib__/LegendAnalyticsNavigation.js';
+import {
+  readLegendAnalyticsCubeId,
+  showLegendAnalyticsCubeInAddress,
+} from '../stores/LegendAnalyticsCubeAddress.js';
 import { createLegendAnalyticsCubeHost } from '../stores/LegendAnalyticsCubeHost.js';
 import { useLegendAnalyticsApplicationStore } from './LegendAnalyticsFrameworkProvider.js';
 
-/** The Cube page in Legend Analytics, with a host that lasts as long as the visit */
+/**
+ * The Cube page in Legend Analytics, with a host that lasts as long as the
+ * visit. A saved cube the address names, by `/cube/:cubeId` or `?queryId=`,
+ * opens with the page, and the address then follows the saved cube shown
+ * (PLAN §11.13)
+ */
 export const LegendAnalyticsCubePage: React.FC = () => {
   const applicationStore = useLegendAnalyticsApplicationStore();
+  const { navigator } = applicationStore.navigationService;
+  const params = useParams<LegendAnalyticsCubePathParams>();
   const [host] = useState(() =>
     createLegendAnalyticsCubeHost(applicationStore),
   );
-  return <CubeEditor host={host} />;
+  // read once, as the page opens
+  const [initialCubeId] = useState(() =>
+    readLegendAnalyticsCubeId(
+      navigator,
+      params[LEGEND_ANALYTICS_ROUTE_PATTERN_TOKEN.CUBE_ID],
+    ),
+  );
+  useEffect(() => {
+    if (initialCubeId !== undefined) {
+      // `?queryId=` becomes the path, which then keeps showing the cube
+      showLegendAnalyticsCubeInAddress(navigator, initialCubeId);
+    }
+  }, [navigator, initialCubeId]);
+  // set on Load and Save, cleared on New, Paste and Import (QUESTIONS.md U9)
+  const onSavedCubeChange = useCallback(
+    (cubeId: string | undefined) =>
+      showLegendAnalyticsCubeInAddress(navigator, cubeId),
+    [navigator],
+  );
+  return (
+    <CubeEditor
+      host={host}
+      initialCubeId={initialCubeId}
+      onSavedCubeChange={onSavedCubeChange}
+    />
+  );
 };

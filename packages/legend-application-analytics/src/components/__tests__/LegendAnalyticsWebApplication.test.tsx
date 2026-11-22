@@ -23,7 +23,7 @@ import {
   LEGEND_CUBE_COMMAND_KEY,
   LEGEND_CUBE_TEST_ID,
 } from '@finos/legend-cube-builder';
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { runInAction } from 'mobx';
 import { Core_LegendAnalytics_LegendApplicationPlugin } from '../../application/Core_LegendAnalytics_LegendApplicationPlugin.js';
 import { LegendAnalyticsPluginManager } from '../../application/LegendAnalyticsPluginManager.js';
@@ -106,4 +106,39 @@ test("Runs Cube's Execute on F9 and binds undo to Ctrl/Cmd+Z, through the applic
   });
   fireEvent.keyDown(document, { key: 'F9', code: 'F9' });
   expect(action).toHaveBeenCalledTimes(1);
+});
+
+test('Opens the saved cube /cube/:cubeId names, keeping the address when it fails (PLAN §11.13)', async () => {
+  const { findByTestId } = renderAt('/analytics/cube/my-cube');
+  // the test environment refuses network calls: the store can't be reached
+  const banner = await findByTestId(LEGEND_CUBE_TEST_ID.LOAD_ERROR);
+  expect(banner.textContent).toContain('Error loading query!');
+  expect(banner.textContent).toContain("The Cube store couldn't be reached");
+  expect(window.location.pathname).toBe('/analytics/cube/my-cube');
+});
+
+test('Reads ?queryId= as the saved cube, and moves it into the path', async () => {
+  const { findByTestId } = renderAt('/analytics/?queryId=my-query&a=1');
+  await findByTestId(LEGEND_CUBE_TEST_ID.LOAD_ERROR);
+  await waitFor(() =>
+    expect(window.location.pathname).toBe('/analytics/cube/my-query'),
+  );
+  expect(window.location.search).toBe('?a=1');
+});
+
+test('Keeps the page as the address follows the saved cube between the root and /cube/:cubeId', async () => {
+  const { applicationStore, findByTestId } = renderAt('/analytics/');
+  const editor = await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR);
+  const historyLength = window.history.length;
+  const { navigator } = applicationStore.navigationService;
+  act(() => navigator.updateCurrentLocation('/cube/abc', { replace: true }));
+  await waitFor(() =>
+    expect(window.location.pathname).toBe('/analytics/cube/abc'),
+  );
+  act(() => navigator.updateCurrentLocation('/', { replace: true }));
+  // the router's base drops its trailing slash
+  await waitFor(() => expect(window.location.pathname).toBe('/analytics'));
+  // the same page all along, its editor never remade, and no history entry added
+  expect(await findByTestId(LEGEND_CUBE_TEST_ID.EDITOR)).toBe(editor);
+  expect(window.history.length).toBe(historyLength);
 });

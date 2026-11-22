@@ -62,7 +62,12 @@ const DatasetCard = observer(
         type="button"
         className={`${CARD} border-l-4 border-l-[var(--color-accent)]`}
         title={`Start a new cube on ${dataset.name}, from its first table`}
-        onClick={() => editorState.examples.startOnDataset(dataset)}
+        // it replaces the cube: unsaved changes are asked about first
+        onClick={() =>
+          editorState.persistence.confirmDiscard(() =>
+            editorState.examples.startOnDataset(dataset),
+          )
+        }
       >
         <span className="flex items-center gap-2 text-lg font-medium text-[var(--color-text-primary)]">
           <DatasetIcon
@@ -108,11 +113,14 @@ const ExampleCard = observer(
         type="button"
         className={CARD}
         title={`Open ${example.name}: it replaces this cube and runs`}
-        onClick={() => {
-          flowResult(editorState.examples.openExample(example)).catch(
-            editorState.host.applicationStore.alertUnhandledError,
-          );
-        }}
+        // it replaces the cube: unsaved changes are asked about first
+        onClick={() =>
+          editorState.persistence.confirmDiscard(() => {
+            flowResult(editorState.examples.openExample(example)).catch(
+              editorState.host.applicationStore.alertUnhandledError,
+            );
+          })
+        }
       >
         <span className="flex items-center gap-2 text-base font-medium text-[var(--color-text-primary)]">
           <DatasetIcon

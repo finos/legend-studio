@@ -81,8 +81,15 @@ export interface ApplicationNavigator {
    * location without doing any navigation.
    *
    * NOTE: we need to reset zone when changing location
+   *
+   * With `replace`, the location replaces the current history entry instead
+   * of adding one, e.g. when the address takes a page's state that Back
+   * shouldn't return to
    */
-  updateCurrentLocation(location: NavigationLocation): void;
+  updateCurrentLocation(
+    location: NavigationLocation,
+    options?: { replace?: boolean | undefined },
+  ): void;
 
   /**
    * Update the current zone

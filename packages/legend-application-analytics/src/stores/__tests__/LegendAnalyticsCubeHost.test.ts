@@ -99,6 +99,8 @@ describe('Legend Analytics as the Cube host', () => {
     expect(host.dataProductCatalog).toBeUndefined();
     expect(host.ingestCatalog).toBeUndefined();
     expect(host.dataSpaceEditor).toBeUndefined();
+    // saved cubes, in the engine's Cube store (PLAN §11.13)
+    expect(host.store).toBeDefined();
     expect(host.engineClientSettings.defaultBaseUrl).toBe(
       'https://testEngineUrl',
     );
