@@ -45,8 +45,8 @@ import {
 const MAPPING_PATH = 'test::CovidDataMapping';
 const RUNTIME_PATH = 'test::H2Runtime';
 
-const MAPPING_QUERY_URL = `create/manual/${PROJECT_GAV}/${MAPPING_PATH}/${RUNTIME_PATH}`;
-const SERVICE_QUERY_URL = `create-from-service/${PROJECT_GAV}/${COVID_CASES_SERVICE_PATH}`;
+const MAPPING_QUERY_URL = `create/manual/${encodeURIComponent(PROJECT_GAV)}/${encodeURIComponent(MAPPING_PATH)}/${encodeURIComponent(RUNTIME_PATH)}`;
+const SERVICE_QUERY_URL = `create-from-service/${encodeURIComponent(PROJECT_GAV)}/${encodeURIComponent(COVID_CASES_SERVICE_PATH)}`;
 
 let captured: CapturedEngineRequests;
 

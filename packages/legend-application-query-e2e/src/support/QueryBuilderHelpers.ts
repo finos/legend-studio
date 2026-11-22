@@ -31,7 +31,7 @@ export const TEST_PROJECT_GAV = `org.finos.legend.test:legend-query-test:${TEST_
  * Deep link into the query builder for the mock data space served by the
  * mock depot server (see `@finos/legend-fixture-mock-server`).
  */
-export const TEST_DATA_SPACE_QUERY_URL = `extensions/dataspace/${TEST_PROJECT_GAV}/test::DataSpace/dummyContext`;
+export const TEST_DATA_SPACE_QUERY_URL = `extensions/dataspace/${encodeURIComponent(TEST_PROJECT_GAV)}/${encodeURIComponent('test::DataSpace')}/dummyContext`;
 
 /** `Cases` of the mock data (see `TEST_DATA__COVIDData`), in its natural order. */
 export const ALL_CASES = ['250', '301', '180', '420', '95', '512', '77', '640'];

@@ -403,7 +403,7 @@ test.describe('with a Lakehouse environment', () => {
     const link = await page.evaluate(() => navigator.clipboard.readText());
     expect(link).toMatch(
       new RegExp(
-        `/query/data-product/lakehouse/${TEST_PROJECT_GAV}/${COVID_DATA_PRODUCT_PATH}/${COVID_DEATHS_ACCESS_POINT_ID}$`,
+        `/query/data-product/lakehouse/${encodeURIComponent(TEST_PROJECT_GAV)}/${encodeURIComponent(COVID_DATA_PRODUCT_PATH)}/${COVID_DEATHS_ACCESS_POINT_ID}$`,
       ),
     );
 
