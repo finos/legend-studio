@@ -108,12 +108,12 @@ export class PermitWorkflowServerClient extends AbstractServerClient {
     instanceId: string,
     taskId: string,
     action: V1_PermitTaskAction,
-    justification: string | undefined,
+    comment: string | undefined,
     token: string | undefined,
   ): Promise<PlainObject<V1_PermitTaskActionResponse>> =>
     this.post(
       `${this._workflow()}/${encodeURIComponent(instanceId)}/task/${encodeURIComponent(taskId)}/${action}`,
-      { justification },
+      { comment },
       undefined,
       this._authToken(token),
     );

@@ -36,6 +36,7 @@ import {
   V1_ComputeSpecificationType,
   V1_DatabricksComputeSpecification,
   V1_DatabricksTag,
+  V1_SinglestoreComputeSpecification,
   V1_SnowflakeComputeSpecification,
   V1_UnknownComputeSpecification,
   type V1_ComputeSpecification,
@@ -86,6 +87,14 @@ const V1_databricksComputeSpecificationModelSchema = createModelSchema(
   },
 );
 
+const V1_singlestoreComputeSpecificationModelSchema = createModelSchema(
+  V1_SinglestoreComputeSpecification,
+  {
+    _type: usingConstantValueSchema(V1_ComputeSpecificationType.SINGLESTORE),
+    clusterSize: optional(primitive()),
+  },
+);
+
 const V1_serializeComputeSpecification = (
   value: V1_ComputeSpecification,
 ): PlainObject<V1_ComputeSpecification> => {
@@ -95,6 +104,8 @@ const V1_serializeComputeSpecification = (
     return serialize(V1_snowflakeComputeSpecificationModelSchema, value);
   } else if (value instanceof V1_DatabricksComputeSpecification) {
     return serialize(V1_databricksComputeSpecificationModelSchema, value);
+  } else if (value instanceof V1_SinglestoreComputeSpecification) {
+    return serialize(V1_singlestoreComputeSpecificationModelSchema, value);
   }
   throw new UnsupportedOperationError(
     `Can't serialize compute specification: no compatible serializer available`,
@@ -110,6 +121,8 @@ const V1_deserializeComputeSpecification = (
       return deserialize(V1_snowflakeComputeSpecificationModelSchema, json);
     case V1_ComputeSpecificationType.DATABRICKS:
       return deserialize(V1_databricksComputeSpecificationModelSchema, json);
+    case V1_ComputeSpecificationType.SINGLESTORE:
+      return deserialize(V1_singlestoreComputeSpecificationModelSchema, json);
     default: {
       // forward-compat: preserve any unknown spec subtype
       const unknown = new V1_UnknownComputeSpecification();

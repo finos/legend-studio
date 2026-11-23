@@ -192,6 +192,49 @@ export class DatabricksComputeSpecification
   }
 }
 
+/**
+ * SingleStore standard cluster sizes, smallest to largest. Spelled as in
+ * `compute.pure` and the grammar (`S_4`), not as SingleStore does (`S-4`).
+ */
+export enum SinglestoreClusterSize {
+  S_00 = 'S_00',
+  S_0 = 'S_0',
+  S_1 = 'S_1',
+  S_2 = 'S_2',
+  S_4 = 'S_4',
+  S_6 = 'S_6',
+  S_8 = 'S_8',
+  S_12 = 'S_12',
+  S_16 = 'S_16',
+  S_20 = 'S_20',
+  S_24 = 'S_24',
+  S_28 = 'S_28',
+  S_32 = 'S_32',
+  S_40 = 'S_40',
+  S_48 = 'S_48',
+  S_56 = 'S_56',
+  S_64 = 'S_64',
+}
+
+/**
+ * Not provisioned on deploy: the compute is allocated a pre-registered reader
+ * cluster of exactly this size. The size is required by the compiler, but
+ * stays optional here so an element that omits it loads untouched.
+ */
+export class SinglestoreComputeSpecification
+  extends ComputeSpecification
+  implements Hashable
+{
+  clusterSize: SinglestoreClusterSize | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SINGLESTORE_COMPUTE_SPECIFICATION,
+      this.clusterSize ?? '',
+    ]);
+  }
+}
+
 export class Compute extends PackageableElement {
   owner!: AppDirOwner;
   specification!: ComputeSpecification;

@@ -18,6 +18,7 @@
     { "path": "../legend-graph" },
     { "path": "../legend-query-builder" },
     { "path": "../legend-storage" },
-    { "path": "../legend-server-lakehouse" }
+    { "path": "../legend-server-lakehouse" },
+    { "path": "../legend-server-marketplace" }
   ]
 }

@@ -2519,6 +2519,7 @@ __metadata:
     "@finos/legend-query-builder": "workspace:*"
     "@finos/legend-server-depot": "workspace:*"
     "@finos/legend-server-lakehouse": "workspace:*"
+    "@finos/legend-server-marketplace": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@finos/legend-storage": "workspace:*"
     "@jest/globals": "npm:29.7.0"
@@ -2629,7 +2630,7 @@ __metadata:
     react-dnd: "npm:16.0.1"
     react-dom: "npm:19.0.1"
     react-oidc-context: "npm:3.3.0"
-    react-router-dom: "npm:7.3.0"
+    react-router-dom: "npm:7.18.5"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.0"
     serializr: "npm:3.0.3"
@@ -3007,8 +3008,8 @@ __metadata:
     react-dnd-html5-backend: "npm:16.0.1"
     react-dom: "npm:19.0.1"
     react-oidc-context: "npm:3.3.0"
-    react-router: "npm:7.3.0"
-    react-router-dom: "npm:7.3.0"
+    react-router: "npm:7.18.5"
+    react-router-dom: "npm:7.18.5"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
     serializr: "npm:3.0.3"
@@ -6329,13 +6330,6 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10/7eb1bc5342a9604facd57598a6c62621e244822442976c443efb84ff745246b10d06e8b309b6e80130026a396f19bf6793b7cecd7380169f369dac3bfc46fb99
-  languageName: node
-  linkType: hard
-
-"@types/cookie@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "@types/cookie@npm:0.6.0"
-  checksum: 10/b883348d5bf88695fbc2c2276b1c49859267a55cae3cf11ea1dccc1b3be15b466e637ce3242109ba27d616c77c6aa4efe521e3d557110b4fdd9bc332a12445c2
   languageName: node
   linkType: hard
 
@@ -18533,33 +18527,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:7.3.0":
-  version: 7.3.0
-  resolution: "react-router-dom@npm:7.3.0"
+"react-router-dom@npm:7.18.5":
+  version: 7.18.5
+  resolution: "react-router-dom@npm:7.18.5"
   dependencies:
-    react-router: "npm:7.3.0"
+    react-router: "npm:7.18.5"
   peerDependencies:
     react: ">=18"
     react-dom: ">=18"
-  checksum: 10/4c6ba00cd50af810e75dbb4fe2d5de7491ccf2b4089ff4b61e1c6831f80f4e670a38920532b2fb92bd171d4aa73c37e9ceebfb42fd83a7e7bb9159b0d55f5fa5
+  checksum: 10/7800b87dc15fa468ec3a57b9fb9fc69b3f93ee4ffaaee00230224c862c642a2208dfc779b9f37073b2698d1eff1f0cafef6f5d71e6d361d0c0ff8df1ae10a5e4
   languageName: node
   linkType: hard
 
-"react-router@npm:7.3.0":
-  version: 7.3.0
-  resolution: "react-router@npm:7.3.0"
+"react-router@npm:7.18.5":
+  version: 7.18.5
+  resolution: "react-router@npm:7.18.5"
   dependencies:
-    "@types/cookie": "npm:^0.6.0"
     cookie: "npm:^1.0.1"
     set-cookie-parser: "npm:^2.6.0"
-    turbo-stream: "npm:2.4.0"
   peerDependencies:
     react: ">=18"
     react-dom: ">=18"
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10/f7694785f95b989e55c0ae058c36c5f523e318109aea26f4e1567a3c50dcbff769417c54451d976990c507f83499bfe7bc4ec9bea52b2fabab4e6da57d21b231
+  checksum: 10/e95a532085bfcf6820cc85255343c7fbba75682ac50d3c8e1e4bc1254f30b1e6e1216b61254cc44d78361a9d87cf1d745f833db88a8aae39d4809c954bb85d5a
   languageName: node
   linkType: hard
 
@@ -21028,13 +21020,6 @@ __metadata:
   version: 0.0.6
   resolution: "tunnel@npm:0.0.6"
   checksum: 10/cf1ffed5e67159b901a924dbf94c989f20b2b3b65649cfbbe4b6abb35955ce2cf7433b23498bdb2c5530ab185b82190fce531597b3b4a649f06a907fc8702405
-  languageName: node
-  linkType: hard
-
-"turbo-stream@npm:2.4.0":
-  version: 2.4.0
-  resolution: "turbo-stream@npm:2.4.0"
-  checksum: 10/7079bbc82b58340f783144cd669cc7e598288523103a8d68bb8a4c6bb28c64eccb71d389b33aab07788d3a9030638b795709e15cb8486f722b1cdac59cb58afc
   languageName: node
   linkType: hard
 

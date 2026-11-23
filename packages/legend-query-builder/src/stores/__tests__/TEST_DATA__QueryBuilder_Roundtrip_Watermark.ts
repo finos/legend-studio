@@ -285,3 +285,43 @@ export const TEST_DATA_lambda_watermark_olapGroupBy = {
   ],
   parameters: [],
 };
+
+const buildDataDNSWatermarkLambda = (milestone: object) => ({
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'forDataDNSWatermark',
+      parameters: [
+        {
+          _type: 'func',
+          function: 'getAll',
+          parameters: [
+            {
+              _type: 'packageableElementPtr',
+              fullPath: 'model::pure::tests::model::simple::Person',
+            },
+          ],
+        },
+        {
+          _type: 'enumValue',
+          fullPath: 'meta::datalake::functions::DataDNSEnv',
+          value: 'PROD',
+        },
+        { _type: 'string', value: 'mySynonymRegistry' },
+        { _type: 'strictDate', value: '2026-08-31' },
+        milestone,
+      ],
+    },
+  ],
+  parameters: [],
+});
+
+export const TEST_DATA_lambda_dataDNSWatermark = buildDataDNSWatermarkLambda({
+  _type: 'collection',
+  multiplicity: { lowerBound: 0, upperBound: 0 },
+  values: [],
+});
+
+export const TEST_DATA_lambda_dataDNSWatermark_milestone =
+  buildDataDNSWatermarkLambda({ _type: 'string', value: 'EOD' });

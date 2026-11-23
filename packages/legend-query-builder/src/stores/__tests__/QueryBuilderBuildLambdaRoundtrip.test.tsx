@@ -128,6 +128,8 @@ import {
   TEST_DATA_lambda_watermark_filter_Constant,
   TEST_DATA_lambda_watermark_olapGroupBy,
   TEST_DATA_lambda_watermark_Parameter,
+  TEST_DATA_lambda_dataDNSWatermark,
+  TEST_DATA_lambda_dataDNSWatermark_milestone,
 } from './TEST_DATA__QueryBuilder_Roundtrip_Watermark.js';
 import {
   TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables,
@@ -215,6 +217,8 @@ const postFilterCtx = {
 const forWatermarkCtx = {
   entities: TEST_DATA__ComplexRelationalModel,
 };
+
+const forDataDNSWatermarkCtx = forWatermarkCtx;
 
 const olapGroupbyCtx = {
   entities: TEST_DATA__OlapGroupBy_entities,
@@ -440,6 +444,18 @@ const cases: RoundtripTestCase[] = [
     'Watermark with parameter value',
     forWatermarkCtx,
     TEST_DATA_lambda_watermark_Parameter,
+    undefined,
+  ],
+  [
+    'Data DNS watermark without milestone',
+    forDataDNSWatermarkCtx,
+    TEST_DATA_lambda_dataDNSWatermark,
+    undefined,
+  ],
+  [
+    'Data DNS watermark with milestone',
+    forDataDNSWatermarkCtx,
+    TEST_DATA_lambda_dataDNSWatermark_milestone,
     undefined,
   ],
   [

@@ -400,6 +400,22 @@ describe(unitTest('IR printer'), () => {
     ).toBe('#I{a::sales::OrdersIngest.TRADES|metadata}#');
   });
 
+  test.each(Object.values(IngestDatasetQualifier))(
+    "Prints a data set's qualifier, %s, as the engine reads it",
+    (qualifier) => {
+      expect(
+        printIR(
+          ingestAccessor(
+            ['a::sales::OrdersIngest', 'TRADES'],
+            undefined,
+            undefined,
+            qualifier,
+          ),
+        ),
+      ).toBe(`#I{a::sales::OrdersIngest.TRADES|${qualifier}}#`);
+    },
+  );
+
   test('Quotes enumeration values that are not identifiers', () => {
     expect(printIR(enumValue('a::E', 'EMEA'))).toBe('a::E.EMEA');
     expect(printIR(enumValue('a::E', 'Dark Blue'))).toBe("a::E.'Dark Blue'");

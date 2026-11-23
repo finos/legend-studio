@@ -214,6 +214,7 @@ export {
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProduct,
   V1_DataProductRegion,
+  V1_DataJurisdiction,
   V1_DeliveryFrequency,
   V1_DataProductOperationalMetadata,
   V1_DataProductDiagram,
@@ -248,6 +249,8 @@ export {
   V1_DatabricksClusterSize,
   V1_DatabricksSpotInstancePolicy,
   V1_DatabricksTag,
+  V1_SinglestoreComputeSpecification,
+  V1_SinglestoreClusterSize,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/compute/V1_Compute.js';
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
@@ -798,6 +801,7 @@ export * from './graph-manager/action/changeDetection/AvailabilityObserveHelper.
 
 // ------------------------------------- Data Product --------------------------------------------
 export {
+  DataJurisdiction,
   DeliveryFrequency,
   OperationalMetadata,
   Region,
@@ -848,6 +852,8 @@ export {
   DatabricksClusterSize,
   DatabricksSpotInstancePolicy,
   DatabricksTag,
+  SinglestoreComputeSpecification,
+  SinglestoreClusterSize,
 } from './graph/metamodel/pure/compute/Compute.js';
 export * from './graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
 export * from './graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';

@@ -669,20 +669,21 @@ export class QueryBuilderValueSpecificationProcessor
       } else if (
         matchFunctionName(precedingExpression.functionName, [
           QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
+          QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATA_DNS_WATERMARK,
         ])
       ) {
         processFilterExpression(valueSpecification, this.queryBuilderState);
         return;
       } else {
         throw new UnsupportedOperationError(
-          `Can't process filter() expression: only support filter() immediately following getAll() or project()/forWatermark()/groupBy()/olapGroupBy()`,
+          `Can't process filter() expression: only support filter() immediately following getAll() or project()/forWatermark()/forDataDNSWatermark()/groupBy()/olapGroupBy()`,
         );
       }
     } else if (
-      matchFunctionName(
-        functionName,
+      matchFunctionName(functionName, [
         QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK,
-      )
+        QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATA_DNS_WATERMARK,
+      ])
     ) {
       processWatermarkExpression(
         valueSpecification,

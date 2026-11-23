@@ -128,6 +128,37 @@ describe(unitTest('Saved specs of ingest cubes'), () => {
     expect(node?.ingestDefinitionUrn).toBe(URN);
   });
 
+  test.each(Object.values(IngestDatasetQualifier))(
+    'Saves a source that reads %s with its qualifier, and reads it back as it was saved',
+    (qualifier) => {
+      const query = SPEC.query as { nodes: JsonObject[] };
+      const [first, ...others] = query.nodes;
+      const { schemaSnapshot, laterKey, ...coordinates } = first as JsonObject;
+      const spec: JsonObject = {
+        ...SPEC,
+        query: {
+          ...query,
+          nodes: [
+            {
+              ...coordinates,
+              qualifier,
+              schemaSnapshot: schemaSnapshot as JsonValue,
+              laterKey: laterKey as JsonValue,
+            },
+            ...others,
+          ],
+        },
+      };
+      const { document } = decodeCubeSpec(spec, { registry: REGISTRY });
+      const [node] = document.query.nodes as IngestDatasetSource[];
+      expect(node?.qualifier).toBe(qualifier);
+      expect(node?.resolution.kind).toBe('resolved');
+      expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
+        JSON.stringify(spec),
+      );
+    },
+  );
+
   test("Saves a source of a data set's batch metadata with its qualifier, and refuses one Cube doesn't read", () => {
     const query = SPEC.query as { nodes: JsonObject[] };
     const [first, ...others] = query.nodes;
@@ -151,7 +182,7 @@ describe(unitTest('Saved specs of ingest cubes'), () => {
     expect(JSON.stringify(encodeCubeSpec(document, REGISTRY))).toBe(
       JSON.stringify(spec),
     );
-    ['incoming', 'METADATA', '', 12].forEach((value) =>
+    ['Incoming', 'METADATA', '', 12].forEach((value) =>
       expect(() =>
         decodeCubeSpec(withFirstNodeField('qualifier', value), {
           registry: REGISTRY,

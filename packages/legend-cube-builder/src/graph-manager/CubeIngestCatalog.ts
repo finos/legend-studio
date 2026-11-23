@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { ModelContext, Schema } from '@finos/legend-cube';
+import {
+  IngestDatasetQualifier,
+  type ModelContext,
+  type Schema,
+} from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   type CubeDataProductEnvironmentType,
@@ -37,6 +41,12 @@ export class CubeIngestDataSet {
   readonly name: string;
   /** Its columns: the declared ones, then the milestoning ones of its write mode; none when they can't be read */
   readonly schema: Schema | undefined;
+  /**
+   * Its columns as `#I{definition.dataSet|incoming}#` reads them: its own,
+   * then those its append log adds; none when it can't be picked, or has a
+   * column of its own named as one of those
+   */
+  readonly incomingSchema: Schema | undefined;
   /** Why it can't be picked, e.g. it is a materialized view; none when it can */
   readonly disabledReason: string | undefined;
   readonly primaryKey: readonly string[];
@@ -44,13 +54,32 @@ export class CubeIngestDataSet {
   constructor(fields: {
     name: string;
     schema?: Schema | undefined;
+    incomingSchema?: Schema | undefined;
     disabledReason?: string | undefined;
     primaryKey?: readonly string[];
   }) {
     this.name = fields.name;
     this.schema = fields.schema;
+    this.incomingSchema = fields.incomingSchema;
     this.disabledReason = fields.disabledReason;
     this.primaryKey = fields.primaryKey ?? [];
+  }
+
+  /**
+   * The columns an accessor with that qualifier reads of it, as the engine
+   * types them: its rows' for none, and for `milestoned` and
+   * `incomingMilestoned`, which are the milestoned table's; its append log's
+   * for `incoming`. None when they can't be read. Its batch metadata has no
+   * data set's columns, so is not asked.
+   */
+  getSchemaRead(
+    qualifier:
+      | Exclude<IngestDatasetQualifier, IngestDatasetQualifier.METADATA>
+      | undefined,
+  ): Schema | undefined {
+    return qualifier === IngestDatasetQualifier.INCOMING
+      ? this.incomingSchema
+      : this.schema;
   }
 
   get isPickable(): boolean {
@@ -199,6 +228,8 @@ export interface CubeIngestDataSetLocation {
   readonly ingestDefinitionUrn: string;
   readonly ingestDefinition: string;
   readonly dataSet: string;
+  /** What the source reads of the data set; its rows when it has none */
+  readonly qualifier?: IngestDatasetQualifier | undefined;
 }
 
 /**

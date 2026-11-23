@@ -15,7 +15,12 @@
  */
 
 import { beforeAll, describe, expect, test } from '@jest/globals';
-import { PrimitiveType, type Schema, TypeFamily } from '@finos/legend-cube';
+import {
+  IngestDatasetQualifier,
+  PrimitiveType,
+  type Schema,
+  TypeFamily,
+} from '@finos/legend-cube';
 import {
   IngestDefinition,
   IngestionAccessor,
@@ -32,6 +37,7 @@ import type { CubeIngestDataSet } from '../../../../CubeIngestCatalog.js';
 import {
   V1_CUBE_INGEST_DATA_SET_REASON,
   V1_getCubeIngestMetadataSchema,
+  V1_getCubeIngestSourceSchema,
   V1_readCubeIngestDataSets,
 } from '../V1_CubeIngestDefinition.js';
 
@@ -180,6 +186,163 @@ describe("An ingest definition's data sets", () => {
     ]);
     expect(byName(dataSets, 'TRADES')?.schema?.columns[3]?.type).toBe(
       PrimitiveType.get('Integer'),
+    );
+  });
+
+  test("Types a data set's columns as #I{…|incoming}# reads them: its append log's, whatever its write mode", () => {
+    const own = [
+      'TRADE_ID: meta::pure::precisePrimitives::BigInt',
+      'DESK: meta::pure::precisePrimitives::Varchar(20)',
+      'PRICE: meta::pure::precisePrimitives::Numeric(18,4)?',
+      'QUANTITY: Integer',
+      'TRADED_ON: StrictDate',
+    ];
+    const timestamp = 'meta::pure::precisePrimitives::Timestamp';
+    // the definition's write mode, batch milestoned: the digest, then the
+    // batch each row came in with and when it was appended; the batches in
+    // and out are its milestoned rows'
+    expect(describeSchema(byName(dataSets, 'TRADES')?.incomingSchema)).toEqual([
+      ...own,
+      'LAKE_DIGEST: String',
+      'LAKE_BATCH_ID: Integer',
+      `LAKE_APPEND_TIME: ${timestamp}`,
+    ]);
+    // business temporal keeps a digest too, and none of its business dates
+    expect(describeSchema(byName(dataSets, 'DESKS')?.incomingSchema)).toEqual([
+      'DESK: String',
+      'LAKE_DIGEST: String',
+      'LAKE_BATCH_ID: Integer',
+      `LAKE_APPEND_TIME: ${timestamp}`,
+    ]);
+    // append only keeps no digest
+    expect(describeSchema(byName(dataSets, 'FLAGS')?.incomingSchema)).toEqual([
+      'FLAG: Boolean',
+      'LAKE_BATCH_ID: Integer',
+      `LAKE_APPEND_TIME: ${timestamp}`,
+    ]);
+    // none for a data set Cube can't pick
+    dataSets
+      .filter((each) => !each.isPickable)
+      .forEach((each) => expect(each.incomingSchema).toBeUndefined());
+  });
+
+  test('Keeps no digest for a batch-milestoned data set that overwrites on snapshot, and adds the times a data set keeps in the lake', () => {
+    const withPreprocessors = (
+      writeMode: string,
+      ...types: string[]
+    ): CubeIngestDataSet | undefined =>
+      byName(
+        V1_readCubeIngestDataSets({
+          datasets: [
+            {
+              ...dataSet('SNAP', [column('ID', 'Integer')], writeMode),
+              preprocessors: types.map((_type) => ({ _type })),
+            },
+          ],
+        }),
+        'SNAP',
+      );
+    const columns = (set: CubeIngestDataSet | undefined): string[] => [
+      ...(set?.incomingSchema?.names() ?? []),
+    ];
+    expect(columns(withPreprocessors('batch_milestoned'))).toEqual([
+      'ID',
+      'LAKE_DIGEST',
+      'LAKE_BATCH_ID',
+      'LAKE_APPEND_TIME',
+    ]);
+    expect(
+      columns(withPreprocessors('batch_milestoned', 'OverwriteOnSnapshot')),
+    ).toEqual(['ID', 'LAKE_BATCH_ID', 'LAKE_APPEND_TIME']);
+    // business temporal keeps its digest, whatever it overwrites
+    expect(
+      columns(
+        withPreprocessors(
+          'batch_milestoned_business_temporal',
+          'OverwriteOnSnapshot',
+        ),
+      ),
+    ).toEqual(['ID', 'LAKE_DIGEST', 'LAKE_BATCH_ID', 'LAKE_APPEND_TIME']);
+    expect(
+      columns(withPreprocessors('append_only', 'IncludeInZOutZTimestamp')),
+    ).toEqual([
+      'ID',
+      'LAKE_BATCH_ID',
+      'LAKE_APPEND_TIME',
+      'LAKE_IN_Z',
+      'LAKE_OUT_Z',
+    ]);
+    // a preprocessor that changes no column
+    expect(
+      columns(withPreprocessors('append_only', 'TrimTrailingWhitespace')),
+    ).toEqual(['ID', 'LAKE_BATCH_ID', 'LAKE_APPEND_TIME']);
+    // the rows keep what they had
+    expect(
+      describeSchema(
+        withPreprocessors('append_only', 'IncludeInZOutZTimestamp')?.schema,
+      ),
+    ).toEqual(['ID: Integer']);
+  });
+
+  test("Picks a data set for its rows when it declares a column of the append log's, but cannot read its incoming rows", () => {
+    const clash = byName(
+      V1_readCubeIngestDataSets({
+        datasets: [
+          dataSet(
+            'CLASH_LOG',
+            [column('ID', 'Integer'), column('LAKE_BATCH_ID', 'Integer')],
+            'append_only',
+          ),
+        ],
+      }),
+      'CLASH_LOG',
+    );
+    expect(clash?.isPickable).toBe(true);
+    expect(describeSchema(clash?.schema)).toEqual([
+      'ID: Integer',
+      'LAKE_BATCH_ID: Integer',
+    ]);
+    expect(clash?.incomingSchema).toBeUndefined();
+    expect(
+      V1_getCubeIngestSourceSchema(clash, IngestDatasetQualifier.INCOMING),
+    ).toBeUndefined();
+    expect(V1_getCubeIngestSourceSchema(clash, undefined)).toBe(clash?.schema);
+  });
+
+  test("Gives a source the columns its qualifier reads: the data set's rows for none, milestoned and incoming milestoned, its append log for incoming, its batch metadata for metadata", () => {
+    const trades = byName(dataSets, 'TRADES');
+    expect(V1_getCubeIngestSourceSchema(trades, undefined)).toBe(
+      trades?.schema,
+    );
+    [
+      IngestDatasetQualifier.MILESTONED,
+      IngestDatasetQualifier.INCOMING_MILESTONED,
+    ].forEach((qualifier) =>
+      expect(V1_getCubeIngestSourceSchema(trades, qualifier)).toBe(
+        trades?.schema,
+      ),
+    );
+    expect(
+      V1_getCubeIngestSourceSchema(trades, IngestDatasetQualifier.INCOMING),
+    ).toBe(trades?.incomingSchema);
+    expect(trades?.incomingSchema).not.toBe(trades?.schema);
+    // its batch metadata needs no data set
+    [trades, undefined, byName(dataSets, 'DAILY')].forEach((each) =>
+      expect(
+        V1_getCubeIngestSourceSchema(each, IngestDatasetQualifier.METADATA),
+      ).toBe(V1_getCubeIngestMetadataSchema()),
+    );
+    // nothing of a data set Cube can't pick, or that isn't there
+    [undefined, byName(dataSets, 'DAILY'), byName(dataSets, 'EMPTY')].forEach(
+      (each) =>
+        [
+          undefined,
+          IngestDatasetQualifier.INCOMING,
+          IngestDatasetQualifier.MILESTONED,
+          IngestDatasetQualifier.INCOMING_MILESTONED,
+        ].forEach((qualifier) =>
+          expect(V1_getCubeIngestSourceSchema(each, qualifier)).toBeUndefined(),
+        ),
     );
   });
 

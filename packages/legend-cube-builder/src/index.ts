@@ -54,7 +54,10 @@ export {
   type CubeEngineConfig,
   type CubeLakehouseServices,
 } from './graph-manager/protocol/pure/CubeEngineBuilder.js';
-export { readCubeIngestDataSets } from './graph-manager/protocol/pure/CubeProtocolJson.js';
+export {
+  getCubeIngestSourceSchema,
+  readCubeIngestDataSets,
+} from './graph-manager/protocol/pure/CubeProtocolJson.js';
 export type { CubeLakehouseEnvironment } from './graph-manager/CubeLakehouseEnvironment.js';
 export {
   type CubeHost,

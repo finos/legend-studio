@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace
 
+## 0.5.19
+
+## 0.5.18
+
+### Patch Changes
+
+- [#5920](https://github.com/finos/legend-studio/pull/5920) [`bc4a926`](https://github.com/finos/legend-studio/commit/bc4a926c9d33a34bc808fe83bc435b48999b600e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Keep a closed home page banner closed. Marketplace now remembers in the browser which banners a user closed, so a closed banner no longer comes back after a reload or on the next visit. A plugin that adds banners through `getExtraHomePageBannerConfigs` should keep each banner's `id` the same, and give it a new `id` to show changed content to everyone again.
+
+- [#5926](https://github.com/finos/legend-studio/pull/5926) [`0ce7a95`](https://github.com/finos/legend-studio/commit/0ce7a9568c5596c8d20554ab721670ca621fb911) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - An access point's definition flow opens the calls of user-defined functions (PLAN §11.33): the viewer state takes a `loadFunctions` action, beside `loadIngestDefinition`, and Marketplace gives it `createDepotFunctionLoader`, which reads every function of the data product's project and its dependencies from Depot in one request, kept for the page. The functions load before the ingest definitions, as a function's body may read some; a function's Pure shows under the flow; a line says when a function drawn as one box leaves the steps after it unchecked; and the flow's telemetry counts the calls opened and the ones drawn as one box, by why.
+
 ## 0.5.17
 
 ### Patch Changes

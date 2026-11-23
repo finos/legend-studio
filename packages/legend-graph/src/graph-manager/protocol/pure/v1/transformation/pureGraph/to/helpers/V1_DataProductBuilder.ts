@@ -47,6 +47,7 @@ import {
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_buildAppDirNode } from './V1_AppDirNodeBuilderHelper.js';
 import {
+  type DataJurisdiction,
   type DeliveryFrequency,
   OperationalMetadata,
   type Region,
@@ -184,6 +185,10 @@ export const V1_buildDataProductOperationalMetadata = (
     operationalMetadata.updateFrequency as DeliveryFrequency | undefined;
   metamodelOperationalMetadata.coverageRegions =
     operationalMetadata.coverageRegions as Region[] | undefined;
+  metamodelOperationalMetadata.accessibilityJurisdictions =
+    operationalMetadata.accessibilityJurisdictions as
+      | DataJurisdiction[]
+      | undefined;
   return metamodelOperationalMetadata;
 };
 

@@ -19,8 +19,10 @@ import { observer } from 'mobx-react-lite';
 import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type AppDirOwner,
+  type SinglestoreComputeSpecification,
   type SnowflakeComputeSpecification,
   AppDirLevel,
+  SinglestoreClusterSize,
   AppDirNode,
   observe_AppDirNode,
 } from '@finos/legend-graph';
@@ -46,6 +48,7 @@ import {
   getVisibleComputeFormSections,
 } from '../../../../stores/editor/editor-state/element-editor-state/compute/ComputeFormDescriptor.js';
 import { SNOWFLAKE_COMPUTE_FORM_DESCRIPTOR } from '../../../../stores/editor/editor-state/element-editor-state/compute/SnowflakeComputeFormDescriptor.js';
+import { singlestoreSpec_setClusterSize } from '../../../../stores/graph-modifier/DSL_Compute_Singlestore_GraphModifierHelper.js';
 import {
   appDirNode_setAppDirId,
   appDirOwner_setProdParallel,
@@ -298,6 +301,49 @@ const SnowflakeForm = observer(
   },
 );
 
+const SINGLESTORE_CLUSTER_SIZE_OPTIONS: ComputeEnumOption[] = Object.values(
+  SinglestoreClusterSize,
+).map((size) => ({ label: size, value: size }));
+
+const SingleStoreForm = observer(
+  (props: { spec: SinglestoreComputeSpecification; isReadOnly: boolean }) => {
+    const { spec, isReadOnly } = props;
+    const applicationStore = useApplicationStore();
+    const selected: ComputeEnumOption | null =
+      SINGLESTORE_CLUSTER_SIZE_OPTIONS.find(
+        (option) => option.value === spec.clusterSize,
+      ) ?? null;
+
+    return (
+      <PanelForm>
+        <LabelledSection label="Cluster Size">
+          <CustomSelectorInput
+            options={SINGLESTORE_CLUSTER_SIZE_OPTIONS}
+            value={selected}
+            onChange={(option: ComputeEnumOption | null): void =>
+              singlestoreSpec_setClusterSize(
+                spec,
+                option?.value as SinglestoreClusterSize | undefined,
+              )
+            }
+            isClearable={false}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+            disabled={isReadOnly}
+          />
+          {!spec.clusterSize && (
+            <div className="input-group__error-message input--small">
+              A cluster size is required
+            </div>
+          )}
+        </LabelledSection>
+      </PanelForm>
+    );
+  },
+);
+
 export const ComputeEditor = observer(() => {
   const editorStore = useEditorStore();
   const applicationStore = useApplicationStore();
@@ -305,11 +351,18 @@ export const ComputeEditor = observer(() => {
     editorStore.tabManagerState.getCurrentEditorState(ComputeEditorState);
   const isReadOnly = state.isReadOnly;
   const spec = state.snowflakeSpecification;
+  const singlestoreSpec = state.singlestoreSpecification;
 
   return (
     <div className="compute-editor">
       <PanelHeader
-        title={spec ? SNOWFLAKE_COMPUTE_FORM_DESCRIPTOR.label : 'compute'}
+        title={
+          spec
+            ? SNOWFLAKE_COMPUTE_FORM_DESCRIPTOR.label
+            : singlestoreSpec
+              ? 'SingleStore compute'
+              : 'compute'
+        }
         darkMode={
           !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
         }
@@ -324,6 +377,8 @@ export const ComputeEditor = observer(() => {
             applyEdit={state.applyFieldEdit}
             isReadOnly={isReadOnly}
           />
+        ) : singlestoreSpec ? (
+          <SingleStoreForm spec={singlestoreSpec} isReadOnly={isReadOnly} />
         ) : (
           <div className="compute-editor__unknown-message">
             This Compute&apos;s specification type is not supported in form
