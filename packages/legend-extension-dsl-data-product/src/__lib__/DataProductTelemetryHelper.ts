@@ -30,6 +30,9 @@ export enum DATA_PRODUCT_EVENT {
   SHOW_ACCESS_POINT_DEFINITION_FLOW = 'marketplace.show.access-point-definition-flow',
   REFUSE_ACCESS_POINT_DEFINITION_FLOW = 'marketplace.refuse.access-point-definition-flow',
   FAIL_ACCESS_POINT_DEFINITION_FLOW = 'marketplace.fail.access-point-definition-flow',
+  SHOW_INGEST_VIEW_FLOW = 'marketplace.show.ingest-view-flow',
+  REFUSE_INGEST_VIEW_FLOW = 'marketplace.refuse.ingest-view-flow',
+  FAIL_INGEST_VIEW_FLOW = 'marketplace.fail.ingest-view-flow',
 }
 
 export enum PRODUCT_INTEGRATION_TYPE {
@@ -89,6 +92,48 @@ export type AccessPointDefinitionFlow_TelemetryData = {
         versionId: string;
       }
     | undefined;
+};
+
+/** The materialized view in Producer Info whose flow an event is about */
+export type IngestViewFlow_TelemetryData = {
+  dataProduct: string;
+  ingestDefinition: string;
+  dataSet: string;
+  /** The data product's version; none for an ad-hoc deployment */
+  origin?:
+    | {
+        groupId: string;
+        artifactId: string;
+        versionId: string;
+      }
+    | undefined;
+};
+
+/** A definition's flow, once read by Legend Cube */
+export type DefinitionFlow_TelemetryData = {
+  steps: number;
+  unknownDataSets: string[];
+  durationMs: number;
+  functionCallsOpened: number;
+  functionCallsClosed: Record<string, number>;
+  scalarFunctionSteps: number;
+  functionsUnloaded: boolean;
+  /** How many SQL, `#SQL{…}#`, it holds */
+  sqlSteps: number;
+  /** How many of its SQL are drawn as the steps of their SQL, not one box */
+  sqlOpened: number;
+};
+
+/** Why Legend Cube can't read a definition, so it shows as Pure */
+export type DefinitionFlowRefusal_TelemetryData = {
+  reason: string;
+  functionName: string | undefined;
+};
+
+/** Why a definition's flow couldn't be shown, though Cube didn't refuse it */
+export type DefinitionFlowFailure_TelemetryData = {
+  kind: string;
+  error: string;
 };
 
 export type MarketplaceUserSession = {
@@ -316,6 +361,17 @@ export class DataProductTelemetryHelper {
     );
   }
 
+  /** Logs an event about a definition's flow, in the user's session */
+  private static logDefinitionFlowEvent(
+    telemetryService: TelemetryService,
+    event: DATA_PRODUCT_EVENT,
+    data: object,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(event, { ...data, ...session });
+  }
+
   /**
    * An access point's definition, read by Legend Cube, opened as its flow:
    * how many steps it has, the data sets whose columns couldn't be loaded,
@@ -328,28 +384,12 @@ export class DataProductTelemetryHelper {
   static logEvent_ShowAccessPointDefinitionFlow(
     telemetryService: TelemetryService,
     accessPoint: AccessPointDefinitionFlow_TelemetryData,
-    flow: {
-      steps: number;
-      unknownDataSets: string[];
-      durationMs: number;
-      functionCallsOpened: number;
-      functionCallsClosed: Record<string, number>;
-      scalarFunctionSteps: number;
-      functionsUnloaded: boolean;
-      sqlSteps: number;
-      /** How many of its SQL are drawn as the steps of their SQL, not one box */
-      sqlOpened: number;
-    },
+    flow: DefinitionFlow_TelemetryData,
   ): void {
-    this.updateEventId();
-    const session = this.getOrCreateUserSession();
-    telemetryService.logEvent(
+    this.logDefinitionFlowEvent(
+      telemetryService,
       DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
-      {
-        ...accessPoint,
-        ...flow,
-        ...session,
-      },
+      { ...accessPoint, ...flow },
     );
   }
 
@@ -361,20 +401,15 @@ export class DataProductTelemetryHelper {
   static logEvent_RefuseAccessPointDefinitionFlow(
     telemetryService: TelemetryService,
     accessPoint: AccessPointDefinitionFlow_TelemetryData,
-    refusal: {
-      reason: string;
-      functionName: string | undefined;
-    },
+    refusal: DefinitionFlowRefusal_TelemetryData,
   ): void {
-    this.updateEventId();
-    const session = this.getOrCreateUserSession();
-    telemetryService.logEvent(
+    this.logDefinitionFlowEvent(
+      telemetryService,
       DATA_PRODUCT_EVENT.REFUSE_ACCESS_POINT_DEFINITION_FLOW,
       {
         ...accessPoint,
         reason: refusal.reason,
         functionName: refusal.functionName,
-        ...session,
       },
     );
   }
@@ -386,21 +421,67 @@ export class DataProductTelemetryHelper {
   static logEvent_FailAccessPointDefinitionFlow(
     telemetryService: TelemetryService,
     accessPoint: AccessPointDefinitionFlow_TelemetryData,
-    failure: {
-      kind: string;
-      error: string;
-    },
+    failure: DefinitionFlowFailure_TelemetryData,
   ): void {
-    this.updateEventId();
-    const session = this.getOrCreateUserSession();
-    telemetryService.logEvent(
+    this.logDefinitionFlowEvent(
+      telemetryService,
       DATA_PRODUCT_EVENT.FAIL_ACCESS_POINT_DEFINITION_FLOW,
       {
         ...accessPoint,
         failure: failure.kind,
         error: failure.error,
         status: TELEMETRY_EVENT_STATUS.FAILURE,
-        ...session,
+      },
+    );
+  }
+
+  /**
+   * A materialized view's function, read by Legend Cube, opened as its flow
+   * in Producer Info: as for an access point's definition
+   */
+  static logEvent_ShowIngestViewFlow(
+    telemetryService: TelemetryService,
+    view: IngestViewFlow_TelemetryData,
+    flow: DefinitionFlow_TelemetryData,
+  ): void {
+    this.logDefinitionFlowEvent(
+      telemetryService,
+      DATA_PRODUCT_EVENT.SHOW_INGEST_VIEW_FLOW,
+      { ...view, ...flow },
+    );
+  }
+
+  /** Legend Cube can't read a materialized view's function, so it shows as Pure */
+  static logEvent_RefuseIngestViewFlow(
+    telemetryService: TelemetryService,
+    view: IngestViewFlow_TelemetryData,
+    refusal: DefinitionFlowRefusal_TelemetryData,
+  ): void {
+    this.logDefinitionFlowEvent(
+      telemetryService,
+      DATA_PRODUCT_EVENT.REFUSE_INGEST_VIEW_FLOW,
+      {
+        ...view,
+        reason: refusal.reason,
+        functionName: refusal.functionName,
+      },
+    );
+  }
+
+  /** A materialized view's flow couldn't be shown, though Cube didn't refuse it */
+  static logEvent_FailIngestViewFlow(
+    telemetryService: TelemetryService,
+    view: IngestViewFlow_TelemetryData,
+    failure: DefinitionFlowFailure_TelemetryData,
+  ): void {
+    this.logDefinitionFlowEvent(
+      telemetryService,
+      DATA_PRODUCT_EVENT.FAIL_INGEST_VIEW_FLOW,
+      {
+        ...view,
+        failure: failure.kind,
+        error: failure.error,
+        status: TELEMETRY_EVENT_STATUS.FAILURE,
       },
     );
   }

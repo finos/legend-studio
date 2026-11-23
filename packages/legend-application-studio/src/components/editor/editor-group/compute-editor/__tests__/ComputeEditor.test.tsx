@@ -38,6 +38,8 @@ import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test'
 import {
   type AppDirOwner,
   AppDirLevel,
+  SinglestoreClusterSize,
+  SinglestoreComputeSpecification,
   SnowflakeComputeSpecification,
   SnowflakeResourceConstraint,
   SnowflakeScalingPolicy,
@@ -136,6 +138,40 @@ const TEST_DATA__ComputeElements = [
     },
     classifierPath: COMPUTE_CLASSIFIER,
   },
+  {
+    path: 'test::SingleStoreReader',
+    content: {
+      _type: 'compute',
+      name: 'SingleStoreReader',
+      package: 'test',
+      owner: {
+        _type: 'appDir',
+        production: { appDirId: 12345, level: 'DEPLOYMENT' },
+      },
+      specification: {
+        _type: 'singlestoreComputeSpecification',
+        clusterSize: 'S_2',
+      },
+    },
+    classifierPath: COMPUTE_CLASSIFIER,
+  },
+  {
+    // no size: ok to create in studio, rejected by engine
+    path: 'test::SingleStoreNoSize',
+    content: {
+      _type: 'compute',
+      name: 'SingleStoreNoSize',
+      package: 'test',
+      owner: {
+        _type: 'appDir',
+        production: { appDirId: 12345, level: 'DEPLOYMENT' },
+      },
+      specification: {
+        _type: 'singlestoreComputeSpecification',
+      },
+    },
+    classifierPath: COMPUTE_CLASSIFIER,
+  },
 ];
 
 const TOGGLED_CLASS = 'panel__content__form__section__toggler__btn--toggled';
@@ -158,6 +194,19 @@ const getSnowflakeSpec = (
     MOCK__editorStore.graphManagerState.graph.getCompute(path).specification,
     SnowflakeComputeSpecification,
   );
+
+const getSingleStoreSpec = (path: string): SinglestoreComputeSpecification =>
+  guaranteeType(
+    MOCK__editorStore.graphManagerState.graph.getCompute(path).specification,
+    SinglestoreComputeSpecification,
+  );
+
+// the protocol the element is saved as
+const savedSpecification = (path: string): unknown => {
+  const { graphManager, graph } = MOCK__editorStore.graphManagerState;
+  const { content } = graphManager.elementToEntity(graph.getCompute(path));
+  return content.specification;
+};
 
 const getOwner = (path = 'test::SnowflakeWh'): AppDirOwner =>
   MOCK__editorStore.graphManagerState.graph.getCompute(path).owner;
@@ -498,5 +547,84 @@ test(
       /not supported in form mode/,
     );
     getByText(editorGroup, 'Owner');
+  },
+);
+
+test(
+  integrationTest(
+    'SingleStore Compute opens in form mode with its cluster size; changing it updates the model, the hash and the saved protocol',
+  ),
+  async () => {
+    const editorGroup = await openComputeEditor(
+      'test::SingleStoreReader',
+      'Cluster Size',
+    );
+
+    expect(queryByText(editorGroup, /not supported in form mode/)).toBeNull();
+    // PanelHeader lowercases its title
+    getByText(editorGroup, 'singlestore compute');
+    expect(textInput(editorGroup, 'Production AppDir ID').value).toBe('12345');
+    getByText(editorGroup, 'S_2');
+    expect(queryByText(editorGroup, 'A cluster size is required')).toBeNull();
+
+    const spec = getSingleStoreSpec('test::SingleStoreReader');
+    expect(spec.clusterSize).toBe(SinglestoreClusterSize.S_2);
+    const hashBefore = spec.hashCode;
+    expect(savedSpecification('test::SingleStoreReader')).toEqual({
+      _type: 'singlestoreComputeSpecification',
+      clusterSize: 'S_2',
+    });
+
+    await selectEnum(editorGroup, 'S_2', 'S_8');
+
+    expect(spec.clusterSize).toBe(SinglestoreClusterSize.S_8);
+    expect(spec.hashCode).not.toBe(hashBefore);
+    expect(savedSpecification('test::SingleStoreReader')).toEqual({
+      _type: 'singlestoreComputeSpecification',
+      clusterSize: 'S_8',
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'A SingleStore Compute with no cluster size reports the omission and is saved without one until a size is chosen',
+  ),
+  async () => {
+    const editorGroup = await openComputeEditor(
+      'test::SingleStoreNoSize',
+      'A cluster size is required',
+    );
+
+    const spec = getSingleStoreSpec('test::SingleStoreNoSize');
+    expect(spec.clusterSize).toBeUndefined();
+    expect(savedSpecification('test::SingleStoreNoSize')).toEqual({
+      _type: 'singlestoreComputeSpecification',
+    });
+
+    // nothing is selected, so open the selector itself
+    fireEvent.mouseDown(
+      guaranteeNonNullable(
+        getByText(editorGroup, 'Cluster Size')
+          .closest('.panel__content__form__section')
+          // class prefix depends on theme: `selector-input` or `selector-input--dark`
+          ?.querySelector(
+            '.selector-input__control, .selector-input--dark__control',
+          ),
+      ),
+    );
+    const options = await screen.findAllByRole('option');
+    const option = options.find((opt) => opt.textContent === 'S_1');
+    expect(option).not.toBeUndefined();
+    fireEvent.click(guaranteeNonNullable(option));
+
+    await waitFor(() =>
+      expect(queryByText(editorGroup, 'A cluster size is required')).toBeNull(),
+    );
+    expect(spec.clusterSize).toBe(SinglestoreClusterSize.S_1);
+    expect(savedSpecification('test::SingleStoreNoSize')).toEqual({
+      _type: 'singlestoreComputeSpecification',
+      clusterSize: 'S_1',
+    });
   },
 );

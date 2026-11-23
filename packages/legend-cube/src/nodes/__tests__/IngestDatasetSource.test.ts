@@ -229,8 +229,40 @@ describe(unitTest('Ingest data set source'), () => {
     );
   });
 
+  test('Reads every qualifier of the engine, says what each reads, and keeps it as it resolves', () => {
+    const reads: [IngestDatasetQualifier, string][] = [
+      [IngestDatasetQualifier.INCOMING, 'Incoming rows of data set'],
+      [IngestDatasetQualifier.MILESTONED, 'Milestoned rows of data set'],
+      [
+        IngestDatasetQualifier.INCOMING_MILESTONED,
+        'Incoming milestoned rows of data set',
+      ],
+    ];
+    reads.forEach(([qualifier, words]) => {
+      const node = IngestDatasetSource.fromCoordinates('ingestDataset101', {
+        ...COORDINATES,
+        qualifier,
+      });
+      expect(node.qualifier).toBe(qualifier);
+      // not its batch metadata, whose columns are no data set's
+      expect(node.readsMetadata).toBe(false);
+      const resolved = node
+        .withResolution({ kind: 'resolved', schema: SCHEMA })
+        .withResolution({ kind: 'resolved', schema: SCHEMA });
+      expect(resolved.qualifier).toBe(qualifier);
+      expect(resolved.describe()).toBe(
+        `${words} "TRADES" from ingest definition "OrdersIngest"`,
+      );
+      expect(emitIngestDatasetSource(resolved)).toMatchObject({
+        k: 'ingestAccessor',
+        path: ['sales::ingest::OrdersIngest', 'TRADES'],
+        qualifier,
+      });
+    });
+  });
+
   test("Refuses a qualifier Cube doesn't read", () => {
-    ['incoming', 'milestoned', 'METADATA', '', 1].forEach((qualifier) =>
+    ['METADATA', 'Incoming', 'incoming ', '', 1].forEach((qualifier) =>
       expect(() =>
         IngestDatasetSource.fromCoordinates('ingestDataset101', {
           ...COORDINATES,

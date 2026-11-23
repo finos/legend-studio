@@ -145,6 +145,7 @@ export class LegendDataCubeCreatorState {
           this._store.depotServerClient,
           this._store.contractServerClient,
           this._alertService,
+          this._store.marketplaceServerClient,
         );
       default:
         throw new UnsupportedOperationError(

@@ -74,6 +74,7 @@ import {
   uniq,
 } from '@finos/legend-shared';
 import { DataProductAPGState } from './DataProductAPGState.js';
+import { DataProductProducerViewsState } from './DataProductProducerViewsState.js';
 import { DataProductQualityState } from './DataProductQualityState.js';
 import type { DataProductConfig } from './DataProductConfig.js';
 import {
@@ -182,6 +183,8 @@ export class DataProductViewerState extends BaseViewerState<
   readonly loadFunctions?: CubeDefinitionFunctionLoader | undefined;
   dataProductDataAccessState: DataProductDataAccessState | undefined;
   readonly qualityState: DataProductQualityState;
+  /** Producer Info's materialized views, and the one its side panel shows */
+  readonly producerViewsState: DataProductProducerViewsState;
 
   batchRelationTypePromise: Promise<V1_BatchLambdaRelationTypeResult> =
     Promise.resolve({
@@ -295,6 +298,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.fetchDataProductQuality = actions.fetchDataProductQuality;
     this.qualityState = new DataProductQualityState(this);
     this.loadFunctions = actions.loadFunctions;
+    this.producerViewsState = new DataProductProducerViewsState(this);
   }
 
   /**

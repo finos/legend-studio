@@ -253,8 +253,9 @@ CUSTOMERS`) or `columns not known`. Its tooltip has the SQL's first 12 lines and
   `with`, a `window` clause and a window frame. The box's tooltip says which.
 - **Measured:** of the 47 test queries of §5, Cube draws 45 as steps; of the 21 kept as the tests' fixture, 16, the
   other five being the refusals above, one of each.
-- **Hosts:** the Marketplace viewer and Studio's preview (the engine client), and Studio's ingest Overview (the
-  graph manager's new `parseSQL`).
+- **Hosts:** the Marketplace viewer and Studio's preview, for access points and for Producer Info's views (#5936),
+  through the flow state they share (the engine client); and Studio's ingest Overview (the graph manager's new
+  `parseSQL`).
 - **Not known:** whether every deployed engine exposes the grammar route. The open-source server does.
 
 ### 7.2 The engine route

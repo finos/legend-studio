@@ -18,7 +18,6 @@ import {
   type V1_AccessPoint,
   type V1_DataProductArtifact,
   type V1_EntitlementsDataProductDetails,
-  CORE_PURE_PATH,
   LakehouseTargetEnv,
   V1_LakehouseAccessPoint,
   V1_RelationElement,
@@ -36,7 +35,6 @@ import {
   type TDSExecutionResult,
 } from '@finos/legend-graph';
 import {
-  type GeneratorFn,
   type PlainObject,
   ActionState,
   assertErrorThrown,
@@ -45,7 +43,7 @@ import {
   isEmpty,
   LogEvent,
 } from '@finos/legend-shared';
-import { action, makeAutoObservable, observable, computed, flow } from 'mobx';
+import { makeAutoObservable, observable, computed } from 'mobx';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
 import { RegistryMetadataResponse } from '@finos/legend-server-marketplace';
@@ -55,13 +53,7 @@ import {
   type AccessPointDefinitionFlow_TelemetryData,
   DataProductTelemetryHelper,
 } from '../../__lib__/DataProductTelemetryHelper.js';
-import type { CubeDefinitionFunctions } from '@finos/legend-cube-builder/definition-flow';
-import {
-  type DataProductDefinitionFlow,
-  type DataProductDefinitionFlowEntry,
-  DataProductDefinitionFlowFailureKind,
-  DataProductDefinitionFlowKind,
-} from './DataProductDefinitionFlow.js';
+import { DataProductDefinitionFlowState } from './DataProductDefinitionFlowState.js';
 
 const getUnsupportedLakehouseTargetEnvs = (): LakehouseTargetEnv[] =>
   Object.values(LakehouseTargetEnv).filter(
@@ -79,29 +71,11 @@ export class DataProductAccessPointState {
   relationType: V1_RelationType | undefined;
   relationElement: V1_RelationElement | undefined;
   grammar: string | undefined;
-  /** Its definition, as Legend Cube's flow shows it, once read (`readDefinitionFlow`) */
-  definitionFlow: DataProductDefinitionFlow | undefined;
-  /** The function elements its definition calls, by path, as loaded */
-  functionElements = new Map<string, PlainObject>();
-  /** A user-defined function whose Pure the Definition panel shows, under the flow */
-  shownFunction:
-    | {
-        readonly name: string;
-        readonly path: string | undefined;
-        readonly origin: string | undefined;
-        readonly pure: string | undefined;
-        readonly error?: string | undefined;
-      }
-    | undefined;
-  /**
-   * The SQL of a step of the flow that is SQL, `#SQL{…}#`, which the
-   * Definition panel shows under the flow, in place of a function's Pure
-   */
-  shownSql: string | undefined;
+  /** Its definition, as Legend Cube's flow shows it */
+  readonly definitionFlowState: DataProductDefinitionFlowState;
 
   readonly fetchingRelationTypeState = ActionState.create();
   readonly fetchingGrammarState = ActionState.create();
-  readonly readingDefinitionFlowState = ActionState.create();
   readonly fetchingSampleDataState = ActionState.create();
   readonly fetchingRegistryMetadataState = ActionState.create();
 
@@ -112,16 +86,7 @@ export class DataProductAccessPointState {
       relationType: observable,
       grammar: observable,
       relationElement: observable,
-      // the reading's steps and Cube's code, as Cube made them
-      definitionFlow: observable.ref,
-      readDefinitionFlow: flow,
-      shownFunction: observable.ref,
-      functionElements: false,
-      showFunction: flow,
-      hideFunction: action,
-      shownSql: observable,
-      showSql: action,
-      hideSql: action,
+      definitionFlowState: false,
       isCollapsed: computed,
       entitlementsDataProductDetails: computed,
       unsupportedLakehouseComputeTarget: computed,
@@ -132,6 +97,31 @@ export class DataProductAccessPointState {
 
     this.apgState = apgState;
     this.accessPoint = accessPoint;
+    this.definitionFlowState = new DataProductDefinitionFlowState(
+      apgState.dataProductViewerState,
+      `access point '${accessPoint.id}'`,
+      () => this.definitionLambda,
+      {
+        show: (flow) =>
+          DataProductTelemetryHelper.logEvent_ShowAccessPointDefinitionFlow(
+            apgState.applicationStore.telemetryService,
+            this.definitionFlowTelemetryData,
+            flow,
+          ),
+        refuse: (refusal) =>
+          DataProductTelemetryHelper.logEvent_RefuseAccessPointDefinitionFlow(
+            apgState.applicationStore.telemetryService,
+            this.definitionFlowTelemetryData,
+            refusal,
+          ),
+        fail: (failure) =>
+          DataProductTelemetryHelper.logEvent_FailAccessPointDefinitionFlow(
+            apgState.applicationStore.telemetryService,
+            this.definitionFlowTelemetryData,
+            failure,
+          ),
+      },
+    );
   }
 
   get anchor(): string {
@@ -371,292 +361,6 @@ export class DataProductAccessPointState {
           }
         : undefined,
     };
-  }
-
-  /**
-   * Reads a Lakehouse access point's definition, once, into the steps of
-   * Legend Cube's flow, in the browser: it loads Cube's code, then the ingest
-   * definitions the function reads, which type the columns of its data sets.
-   * Cube reads all of a definition or none of it: what it can't read yet is
-   * refused, and shows as Pure.
-   */
-  *readDefinitionFlow(): GeneratorFn<void> {
-    if (
-      !(this.accessPoint instanceof V1_LakehouseAccessPoint) ||
-      !this.readingDefinitionFlowState.isInInitialState
-    ) {
-      return;
-    }
-    this.readingDefinitionFlowState.inProgress();
-    const startedAt = Date.now();
-    try {
-      const lambda = this.definitionLambda;
-      if (lambda === undefined) {
-        this.failDefinitionFlow(
-          DataProductDefinitionFlowFailureKind.MISSING,
-          new Error(`Access point '${this.accessPoint.id}' has no function`),
-        );
-        return;
-      }
-      let entry: DataProductDefinitionFlowEntry;
-      try {
-        entry =
-          (yield this.apgState.dataProductViewerState.loadDefinitionFlowEntry()) as DataProductDefinitionFlowEntry;
-      } catch (error) {
-        assertErrorThrown(error);
-        this.failDefinitionFlow(
-          DataProductDefinitionFlowFailureKind.LOAD,
-          error,
-        );
-        return;
-      }
-      // the functions it calls first: their bodies may read ingest
-      // definitions too (PLAN §11.33)
-      const loadFunctions = this.apgState.dataProductViewerState.loadFunctions;
-      let functions: CubeDefinitionFunctions | undefined;
-      let functionsUnloaded = false;
-      if (loadFunctions) {
-        try {
-          functions = (yield entry.loadCubeDefinitionFunctions(
-            lambda,
-            async (names) => {
-              const elements = await loadFunctions(names);
-              elements.forEach((element) =>
-                this.functionElements.set(element.path, element.content),
-              );
-              return elements;
-            },
-          )) as CubeDefinitionFunctions;
-        } catch (error) {
-          assertErrorThrown(error);
-          // its calls are drawn as boxes, or refused, as Cube reads them
-          functionsUnloaded = true;
-          this.apgState.applicationStore.logService.warn(
-            LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
-            `Unable to load the functions of access point '${this.accessPoint.id}': ${error.message}`,
-          );
-        }
-      }
-      // the engine's tree of the SQL it holds, `#SQL{…}#`, which Cube draws
-      // as steps; SQL with no tree is one box
-      const sqlTrees = (yield this.loadSqlTrees(
-        entry.findCubeDefinitionSql(lambda, { functions }),
-      )) as Map<string, PlainObject>;
-      const getSqlTree = (sql: string): PlainObject | undefined =>
-        sqlTrees.get(sql);
-      const ingestDefinitions = (yield this.loadIngestDefinitions(
-        entry.findCubeDefinitionIngestDefinitions(lambda, {
-          functions,
-          getSqlTree,
-        }),
-      )) as Map<string, PlainObject>;
-      const reading = entry.readCubeDefinition(lambda, {
-        getIngestDefinition: (path) => ingestDefinitions.get(path),
-        functions,
-        getSqlTree,
-      });
-      const telemetryService = this.apgState.applicationStore.telemetryService;
-      if (reading.kind === 'flow') {
-        this.definitionFlow = {
-          kind: DataProductDefinitionFlowKind.FLOW,
-          reading,
-          entry,
-        };
-        DataProductTelemetryHelper.logEvent_ShowAccessPointDefinitionFlow(
-          telemetryService,
-          this.definitionFlowTelemetryData,
-          {
-            steps: reading.steps.length,
-            unknownDataSets: reading.unknownDataSets.map(
-              (each) => `${each.ingestDefinition}.${each.dataSet}`,
-            ),
-            durationMs: Date.now() - startedAt,
-            functionCallsOpened: reading.functionCalls.filter(
-              (call) => call.opened,
-            ).length,
-            functionCallsClosed: reading.functionCalls.reduce<
-              Record<string, number>
-            >((closed, call) => {
-              if (call.closedReason) {
-                closed[call.closedReason] =
-                  (closed[call.closedReason] ?? 0) + 1;
-              }
-              return closed;
-            }, {}),
-            scalarFunctionSteps: reading.scalarFunctions.size,
-            functionsUnloaded,
-            sqlSteps: reading.sqlIslands.length,
-            sqlOpened: reading.sqlIslands.filter((island) => island.steps)
-              .length,
-          },
-        );
-      } else {
-        this.definitionFlow = {
-          kind: DataProductDefinitionFlowKind.REFUSED,
-          refusal: reading,
-        };
-        DataProductTelemetryHelper.logEvent_RefuseAccessPointDefinitionFlow(
-          telemetryService,
-          this.definitionFlowTelemetryData,
-          { reason: reading.reason, functionName: reading.functionName },
-        );
-      }
-    } catch (error) {
-      assertErrorThrown(error);
-      this.failDefinitionFlow(DataProductDefinitionFlowFailureKind.READ, error);
-    } finally {
-      this.readingDefinitionFlowState.complete();
-    }
-  }
-
-  /**
-   * The engine's tree of each SQL, by the SQL, as its SQL parser reads it:
-   * one the engine fails to parse, or has no route for, is left out, and its
-   * SQL is drawn as one box
-   */
-  private async loadSqlTrees(
-    sqls: string[],
-  ): Promise<Map<string, PlainObject>> {
-    const trees = new Map<string, PlainObject>();
-    const client = this.apgState.dataProductViewerState.engineServerClient;
-    const loaded = await Promise.allSettled(
-      sqls.map((sql) => client.SQLToJSON(sql)),
-    );
-    loaded.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
-        trees.set(guaranteeNonNullable(sqls[index]), result.value);
-      } else {
-        this.apgState.applicationStore.logService.warn(
-          LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
-          `Unable to parse the SQL of access point '${this.accessPoint.id}' for its flow: ${
-            result.reason instanceof Error
-              ? result.reason.message
-              : String(result.reason)
-          }`,
-        );
-      }
-    });
-    return trees;
-  }
-
-  /**
-   * The content of the ingest definitions the host gives, by path: one it
-   * doesn't have, or fails to load, is left out, and its data sets are drawn
-   * by name
-   */
-  private async loadIngestDefinitions(
-    paths: string[],
-  ): Promise<Map<string, PlainObject>> {
-    const contents = new Map<string, PlainObject>();
-    const load = this.apgState.dataProductViewerState.loadIngestDefinition;
-    if (!load) {
-      return contents;
-    }
-    const loaded = await Promise.allSettled(paths.map((path) => load(path)));
-    loaded.forEach((result, index) => {
-      const path = guaranteeNonNullable(paths[index]);
-      if (result.status === 'rejected') {
-        this.apgState.applicationStore.logService.warn(
-          LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
-          `Unable to load ingest definition '${path}' for the flow of access point '${this.accessPoint.id}': ${
-            result.reason instanceof Error
-              ? result.reason.message
-              : String(result.reason)
-          }`,
-        );
-      } else if (result.value) {
-        contents.set(path, result.value);
-      }
-    });
-    return contents;
-  }
-
-  private failDefinitionFlow(
-    failure: DataProductDefinitionFlowFailureKind,
-    error: Error,
-  ): void {
-    this.definitionFlow = {
-      kind: DataProductDefinitionFlowKind.FAILED,
-      failure,
-      error,
-    };
-    this.logDefinitionFlowFailure(failure, error);
-  }
-
-  /**
-   * Logs a flow that couldn't be shown, though Cube didn't refuse the
-   * definition: e.g. its canvas failed while drawing it
-   */
-  logDefinitionFlowFailure(
-    failure: DataProductDefinitionFlowFailureKind,
-    error: Error,
-  ): void {
-    this.apgState.applicationStore.logService.error(
-      LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
-      `Unable to show the flow of access point '${this.accessPoint.id}' (${failure}): ${error.message}`,
-    );
-    DataProductTelemetryHelper.logEvent_FailAccessPointDefinitionFlow(
-      this.apgState.applicationStore.telemetryService,
-      this.definitionFlowTelemetryData,
-      { kind: failure, error: error.message },
-    );
-  }
-
-  /**
-   * Shows a user-defined function's Pure under the flow, as the engine
-   * prints its element, through the graph manager (PLAN §11.33)
-   */
-  *showFunction(call: {
-    readonly name: string;
-    readonly path: string | undefined;
-    readonly origin: string | undefined;
-  }): GeneratorFn<void> {
-    const { path } = call;
-    const content = path ? this.functionElements.get(path) : undefined;
-    this.shownSql = undefined;
-    this.shownFunction = { ...call, pure: undefined };
-    if (!path || !content) {
-      this.shownFunction = {
-        ...call,
-        pure: undefined,
-        error: `${call.name} isn't in the data product's project or its dependencies.`,
-      };
-      return;
-    }
-    try {
-      const pure =
-        (yield this.apgState.dataProductViewerState.graphManagerState.graphManager.entitiesToPureCode(
-          [{ path, classifierPath: CORE_PURE_PATH.FUNCTION, content }],
-          { pretty: true },
-        )) as string;
-      this.shownFunction = { ...call, pure: pure.trim() };
-    } catch (error) {
-      assertErrorThrown(error);
-      this.shownFunction = { ...call, pure: undefined, error: error.message };
-    }
-  }
-
-  hideFunction(): void {
-    this.shownFunction = undefined;
-  }
-
-  /**
-   * Shows the SQL of a step that is SQL under the flow, as written: the
-   * flow's box shows only its first words
-   */
-  showSql(sql: string): void {
-    this.shownFunction = undefined;
-    this.shownSql = sql.trim();
-  }
-
-  hideSql(): void {
-    this.shownSql = undefined;
-  }
-
-  /** Forgets its definition's flow, to read it again */
-  resetDefinitionFlow(): void {
-    this.definitionFlow = undefined;
-    this.readingDefinitionFlowState.reset();
   }
 
   /** Forgets its definition's Pure, to fetch it again */

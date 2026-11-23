@@ -19,6 +19,7 @@ import {
   type Compute,
   type DatabricksTag,
   DatabricksComputeSpecification,
+  SinglestoreComputeSpecification,
   SnowflakeComputeSpecification,
   UnknownComputeSpecification,
 } from '../../../graph/metamodel/pure/compute/Compute.js';
@@ -83,6 +84,18 @@ const observe_DatabricksComputeSpecification = skipObserved(
   },
 );
 
+const observe_SinglestoreComputeSpecification = skipObserved(
+  (
+    metamodel: SinglestoreComputeSpecification,
+  ): SinglestoreComputeSpecification => {
+    makeObservable(metamodel, {
+      clusterSize: observable,
+      hashCode: computed,
+    });
+    return metamodel;
+  },
+);
+
 export const observe_Compute = skipObserved((metamodel: Compute): Compute => {
   observe_Abstract_PackageableElement(metamodel);
 
@@ -99,6 +112,10 @@ export const observe_Compute = skipObserved((metamodel: Compute): Compute => {
     metamodel.specification instanceof DatabricksComputeSpecification
   ) {
     observe_DatabricksComputeSpecification(metamodel.specification);
+  } else if (
+    metamodel.specification instanceof SinglestoreComputeSpecification
+  ) {
+    observe_SinglestoreComputeSpecification(metamodel.specification);
   } else if (metamodel.specification instanceof UnknownComputeSpecification) {
     makeObservable(metamodel.specification, {
       content: observable,

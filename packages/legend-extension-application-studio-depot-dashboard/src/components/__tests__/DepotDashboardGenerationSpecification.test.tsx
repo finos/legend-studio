@@ -497,7 +497,7 @@ test('open an element from its name, copy its path and copy a link to the view',
 
   const link = await screen.findByRole('link', { name: 'AlphaGenerations' });
   expect(link.getAttribute('href')).toContain(
-    '/view/PROJECT-alpha/version/1.0.0/entity/test::alpha::AlphaGenerations',
+    '/view/PROJECT-alpha/version/1.0.0/entity/test%3A%3Aalpha%3A%3AAlphaGenerations',
   );
   expect(link.getAttribute('target')).toBe('_blank');
 
@@ -997,7 +997,7 @@ test('open a snapshot at the head of its project', async () => {
   // the element's name: the project's head, not a snapshot version
   const link = await screen.findByRole('link', { name: 'AlphaGenerations' });
   expect(link.getAttribute('href')).toMatch(
-    new RegExp(`/view/PROJECT-alpha/entity/${ALPHA_PATH}$`),
+    new RegExp(`/view/PROJECT-alpha/entity/${encodeURIComponent(ALPHA_PATH)}$`),
   );
   // and the project id
   const visitSpy = createSpy(
@@ -1009,7 +1009,9 @@ test('open a snapshot at the head of its project', async () => {
   });
   expect(visitSpy).toHaveBeenCalledWith(
     expect.stringMatching(
-      new RegExp(`/view/PROJECT-alpha/entity/${ALPHA_PATH}$`),
+      new RegExp(
+        `/view/PROJECT-alpha/entity/${encodeURIComponent(ALPHA_PATH)}$`,
+      ),
     ),
   );
 });

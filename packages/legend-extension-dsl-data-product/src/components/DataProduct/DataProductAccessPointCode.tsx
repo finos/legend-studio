@@ -30,6 +30,7 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
+import type { DataProductDefinitionFlowState } from '../../stores/DataProduct/DataProductDefinitionFlowState.js';
 import { DataProductDefinitionFlowKind } from '../../stores/DataProduct/DataProductDefinitionFlow.js';
 import {
   DataProductAccessPointDefinitionFlow,
@@ -330,48 +331,70 @@ const fetchGrammar = (accessPointState: DataProductAccessPointState): void => {
     );
 };
 
-/** Reads an access point's definition into Legend Cube's flow, once */
+/** Reads a definition into Legend Cube's flow, once */
 const readDefinitionFlow = (
-  accessPointState: DataProductAccessPointState,
+  flowState: DataProductDefinitionFlowState,
 ): void => {
-  flowResult(accessPointState.readDefinitionFlow()).catch(
-    accessPointState.apgState.applicationStore.alertUnhandledError,
+  flowResult(flowState.readDefinitionFlow()).catch(
+    flowState.viewerState.applicationStore.alertUnhandledError,
   );
 };
 
 /**
- * How the producer defined the access point: as Legend Cube's flow, which it
- * opens on, or as Pure, which it shows instead when Cube can't draw the
- * definition. Both are fetched when first shown; Copy copies the Pure.
+ * A definition, as Legend Cube's flow, which it opens on, or as Pure, which
+ * it shows instead when Cube can't draw the definition; Copy copies the Pure.
+ * Under the flow, the Pure of a user-defined function it calls, when asked.
  */
-const DataProductAccessPointDefinition = observer(
-  (props: { accessPointState: DataProductAccessPointState }) => {
-    const { accessPointState } = props;
+export const DataProductDefinitionSection = observer(
+  (props: {
+    flowState: DataProductDefinitionFlowState;
+    /** The section's name, for assistive technology */
+    label: string;
+    title: React.ReactNode;
+    caption: React.ReactNode;
+    /** What Copy copies, e.g. "definition": "Copy definition" */
+    copyLabel: string;
+    /** The definition's Pure; none until fetched, or when it can't be */
+    pure: string | undefined;
+    isFetchingPure: boolean;
+    /** Neither the flow nor the Pure can be shown: why, with another try */
+    unavailable: (onRetry: () => void) => React.ReactNode;
+    /** Fetches the Pure again, after it failed */
+    onRetryPure: () => void;
+    className?: string | undefined;
+    /** Between the head and the flow, e.g. what a view reads */
+    children?: React.ReactNode;
+  }) => {
+    const {
+      flowState,
+      label,
+      title,
+      caption,
+      copyLabel,
+      pure,
+      isFetchingPure,
+      unavailable,
+      onRetryPure,
+      className,
+      children,
+    } = props;
     const [view, setView] = useState(DataProductDefinitionView.FLOW);
 
     useEffect(() => {
-      if (accessPointState.fetchingGrammarState.isInInitialState) {
-        fetchGrammar(accessPointState);
-      }
-      // read once per access point
-      readDefinitionFlow(accessPointState);
-    }, [accessPointState]);
+      // read once per definition
+      readDefinitionFlow(flowState);
+    }, [flowState]);
 
     const retryDefinitionFlow = (): void => {
-      accessPointState.resetDefinitionFlow();
-      readDefinitionFlow(accessPointState);
+      flowState.resetDefinitionFlow();
+      readDefinitionFlow(flowState);
     };
     const retryDefinition = (): void => {
-      accessPointState.resetGrammar();
-      fetchGrammar(accessPointState);
+      onRetryPure();
       retryDefinitionFlow();
     };
 
-    const definition = accessPointState.grammar;
-    const isFetching =
-      accessPointState.fetchingGrammarState.isInInitialState ||
-      accessPointState.fetchingGrammarState.isInProgress;
-    const definitionFlow = accessPointState.definitionFlow;
+    const definitionFlow = flowState.definitionFlow;
     const refusal =
       definitionFlow?.kind === DataProductDefinitionFlowKind.REFUSED
         ? definitionFlow.refusal
@@ -379,23 +402,23 @@ const DataProductAccessPointDefinition = observer(
     // neither view can be shown
     const isUnavailable =
       definitionFlow?.kind === DataProductDefinitionFlowKind.FAILED &&
-      !isFetching &&
-      definition === undefined;
+      !isFetchingPure &&
+      pure === undefined;
     const shownView = refusal ? DataProductDefinitionView.PURE : view;
+    const shownFunction = flowState.shownFunction;
 
     return (
       <section
-        className="data-product__viewer__definition"
-        aria-label="Definition"
+        className={clsx('data-product__viewer__definition', className)}
+        aria-label={label}
       >
         <div className="data-product__viewer__definition__header">
           <div>
             <div className="data-product__viewer__definition__title">
-              Definition
+              {title}
             </div>
             <div className="data-product__viewer__definition__caption">
-              How the producer defined this access point. To query it, use{' '}
-              <strong>Pure Query</strong>.
+              {caption}
             </div>
           </div>
           <div className="data-product__viewer__definition__actions">
@@ -410,67 +433,68 @@ const DataProductAccessPointDefinition = observer(
                 }
               />
             )}
-            {definition !== undefined && (
-              <CopyCodeButton value={definition} label="definition" />
+            {pure !== undefined && (
+              <CopyCodeButton value={pure} label={copyLabel} />
             )}
           </div>
         </div>
+        {children}
         {isUnavailable ? (
-          <DataProductDefinitionUnavailable onRetry={retryDefinition} />
+          unavailable(retryDefinition)
         ) : shownView === DataProductDefinitionView.FLOW ? (
           <>
             <DataProductAccessPointDefinitionFlow
-              accessPointState={accessPointState}
+              flowState={flowState}
               onShowPure={() => setView(DataProductDefinitionView.PURE)}
               onRetry={retryDefinitionFlow}
             />
-            {accessPointState.shownFunction && (
+            {shownFunction && (
               <section
                 className="data-product__viewer__definition__function"
-                aria-label={`Function ${accessPointState.shownFunction.name}`}
+                aria-label={`Function ${shownFunction.name}`}
               >
                 <div className="data-product__viewer__definition__header">
                   <div className="data-product__viewer__definition__function__heading">
                     <span className="data-product__viewer__definition__title data-product__viewer__definition__function__title">
-                      {accessPointState.shownFunction.name}
+                      {shownFunction.name}
                     </span>
-                    {accessPointState.shownFunction.origin && (
+                    {shownFunction.origin && (
                       <span className="data-product__viewer__definition__caption">
-                        {`from ${accessPointState.shownFunction.origin}`}
+                        {`from ${shownFunction.origin}`}
                       </span>
                     )}
                   </div>
                   <span className="data-product__viewer__definition__actions">
-                    {accessPointState.shownFunction.pure !== undefined && (
+                    {shownFunction.pure !== undefined && (
                       <CopyCodeButton
-                        value={accessPointState.shownFunction.pure}
+                        value={shownFunction.pure}
                         label="function"
                       />
                     )}
                     <button
                       type="button"
                       className="data-product__viewer__definition-flow__failure__action"
-                      onClick={() => accessPointState.hideFunction()}
+                      onClick={() => flowState.hideFunction()}
                     >
                       Close
                     </button>
                   </span>
                 </div>
-                {accessPointState.shownFunction.pure !== undefined ? (
+                {shownFunction.pure !== undefined ? (
                   <ReadOnlyPureCode
-                    value={accessPointState.shownFunction.pure}
+                    value={shownFunction.pure}
                     maxLines={DEFINITION_MAX_LINES}
                   />
-                ) : accessPointState.shownFunction.error ? (
+                ) : shownFunction.error ? (
                   <div className="data-product__viewer__definition__message">
-                    {accessPointState.shownFunction.error}
+                    {shownFunction.error}
                   </div>
                 ) : (
                   <CodeLoadingIndicator />
                 )}
               </section>
             )}
-            {accessPointState.shownSql !== undefined && (
+            {flowState.shownSql !== undefined && (
               <section
                 className="data-product__viewer__definition__function"
                 aria-label="SQL of a step"
@@ -485,21 +509,18 @@ const DataProductAccessPointDefinition = observer(
                     </span>
                   </div>
                   <span className="data-product__viewer__definition__actions">
-                    <CopyCodeButton
-                      value={accessPointState.shownSql}
-                      label="SQL"
-                    />
+                    <CopyCodeButton value={flowState.shownSql} label="SQL" />
                     <button
                       type="button"
                       className="data-product__viewer__definition-flow__failure__action"
-                      onClick={() => accessPointState.hideSql()}
+                      onClick={() => flowState.hideSql()}
                     >
                       Close
                     </button>
                   </span>
                 </div>
                 <ReadOnlyPureCode
-                  value={accessPointState.shownSql}
+                  value={flowState.shownSql}
                   maxLines={DEFINITION_MAX_LINES}
                   language={CODE_EDITOR_LANGUAGE.SQL}
                 />
@@ -509,13 +530,10 @@ const DataProductAccessPointDefinition = observer(
         ) : (
           <>
             {refusal && <DataProductDefinitionFlowRefusal refusal={refusal} />}
-            {isFetching ? (
+            {isFetchingPure ? (
               <CodeLoadingIndicator />
-            ) : definition !== undefined ? (
-              <ReadOnlyPureCode
-                value={definition}
-                maxLines={DEFINITION_MAX_LINES}
-              />
+            ) : pure !== undefined ? (
+              <ReadOnlyPureCode value={pure} maxLines={DEFINITION_MAX_LINES} />
             ) : (
               <div className="data-product__viewer__definition__message">
                 Unable to fetch the definition
@@ -524,6 +542,56 @@ const DataProductAccessPointDefinition = observer(
           </>
         )}
       </section>
+    );
+  },
+);
+
+/**
+ * How the producer defined the access point: its flow, or its Pure. Both are
+ * fetched when first shown.
+ */
+const DataProductAccessPointDefinition = observer(
+  (props: { accessPointState: DataProductAccessPointState }) => {
+    const { accessPointState } = props;
+
+    useEffect(() => {
+      if (accessPointState.fetchingGrammarState.isInInitialState) {
+        fetchGrammar(accessPointState);
+      }
+    }, [accessPointState]);
+
+    return (
+      <DataProductDefinitionSection
+        flowState={accessPointState.definitionFlowState}
+        label="Definition"
+        title="Definition"
+        caption={
+          <>
+            How the producer defined this access point. To query it, use{' '}
+            <strong>Pure Query</strong>.
+          </>
+        }
+        copyLabel="definition"
+        pure={accessPointState.grammar}
+        isFetchingPure={
+          accessPointState.fetchingGrammarState.isInInitialState ||
+          accessPointState.fetchingGrammarState.isInProgress
+        }
+        onRetryPure={() => {
+          accessPointState.resetGrammar();
+          fetchGrammar(accessPointState);
+        }}
+        unavailable={(onRetry) => (
+          <DataProductDefinitionUnavailable
+            subject="this access point's definition"
+            onRetry={onRetry}
+          >
+            Querying the access point still works: see{' '}
+            <strong>Pure Query</strong>. If this persists, tell the data
+            product&apos;s owners.
+          </DataProductDefinitionUnavailable>
+        )}
+      />
     );
   },
 );

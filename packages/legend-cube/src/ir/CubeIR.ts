@@ -31,12 +31,18 @@ export interface Origin {
 
 /**
  * What an ingest accessor reads of its data set other than its rows, as its
- * qualifier says: `#I{definition.dataSet|metadata}#`. legend-graph keeps
- * others too (incoming, milestoned), which Cube can't type, so doesn't read.
+ * qualifier says: `#I{definition.dataSet|metadata}#`. The values are the
+ * engine's `accessorQualifier`, which Cube writes as they are.
  */
 export enum IngestDatasetQualifier {
   /** The data set's batch metadata: a row per batch, with the same columns for every data set */
   METADATA = 'metadata',
+  /** The batches an incremental materialized view has not read yet, as they were appended */
+  INCOMING = 'incoming',
+  /** The data set's milestoned rows: typed as its rows are */
+  MILESTONED = 'milestoned',
+  /** The batches an incremental materialized view has not read yet, as milestoned: typed as the data set's rows are */
+  INCOMING_MILESTONED = 'incomingMilestoned',
 }
 
 /**

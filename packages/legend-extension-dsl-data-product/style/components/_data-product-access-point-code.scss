@@ -159,6 +159,16 @@
   }
 }
 
+// a materialized view's definition, in Producer Info's side panel: its flow
+// gets most of the screen
+.data-product__viewer__definition--panel {
+  margin: 0;
+
+  .data-product__viewer__definition-flow {
+    height: max(30rem, calc(100vh - 24rem));
+  }
+}
+
 // Flow | Pure: Flow can't be picked when Cube can't draw the definition
 .data-product__viewer__definition-switch {
   display: inline-flex;

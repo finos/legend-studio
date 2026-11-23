@@ -15,36 +15,116 @@
  */
 
 import {
+  CollectionInstanceValue,
+  GenericType,
+  GenericTypeExplicitReference,
+  Multiplicity,
+  PrimitiveInstanceValue,
+  PrimitiveType,
   SimpleFunctionExpression,
+  VariableExpression,
   extractElementNameFromPath,
   type LambdaFunction,
+  type ValueSpecification,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { QUERY_BUILDER_SUPPORTED_FUNCTIONS } from '../../graph/QueryBuilderMetaModelConst.js';
-import type { QueryBuilderWatermarkState } from './QueryBuilderWatermarkState.js';
+import {
+  assertTrue,
+  guaranteeNonNullable,
+  UnsupportedOperationError,
+} from '@finos/legend-shared';
+import {
+  DATA_DNS_ENV_ENUMERATION_PATH,
+  QUERY_BUILDER_SUPPORTED_FUNCTIONS,
+} from '../../graph/QueryBuilderMetaModelConst.js';
+import { buildEnumInstanceValue } from '../shared/ValueSpecificationEditorHelper.js';
+import {
+  type QueryBuilderWatermarkState,
+  QueryBuilderDataDNSWatermark,
+  QueryBuilderStandardWatermark,
+} from './QueryBuilderWatermarkState.js';
+
+const buildStringValue = (value: string): PrimitiveInstanceValue => {
+  const instance = new PrimitiveInstanceValue(
+    GenericTypeExplicitReference.create(new GenericType(PrimitiveType.STRING)),
+  );
+  instance.values = [value];
+  return instance;
+};
+
+const buildDataDNSWatermarkExpression = (
+  watermarkState: QueryBuilderWatermarkState,
+  dataDNSWatermark: QueryBuilderDataDNSWatermark,
+  currentExpression: ValueSpecification,
+): SimpleFunctionExpression => {
+  const expression = new SimpleFunctionExpression(
+    extractElementNameFromPath(
+      QUERY_BUILDER_SUPPORTED_FUNCTIONS.DATA_DNS_WATERMARK,
+    ),
+  );
+  const date = guaranteeNonNullable(
+    dataDNSWatermark.date,
+    `Can't build forDataDNSWatermark() expression: the date is missing`,
+  );
+  // the parser only accepts the business date parameter of the query as a parameter date
+  if (date instanceof VariableExpression) {
+    assertTrue(
+      date.name === watermarkState.businessDateVariable?.name,
+      `Can't build forDataDNSWatermark() expression: the date parameter '${date.name}' is not the business date of the query`,
+    );
+  }
+  const milestone = dataDNSWatermark.milestone
+    ? buildStringValue(dataDNSWatermark.milestone)
+    : new CollectionInstanceValue(Multiplicity.ZERO);
+  expression.parametersValues = [
+    currentExpression,
+    buildEnumInstanceValue(
+      watermarkState.queryBuilderState.graphManagerState.graph,
+      DATA_DNS_ENV_ENUMERATION_PATH,
+      dataDNSWatermark.env,
+      watermarkState.queryBuilderState.observerContext,
+    ),
+    buildStringValue(dataDNSWatermark.registryUri),
+    date,
+    milestone,
+  ];
+  return expression;
+};
+
+const buildStandardWatermarkExpression = (
+  watermark: QueryBuilderStandardWatermark,
+  currentExpression: ValueSpecification,
+): SimpleFunctionExpression => {
+  const watermarkExpression = new SimpleFunctionExpression(
+    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK),
+  );
+  watermarkExpression.parametersValues = [currentExpression, watermark.value];
+  return watermarkExpression;
+};
 
 export const buildWatermarkExpression = (
   watermarkState: QueryBuilderWatermarkState,
   lambdaFunction: LambdaFunction,
 ): void => {
-  if (!watermarkState.value) {
+  const watermark = watermarkState.watermark;
+  if (!watermark) {
     return;
   }
   const currentExpression = guaranteeNonNullable(
     lambdaFunction.expressionSequence[0],
   );
-
-  // main filter expression
-  const watermarkExpression = new SimpleFunctionExpression(
-    extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.WATERMARK),
-  );
-
-  // param [0]
-  watermarkExpression.parametersValues.push(currentExpression);
-
-  // param [1]
-  watermarkExpression.parametersValues.push(watermarkState.value);
-
   // replace watermark as main expression
-  lambdaFunction.expressionSequence[0] = watermarkExpression;
+  if (watermark instanceof QueryBuilderDataDNSWatermark) {
+    lambdaFunction.expressionSequence[0] = buildDataDNSWatermarkExpression(
+      watermarkState,
+      watermark,
+      currentExpression,
+    );
+  } else if (watermark instanceof QueryBuilderStandardWatermark) {
+    lambdaFunction.expressionSequence[0] = buildStandardWatermarkExpression(
+      watermark,
+      currentExpression,
+    );
+  } else {
+    throw new UnsupportedOperationError(`Can't build watermark expression`);
+  }
 };

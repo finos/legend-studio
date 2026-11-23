@@ -5747,6 +5747,542 @@ describe('DataProductViewer', () => {
         expect(writeText).toHaveBeenLastCalledWith(SQL);
       });
     });
+
+    describe("Producer Info: how each materialized view is made, for the data product's owners", () => {
+      const INGEST = FUNCTIONS.ingestDefinition;
+      const PROJECT = {
+        groupId: 'test.group',
+        artifactId: 'test-artifact',
+        versionId: '1.0.0',
+      };
+      const VIEW_PURE =
+        "|#I{shop::ingest::OrdersIngest.ORDERS}#->filter(o|$o.STATUS == 'OPEN')";
+      const readsDataSet = (dataSet: string): PlainObject => ({
+        _type: 'classInstance',
+        type: 'I',
+        value: { metadata: false, path: [INGEST, dataSet] },
+      });
+      const lambda = (
+        body: PlainObject,
+        parameters: PlainObject[] = [],
+      ): PlainObject => ({ _type: 'lambda', body: [body], parameters });
+      const statusIs = (status: string): PlainObject =>
+        lambda(
+          {
+            _type: 'func',
+            function: 'equal',
+            parameters: [
+              {
+                _type: 'property',
+                parameters: [{ _type: 'var', name: 'o' }],
+                property: 'STATUS',
+              },
+              { _type: 'string', value: status },
+            ],
+          },
+          [{ _type: 'var', name: 'o' }],
+        );
+      const view = (
+        name: string,
+        func: PlainObject,
+        primaryKey: string[] = [],
+      ): PlainObject => ({
+        name,
+        primaryKey,
+        source: { _type: 'FunctionSource', function: func },
+      });
+      /** The ingest definition: its two data sets, then its views */
+      const INGEST_CONTENT = {
+        ...FUNCTIONS.ingestDefinitionContent,
+        datasets: [
+          ...FUNCTIONS.ingestDefinitionContent.datasets,
+          // calls a user-defined function
+          view(
+            'ACTIVE_BY_REGION',
+            FUNCTIONS.accessPoints.active_orders_by_region,
+            ['REGION'],
+          ),
+          view(
+            'OPEN_ORDERS',
+            lambda({
+              _type: 'func',
+              function: 'filter',
+              parameters: [readsDataSet('ORDERS'), statusIs('OPEN')],
+            }),
+            ['ORDER_ID'],
+          ),
+          // a view of a view
+          view(
+            'OPEN_EMEA_ORDERS',
+            lambda({
+              _type: 'func',
+              function: 'filter',
+              parameters: [readsDataSet('OPEN_ORDERS'), statusIs('EMEA')],
+            }),
+          ),
+          // Cube shows no parameter in a limit()
+          view(
+            'LAST_ORDERS',
+            lambda(
+              {
+                _type: 'func',
+                function: 'limit',
+                parameters: [
+                  readsDataSet('ORDERS'),
+                  { _type: 'var', name: 'rows' },
+                ],
+              },
+              [
+                {
+                  _type: 'var',
+                  name: 'rows',
+                  genericType: {
+                    rawType: { _type: 'packageableType', fullPath: 'Integer' },
+                    typeArguments: [],
+                    multiplicityArguments: [],
+                    typeVariableValues: [],
+                  },
+                  multiplicity: { lowerBound: 1, upperBound: 1 },
+                },
+              ],
+            ),
+          ),
+        ],
+      };
+      /** Each access point, and the data set it reads */
+      const READS: Record<string, string> = {
+        active_by_region: 'ACTIVE_BY_REGION',
+        open_orders: 'OPEN_ORDERS',
+        open_emea_orders: 'OPEN_EMEA_ORDERS',
+        last_orders: 'LAST_ORDERS',
+        all_orders: 'ORDERS',
+      };
+      const DATA_PRODUCT_WITH_VIEWS = deserialize(
+        V1_dataProductModelSchema([]),
+        {
+          _type: 'dataProduct',
+          package: 'test',
+          name: 'Mock_SDLC_DataProduct',
+          title: 'Mock SDLC Data Product',
+          accessPointGroups: [
+            {
+              _type: 'defaultAccessPointGroup',
+              id: 'GROUP1',
+              title: 'Main Group Test',
+              accessPoints: Object.entries(READS).map(([id, dataSet]) => ({
+                _type: 'lakehouseAccessPoint',
+                id,
+                targetEnvironment: 'Snowflake',
+                func: lambda(readsDataSet(dataSet)),
+              })),
+            },
+          ],
+        },
+      );
+      /** Depot's data product artifact: what each access point reads */
+      const ARTIFACT_FILES = getMockDataProductGenerationFilesByType(
+        DATA_PRODUCT_WITH_VIEWS,
+      ).map((file) => {
+        const artifact = JSON.parse(file.file.content) as {
+          accessPointGroups: {
+            accessPointImplementations: {
+              id: string;
+              dependencyDatasets?: PlainObject[];
+            }[];
+          }[];
+        };
+        artifact.accessPointGroups.forEach((group) =>
+          group.accessPointImplementations.forEach((accessPoint) => {
+            accessPoint.dependencyDatasets = [
+              {
+                ingestDefinition: {
+                  path: INGEST,
+                  producer: { _type: 'AppDir', appDirId: 12345 },
+                },
+                dataset: READS[accessPoint.id],
+              },
+            ];
+          }),
+        );
+        return {
+          ...file,
+          file: { ...file.file, content: JSON.stringify(artifact) },
+        } as StoredFileGeneration;
+      });
+
+      const setupProducerInfo = async (options: {
+        isOwner: boolean;
+        loadIngestDefinition?: (
+          path: string,
+        ) => Promise<PlainObject | undefined>;
+        loadFunctions?: (names: readonly string[]) => Promise<PlainObject[]>;
+      }) => {
+        const loadIngestDefinition = jest.fn(
+          options.loadIngestDefinition ??
+            (async (path: string): Promise<PlainObject | undefined> =>
+              path === INGEST ? INGEST_CONTENT : undefined),
+        );
+        const result = await setupLakehouseDataProductTest(
+          DATA_PRODUCT_WITH_VIEWS,
+          mockEntitlementsSDLCDataProduct,
+          [],
+          [],
+          PROJECT,
+          ARTIFACT_FILES,
+          {
+            loadIngestDefinition,
+            loadFunctions:
+              options.loadFunctions ??
+              (async () => FUNCTIONS.functions as PlainObject[]),
+          },
+        );
+        const { graphManager } =
+          result.dataProductViewerState.graphManagerState;
+        const lambdaToPureCode = createSpy(
+          graphManager,
+          'lambdaToPureCode',
+        ).mockResolvedValue(VIEW_PURE);
+        createSpy(
+          result.dataProductViewerState.engineServerClient,
+          'JSONToGrammar_model',
+        ).mockResolvedValue(FUNCTIONS.functionPure);
+        const logEvent = jest.spyOn(
+          result.dataProductViewerState.applicationStore.telemetryService,
+          'logEvent',
+        );
+        if (options.isOwner) {
+          act(() => {
+            guaranteeNonNullable(
+              result.dataProductDataAccessState,
+            ).setDataProductOwners(['test-consumer-user-id']);
+          });
+        }
+        const producerInfo = await waitFor(() =>
+          guaranteeNonNullable(
+            document.querySelector<HTMLElement>(
+              '.data-product__viewer__producer-info',
+            ),
+          ),
+        );
+        await within(producerInfo).findByText('OPEN_EMEA_ORDERS');
+        return {
+          ...result,
+          producerInfo,
+          loadIngestDefinition,
+          lambdaToPureCode,
+          logEvent,
+        };
+      };
+
+      /** Opens a view's panel from its row's Flow */
+      const openViewPanel = async (
+        producerInfo: HTMLElement,
+        name: string,
+      ): Promise<HTMLElement> => {
+        const flowButton = await within(producerInfo).findByTitle(
+          `See how ${name} is made`,
+        );
+        await act(async () => {
+          fireEvent.click(flowButton);
+        });
+        return screen.findByLabelText(`How ${name} is made`);
+      };
+
+      test('marks the views for an owner, each with a Flow, from one request to Depot', async () => {
+        const { producerInfo, loadIngestDefinition } = await setupProducerInfo({
+          isOwner: true,
+        });
+        await waitFor(() =>
+          expect(within(producerInfo).getAllByText('View')).toHaveLength(4),
+        );
+        expect(
+          within(producerInfo)
+            .getAllByTitle(/^See how .* is made$/)
+            .map((button) => button.getAttribute('title'))
+            .sort(),
+        ).toEqual([
+          'See how ACTIVE_BY_REGION is made',
+          'See how LAST_ORDERS is made',
+          'See how OPEN_EMEA_ORDERS is made',
+          'See how OPEN_ORDERS is made',
+        ]);
+        // the data set ORDERS isn't a view
+        expect(
+          within(producerInfo).queryByTitle('See how ORDERS is made'),
+        ).toBeNull();
+        // one ingest definition, asked for once
+        expect(loadIngestDefinition.mock.calls).toEqual([[INGEST]]);
+      });
+
+      test("shows no view, nor asks Depot, for someone who isn't an owner", async () => {
+        const { producerInfo, loadIngestDefinition } = await setupProducerInfo({
+          isOwner: false,
+        });
+        expect(within(producerInfo).queryByText('View')).toBeNull();
+        expect(within(producerInfo).queryByText('checking…')).toBeNull();
+        expect(within(producerInfo).queryByText('Flow')).toBeNull();
+        expect(loadIngestDefinition).not.toHaveBeenCalled();
+      });
+
+      test('says the data sets are being checked while Depot answers', async () => {
+        const { producerInfo } = await setupProducerInfo({
+          isOwner: true,
+          loadIngestDefinition: () => new Promise(() => undefined),
+        });
+        await waitFor(() =>
+          expect(within(producerInfo).getAllByText('checking…')).toHaveLength(
+            5,
+          ),
+        );
+        expect(within(producerInfo).queryByText('Flow')).toBeNull();
+      });
+
+      test("says so when Depot can't give the ingest definition, and leaves the table as before", async () => {
+        const { producerInfo } = await setupProducerInfo({
+          isOwner: true,
+          loadIngestDefinition: async () => {
+            throw new Error('Depot is down');
+          },
+        });
+        await within(producerInfo).findByText(
+          `Couldn't load ${INGEST} from Depot, so its views aren't marked and have no flow here.`,
+        );
+        expect(within(producerInfo).queryByText('View')).toBeNull();
+        expect(within(producerInfo).queryByText('checking…')).toBeNull();
+        expect(within(producerInfo).queryByText('Flow')).toBeNull();
+      });
+
+      test('opens a view in the side panel: what it reads, its key, who reads it, then its flow, and a view it reads in its place', async () => {
+        const { producerInfo, logEvent } = await setupProducerInfo({
+          isOwner: true,
+        });
+        let panel = await openViewPanel(producerInfo, 'OPEN_EMEA_ORDERS');
+        expect(
+          screen.getByText(`Producer Info · ${INGEST}`).textContent,
+        ).toBeDefined();
+        const reads = within(panel).getByText('Reads').nextElementSibling;
+        expect(reads?.textContent).toBe('OPEN_ORDERSView');
+        expect(
+          within(panel).getByText('Read by').nextElementSibling?.textContent,
+        ).toBe('open_emea_orders');
+        // the data set and the filter
+        await findFlowNodes(panel, 2);
+        expect(logEvent).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.SHOW_INGEST_VIEW_FLOW,
+          expect.objectContaining({
+            dataProduct: DATA_PRODUCT,
+            ingestDefinition: INGEST,
+            dataSet: 'OPEN_EMEA_ORDERS',
+            steps: 2,
+          }),
+        );
+
+        // the view it reads opens in its place
+        await act(async () => {
+          fireEvent.click(
+            within(panel).getByTitle('See how OPEN_ORDERS is made'),
+          );
+        });
+        panel = await screen.findByLabelText('How OPEN_ORDERS is made');
+        expect(
+          within(panel).getByText('Key').nextElementSibling?.textContent,
+        ).toBe('ORDER_ID');
+        expect(
+          within(panel).getByText('Reads').nextElementSibling?.textContent,
+        ).toBe('ORDERS');
+        await findFlowNodes(panel, 2);
+        expect(
+          screen.queryByLabelText('How OPEN_EMEA_ORDERS is made'),
+        ).toBeNull();
+
+        // Pure: as the engine prints the view's function
+        await act(async () => {
+          fireEvent.click(within(panel).getByText('Pure'));
+        });
+        await waitFor(() => expect(showsPure(panel)).toBe(true));
+
+        await act(async () => {
+          fireEvent.click(screen.getByLabelText('Close'));
+        });
+        await waitFor(() =>
+          expect(screen.queryByLabelText('How OPEN_ORDERS is made')).toBeNull(),
+        );
+      });
+
+      test("opens a view Cube can't draw on its Pure, and says why", async () => {
+        const { producerInfo, lambdaToPureCode } = await setupProducerInfo({
+          isOwner: true,
+        });
+        const panel = await openViewPanel(producerInfo, 'LAST_ORDERS');
+        await within(panel).findByText(
+          "No flow for this definition: it uses a parameter in its limit(), which Cube's flow doesn't show yet.",
+        );
+        await waitFor(() => expect(showsPure(panel)).toBe(true));
+        expect(
+          within(panel).getByText('Flow').getAttribute('aria-disabled'),
+        ).toBe('true');
+        expect(lambdaToPureCode).toHaveBeenCalledTimes(1);
+      });
+
+      /** The ingest definition with OPEN_ORDERS written in SQL: `#SQL{…}#->limit(10)` */
+      const VIEW_SQL = `select * from i('${INGEST}.ORDERS') where STATUS = 'OPEN'`;
+      const loadIngestWithSqlView = async (
+        path: string,
+      ): Promise<PlainObject | undefined> =>
+        path === INGEST
+          ? {
+              ...INGEST_CONTENT,
+              datasets: INGEST_CONTENT.datasets.map((dataSet) =>
+                dataSet.name === 'OPEN_ORDERS'
+                  ? view(
+                      'OPEN_ORDERS',
+                      lambda({
+                        _type: 'func',
+                        function: 'limit',
+                        parameters: [
+                          {
+                            _type: 'classInstance',
+                            type: 'SQL',
+                            value: { sql: VIEW_SQL },
+                          },
+                          { _type: 'integer', value: 10 },
+                        ],
+                      }),
+                      ['ORDER_ID'],
+                    )
+                  : dataSet,
+              ),
+            }
+          : undefined;
+
+      test('draws a view written in SQL as one step, says the steps after it are unchecked, and shows its SQL', async () => {
+        const { producerInfo } = await setupProducerInfo({
+          isOwner: true,
+          loadIngestDefinition: loadIngestWithSqlView,
+        });
+        const panel = await openViewPanel(producerInfo, 'OPEN_ORDERS');
+        // the SQL, then the limit
+        const [sqlStep] = await findFlowNodes(panel, 2);
+        expect(sqlStep?.textContent).toContain('SQL');
+        expect(sqlStep?.textContent).toContain('names ORDERS');
+        expect(
+          within(panel).getByText(
+            "Cube doesn't check the SQL, so its columns aren't known and the steps after it aren't checked.",
+          ),
+        ).toBeDefined();
+        await act(async () => {
+          fireEvent.click(guaranteeNonNullable(sqlStep));
+        });
+        const sqlPanel = await within(panel).findByLabelText('SQL of a step');
+        await act(async () => {
+          fireEvent.click(within(sqlPanel).getByLabelText('Copy SQL'));
+        });
+        expect(writeText).toHaveBeenLastCalledWith(VIEW_SQL);
+      });
+
+      test("draws a view written in SQL as the steps of its SQL, from the engine's tree of it", async () => {
+        const name = (column: string): PlainObject => ({
+          _type: 'qualifiedNameReference',
+          name: { parts: [column] },
+        });
+        const { producerInfo, dataProductViewerState } =
+          await setupProducerInfo({
+            isOwner: true,
+            loadIngestDefinition: loadIngestWithSqlView,
+          });
+        // the engine's tree of the view's SQL, as its SQL grammar writes it
+        const parse = createSpy(
+          dataProductViewerState.engineServerClient,
+          'SQLToJSON',
+        ).mockResolvedValue({
+          _type: 'query',
+          queryBody: {
+            _type: 'querySpecification',
+            from: [
+              {
+                _type: 'tableFunction',
+                functionCall: {
+                  _type: 'functionCall',
+                  arguments: [
+                    { _type: 'stringLiteral', value: `${INGEST}.ORDERS` },
+                  ],
+                  distinct: false,
+                  name: { parts: ['i'] },
+                  orderBy: [],
+                },
+              },
+            ],
+            groupBy: [],
+            orderBy: [],
+            select: {
+              _type: 'select',
+              distinct: false,
+              selectItems: [{ _type: 'allColumns' }],
+            },
+            where: {
+              _type: 'comparisonExpression',
+              left: name('STATUS'),
+              operator: 'EQUAL',
+              right: { _type: 'stringLiteral', value: 'OPEN' },
+            },
+            windows: [],
+          },
+        });
+        const panel = await openViewPanel(producerInfo, 'OPEN_ORDERS');
+        // its data set, its Where and its Select, then the limit
+        const steps = await findFlowNodes(panel, 4);
+        expect(parse.mock.calls).toEqual([[VIEW_SQL]]);
+        expect(steps.map((step) => step.textContent)).toEqual([
+          expect.stringContaining('ORDERS'),
+          "WhereSTATUS = 'OPEN'",
+          'Selectall columns',
+          expect.stringContaining('Take first 10 row(s)'),
+        ]);
+      });
+
+      test('opens the calls of user-defined functions in a view into containers, and shows their Pure', async () => {
+        const loadFunctions = jest.fn(
+          async () => FUNCTIONS.functions as PlainObject[],
+        );
+        const { producerInfo, logEvent } = await setupProducerInfo({
+          isOwner: true,
+          loadFunctions,
+        });
+        const panel = await openViewPanel(producerInfo, 'ACTIVE_BY_REGION');
+        // the data set and the filter in the container, the group after it
+        await findFlowNodes(panel, 3);
+        expect(loadFunctions).toHaveBeenCalledWith([
+          'shop::orders::activeOrders',
+        ]);
+        const frame = within(panel).getByTestId(
+          LEGEND_CUBE_TEST_ID.CANVAS_CONTAINER,
+        );
+        expect(frame.textContent).toContain('activeOrders()');
+        // it reads ORDERS only through the function, whose body comes from
+        // Depot: its flow shows it
+        expect(within(panel).queryByText('Reads')).toBeNull();
+        expect(logEvent).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.SHOW_INGEST_VIEW_FLOW,
+          expect.objectContaining({
+            dataSet: 'ACTIVE_BY_REGION',
+            functionCallsOpened: 1,
+            functionsUnloaded: false,
+          }),
+        );
+
+        await act(async () => {
+          fireEvent.click(
+            within(frame).getByLabelText(
+              'Show the Pure of shop::orders::activeOrders',
+            ),
+          );
+        });
+        const functionPanel = await within(panel).findByLabelText(
+          'Function shop::orders::activeOrders',
+        );
+        await waitFor(() => expect(showsPure(functionPanel)).toBe(true));
+      });
+    });
   });
 
   describe('Column Specifications: missing descriptions and sample values', () => {

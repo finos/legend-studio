@@ -80,6 +80,7 @@ import type {
   LakehouseIngestServerClient,
   LakehousePlatformServerClient,
 } from '@finos/legend-server-lakehouse';
+import type { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import { LegendDataCubeEditSourceQuery } from '../../components/builder/LegendDataCubeEditSourceQuery.js';
 import type { LegendDataCubeCodeEditorState } from './LegendDataCubeCodeEditorState.js';
 import {
@@ -151,6 +152,7 @@ export class LegendDataCubeBuilderStore {
   readonly platformServerClient: LakehousePlatformServerClient;
   readonly ingestServerClient: LakehouseIngestServerClient;
   readonly contractServerClient: LakehouseContractServerClient;
+  readonly marketplaceServerClient: MarketplaceServerClient | undefined;
   readonly engineServerClient: V1_EngineServerClient;
   readonly graphManager: V1_PureGraphManager;
   readonly taskService: DataCubeTaskService;
@@ -212,6 +214,7 @@ export class LegendDataCubeBuilderStore {
     this.platformServerClient = baseStore.lakehousePlatformServerClient;
     this.ingestServerClient = baseStore.lakehouseIngestServerClient;
     this.contractServerClient = baseStore.lakehouseContractServerClient;
+    this.marketplaceServerClient = baseStore.marketplaceServerClient;
     this.graphManager = baseStore.graphManager;
     this.taskService = baseStore.taskService;
     this.alertService = baseStore.alertService;
