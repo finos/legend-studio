@@ -25,10 +25,18 @@ import {
   V1_deserializeTaskResponse,
   V1_EnrichedUserApprovalStatus,
   V1_ResourceType,
+  V1_User,
   V1_UserApprovalStatus,
   V1_UserType,
 } from '@finos/legend-graph';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+
+export const buildWorkforceUser = (name: string): V1_User => {
+  const user = new V1_User();
+  user.name = name;
+  user.userType = V1_UserType.WORKFORCE_USER;
+  return user;
+};
 
 const invalidContractState = [
   V1_ContractState.DRAFT,

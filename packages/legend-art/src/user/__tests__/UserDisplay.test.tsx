@@ -19,6 +19,7 @@ import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { unitTest } from '@finos/legend-shared/test';
 import { LegendUser } from '@finos/legend-shared';
 import { UserDisplay } from '../UserDisplay.js';
+import { SystemAccountDisplay } from '../SystemAccountDisplay.js';
 
 const buildUser = (data: {
   firstName?: string;
@@ -148,6 +149,26 @@ describe('UserDisplay', () => {
         />,
       );
       expect(container.querySelector('.my-user')).not.toBeNull();
+    });
+  });
+
+  describe(unitTest('system account display'), () => {
+    test(unitTest('shows the id, a System tag and a robot avatar'), () => {
+      const { container } = render(
+        <SystemAccountDisplay id="system-account-a" />,
+      );
+      expect(screen.getByText('system-account-a')).toBeDefined();
+      expect(screen.getByText('System')).toBeDefined();
+      expect(
+        container.querySelector('.legend-system-account-avatar svg'),
+      ).not.toBeNull();
+    });
+
+    test(unitTest('applies an extra class name'), () => {
+      const { container } = render(
+        <SystemAccountDisplay id="system-account-a" className="my-account" />,
+      );
+      expect(container.querySelector('.my-account')).not.toBeNull();
     });
   });
 });

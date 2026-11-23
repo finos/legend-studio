@@ -17,6 +17,8 @@
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  SystemAccountAvatar,
+  SystemAccountDisplay,
 } from '@finos/legend-art';
 import {
   Avatar,
@@ -26,6 +28,7 @@ import {
   Popover,
   Typography,
 } from '@mui/material';
+import { type V1_User, V1_UserType } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import type { ActionState, UserSearchService } from '@finos/legend-shared';
@@ -34,7 +37,7 @@ import { UserRenderer } from '../UserRenderer/UserRenderer.js';
 
 export const UserAvatarGroupWithPopover = observer(
   (props: {
-    users: string[];
+    users: V1_User[];
     fetchingUsersState: ActionState;
     label: string;
     userSearchService: UserSearchService | undefined;
@@ -80,17 +83,20 @@ export const UserAvatarGroupWithPopover = observer(
               className="data-product__viewer__header__type__owners__avatars"
             >
               {users.map((user) => {
+                if (user.userType === V1_UserType.SYSTEM_ACCOUNT) {
+                  return <SystemAccountAvatar key={user.name} />;
+                }
                 const imgUrl = userSearchService?.userProfileImageUrl?.replace(
                   '{userId}',
-                  user,
+                  user.name,
                 );
                 return (
                   <Avatar
-                    key={user}
+                    key={user.name}
                     {...(imgUrl ? { src: imgUrl } : {})}
-                    alt={user}
+                    alt={user.name}
                   >
-                    {user.substring(0, 2).toUpperCase()}
+                    {user.name.substring(0, 2).toUpperCase()}
                   </Avatar>
                 );
               })}
@@ -120,14 +126,18 @@ export const UserAvatarGroupWithPopover = observer(
                 <CubesLoadingIndicatorIcon />
               </CubesLoadingIndicator>
             ) : (
-              users.map((user) => (
-                <UserRenderer
-                  key={user}
-                  userId={user}
-                  applicationStore={applicationStore}
-                  userSearchService={userSearchService}
-                />
-              ))
+              users.map((user) =>
+                user.userType === V1_UserType.SYSTEM_ACCOUNT ? (
+                  <SystemAccountDisplay key={user.name} id={user.name} />
+                ) : (
+                  <UserRenderer
+                    key={user.name}
+                    userId={user.name}
+                    applicationStore={applicationStore}
+                    userSearchService={userSearchService}
+                  />
+                ),
+              )
             )}
           </Box>
         </Popover>

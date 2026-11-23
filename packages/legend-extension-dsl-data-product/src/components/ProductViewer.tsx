@@ -61,6 +61,7 @@ import { DataProductDataAccessState } from '../stores/DataProduct/DataProductDat
 import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
 import type { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
 import { getHumanReadableIngestEnvName } from '../utils/LakehouseUtils.js';
+import { buildWorkforceUser } from '../utils/DataContractUtils.js';
 import { UserAvatarGroupWithPopover } from './DataProduct/UserAvatarGroupWithPopover.js';
 import { DataProductQualityEmote } from './DataProductQualityEmote.js';
 
@@ -277,7 +278,7 @@ const DataProductEnvironmentLabel = observer(
           {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
         </Button>
         <UserAvatarGroupWithPopover
-          users={dataAccessState.dataProductOwners}
+          users={dataAccessState.dataProductOwners.map(buildWorkforceUser)}
           fetchingUsersState={dataAccessState.fetchingDataProductOwnersState}
           label="Owners"
           userSearchService={
