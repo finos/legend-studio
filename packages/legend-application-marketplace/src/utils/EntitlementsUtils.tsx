@@ -15,6 +15,8 @@
  */
 
 import {
+  type ContractErrorLayer,
+  ContractSyncStatus,
   getOrganizationalScopeTypeName,
   getOrganizationalScopeTypeDetails,
   UserRenderer,
@@ -31,10 +33,13 @@ import {
   V1_ResourceType,
   V1_AccessPointGroupReference,
   V1_ContractState,
+  V1_EnrichedUserApprovalStatus,
   V1_RequestState,
   V1_WorkflowTaskStatus,
   type V1_DataRequestWithWorkflow,
+  type V1_LiteAccessRequest,
   V1_deserializeDataRequestsWithWorkflowResponse,
+  V1_transformDataRequestWithWorkflowToLiteDataAccessRequest,
 } from '@finos/legend-graph';
 import type {
   DataGridCellRendererParams,
@@ -50,6 +55,7 @@ import { Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import type { LakehouseEntitlementsStore } from '../stores/lakehouse/entitlements/LakehouseEntitlementsStore.js';
 import { useMemo } from 'react';
+import { createModelSchema, list, object, primitive } from 'serializr';
 import { useLegendMarketplaceBaseStore } from '../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   generateContractPagePath,
@@ -127,6 +133,57 @@ export const getSelectedRowId = (
 export const getSelectedContractGuid = (
   row: EntitlementsRow | undefined,
 ): string | undefined => (row ? getContractData(row)?.guid : undefined);
+
+/**
+ * The lite access request of a row, whether it is a contract or a (RMS) data
+ * request. This is what contract errors (unverified ingests, unsynced
+ * entities, ...) are looked up with.
+ */
+export const getLiteAccessRequest = (
+  row: EntitlementsRow,
+): V1_LiteAccessRequest =>
+  row.kind === ROW_KIND_CONTRACT
+    ? row.data.contractResultLite
+    : V1_transformDataRequestWithWorkflowToLiteDataAccessRequest(row.data);
+
+/**
+ * Whether the row has approved access, which is when its sync status is
+ * meaningful. Only such rows are ever checked for their sync status.
+ *
+ * - Rows of the user's own contracts: the user's status is APPROVED.
+ * - Contracts requested for others: the contract is COMPLETED, and, when the
+ *   members are known, at least one of them is APPROVED. A contract is COMPLETED
+ *   once no user is pending, even if every user was denied.
+ * - Data requests: the request is COMPLETED.
+ */
+export const isApprovedRow = (row: EntitlementsRow): boolean => {
+  if (row.kind === ROW_KIND_CONTRACT) {
+    const lite = row.data.contractResultLite;
+    if (!(lite instanceof V1_LiteDataContract)) {
+      return false;
+    }
+    if (row.data instanceof V1_LiteDataContractWithUserStatus) {
+      return row.data.status === V1_EnrichedUserApprovalStatus.APPROVED;
+    }
+    if (lite.state !== V1_ContractState.COMPLETED) {
+      return false;
+    }
+    const memberStatuses = Array.from(row.data.members.values());
+    return (
+      memberStatuses.length === 0 ||
+      memberStatuses.includes(V1_EnrichedUserApprovalStatus.APPROVED)
+    );
+  }
+  return row.data.dataRequest.state === V1_RequestState.COMPLETED;
+};
+
+/**
+ * Returns the id to check the sync status for, if the row has approved access.
+ * Rows that are not approved (pending, denied, closed, revoked, ...) have
+ * nothing to sync, so they get no id.
+ */
+export const getSyncCheckId = (row: EntitlementsRow): string | undefined =>
+  isApprovedRow(row) ? getSelectedRowId(row) : undefined;
 
 export const getOpenTaskAssignees = (
   data: V1_DataRequestWithWorkflow,
@@ -474,3 +531,161 @@ export const useGetDataProductUrl = (): ((
       generateLakehouseDataProductPath(dataProductId, deploymentId),
     );
 };
+
+// ------------------------------------- Access status (sync) -------------------------------------
+
+/**
+ * The response of the sync status endpoint, with only what the access status
+ * needs. The endpoint leaves out the lists that are empty, which stay empty here.
+ */
+export class ContractSyncSubscription {
+  guid!: string;
+}
+
+export class ContractSyncFailure {
+  sqlStatement!: string;
+  exception?: string | undefined;
+}
+
+export class ContractSyncUser {
+  username!: string;
+}
+
+export class ContractSyncAccessPoint {
+  accessPointName!: string;
+}
+
+export class ContractSyncStatusResponse {
+  status!: string;
+  subscriptions: ContractSyncSubscription[] = [];
+  syncFailures: ContractSyncFailure[] = [];
+  unsyncedUsers: ContractSyncUser[] = [];
+  unsyncedAccessPoints: ContractSyncAccessPoint[] = [];
+  unsyncedTargetAccounts: string[] = [];
+}
+
+const contractSyncSubscriptionModelSchema = createModelSchema(
+  ContractSyncSubscription,
+  { guid: primitive() },
+);
+
+const contractSyncFailureModelSchema = createModelSchema(ContractSyncFailure, {
+  sqlStatement: primitive(),
+  exception: primitive(),
+});
+
+const contractSyncUserModelSchema = createModelSchema(ContractSyncUser, {
+  username: primitive(),
+});
+
+const contractSyncAccessPointModelSchema = createModelSchema(
+  ContractSyncAccessPoint,
+  { accessPointName: primitive() },
+);
+
+export const ContractSyncStatusResponseModelSchema = createModelSchema(
+  ContractSyncStatusResponse,
+  {
+    status: primitive(),
+    subscriptions: list(object(contractSyncSubscriptionModelSchema)),
+    syncFailures: list(object(contractSyncFailureModelSchema)),
+    unsyncedUsers: list(object(contractSyncUserModelSchema)),
+    unsyncedAccessPoints: list(object(contractSyncAccessPointModelSchema)),
+    unsyncedTargetAccounts: list(primitive()),
+  },
+);
+
+/**
+ * What the user sees for an approved contract: whether the approved access has
+ * actually been applied (synced) on the target, as opposed to only being approved.
+ */
+export enum ContractAccessStatus {
+  SETTING_UP = 'Setting up',
+  ACTIVE = 'Active',
+  NEEDS_ATTENTION = 'Needs attention',
+  NOT_CHECKED = 'Not checked',
+}
+
+export type ContractAccessStatusDetail = {
+  status: ContractAccessStatus;
+  // Explains the status in a tooltip, when there is something worth saying
+  reason?: string | undefined;
+};
+
+const pluralize = (count: number, noun: string): string =>
+  `${count} ${noun}${count === 1 ? '' : 's'}`;
+
+/**
+ * Derives the access status from the response of the sync status endpoint.
+ * Pass `undefined` when the endpoint could not be called or did not return a
+ * usable answer (error, unsupported engine, bundle contract, ...).
+ *
+ * "Active" is only ever returned when the backend reports FULLY_SYNCED.
+ */
+export const deriveContractAccessStatus = (
+  response: ContractSyncStatusResponse | undefined,
+): ContractAccessStatusDetail => {
+  const status = response?.status.toUpperCase();
+
+  if (status === ContractSyncStatus.FULLY_SYNCED) {
+    return { status: ContractAccessStatus.ACTIVE };
+  }
+
+  if (
+    response &&
+    (status === ContractSyncStatus.NEVER_SYNCED ||
+      status === ContractSyncStatus.NOT_FULLY_SYNCED)
+  ) {
+    // Without a subscription for the target, nothing is ever granted
+    if (response.subscriptions.length === 0) {
+      return {
+        status: ContractAccessStatus.NEEDS_ATTENTION,
+        reason:
+          'This contract has no subscription, so access cannot be applied yet.',
+      };
+    }
+    if (response.syncFailures.length > 0) {
+      return {
+        status: ContractAccessStatus.NEEDS_ATTENTION,
+        reason: `${pluralize(response.syncFailures.length, 'sync failure')} reported while applying access. Contact the data product owner if this persists.`,
+      };
+    }
+    const pending = [
+      response.unsyncedUsers.length > 0
+        ? pluralize(response.unsyncedUsers.length, 'user')
+        : undefined,
+      response.unsyncedAccessPoints.length > 0
+        ? pluralize(response.unsyncedAccessPoints.length, 'access point')
+        : undefined,
+      response.unsyncedTargetAccounts.length > 0
+        ? pluralize(response.unsyncedTargetAccounts.length, 'target account')
+        : undefined,
+    ].filter((item): item is string => item !== undefined);
+    return {
+      status: ContractAccessStatus.SETTING_UP,
+      reason:
+        pending.length > 0
+          ? `Approved. Waiting for ${pending.join(', ')} to be granted.`
+          : 'Approved. Waiting for access to be granted.',
+    };
+  }
+
+  return {
+    status: ContractAccessStatus.NOT_CHECKED,
+    reason: 'Sync status is not available for this contract.',
+  };
+};
+
+/**
+ * The line of the contract errors that says why the access status is what it is,
+ * for when the sync status lists nothing that is unsynced to show. Without it the
+ * chip says "Setting up" or "Needs attention" while there is no error to be seen.
+ * Nothing is shown for an access status that is not a problem.
+ */
+export const buildAccessStatusErrorLayer = (
+  detail: ContractAccessStatusDetail,
+): ContractErrorLayer | undefined =>
+  detail.status === ContractAccessStatus.SETTING_UP ||
+  detail.status === ContractAccessStatus.NEEDS_ATTENTION
+    ? { title: detail.reason ?? detail.status }
+    : undefined;
