@@ -664,6 +664,31 @@
       border-color: var(--color-hclight-grey-20);
     }
 
+    &__producer-view-panel {
+      background: var(--color-hclight-white) !important;
+    }
+
+    &__producer-view-panel__crumb,
+    &__producer-view-panel__close,
+    &__producer-view__fact dt,
+    &__producer-view__view-title svg,
+    &__producer-view__chip svg {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__producer-view-panel__close:hover,
+    &__producer-view__fact dd {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__producer-view__chip {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__producer-view__chip--link {
+      border-color: #7e57c2;
+    }
+
     &__definition-switch {
       border-color: var(--color-hclight-grey-30);
     }

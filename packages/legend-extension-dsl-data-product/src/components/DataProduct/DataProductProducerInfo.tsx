@@ -31,6 +31,7 @@ import {
   artifactHasDependencyDatasets,
 } from './DataProductDataAccess.js';
 import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
+import { DataProductProducerViewPanel } from './DataProductProducerViewPanel.js';
 
 export const DataProductProducerInfo = observer(
   (props: {
@@ -157,6 +158,10 @@ export const DataProductProducerInfo = observer(
                   />
                 </div>
               ))}
+              <DataProductProducerViewPanel
+                producerViewsState={dataProductViewerState.producerViewsState}
+                artifact={dataProductArtifact}
+              />
             </div>
           </div>
         </CollapsibleWikiSection>
