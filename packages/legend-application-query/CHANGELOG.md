@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.75
+
+### Patch Changes
+
+- [#5950](https://github.com/finos/legend-studio/pull/5950) [`b5d5344`](https://github.com/finos/legend-studio/commit/b5d534484c176f39e211e2222fe0b9be4dcb7be3) ([@kelly-thai](https://github.com/kelly-thai)) - Bump `react-router` and `react-router-dom` to `7.18.5`. `generatePath()` now percent-encodes interpolated params (e.g. `:` as `%3A`), so tests that assert on generated paths expect the encoded form.
+
 ## 13.8.74
 
 ## 13.8.73

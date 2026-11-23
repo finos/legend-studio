@@ -1,5 +1,13 @@
 # @finos/legend-application
 
+## 16.1.6
+
+### Patch Changes
+
+- [#5950](https://github.com/finos/legend-studio/pull/5950) [`b5d5344`](https://github.com/finos/legend-studio/commit/b5d534484c176f39e211e2222fe0b9be4dcb7be3) ([@kelly-thai](https://github.com/kelly-thai)) - Bump `react-router` and `react-router-dom` to `7.18.5`. `generatePath()` now percent-encodes interpolated params (e.g. `:` as `%3A`), so tests that assert on generated paths expect the encoded form.
+
+- [#5937](https://github.com/finos/legend-studio/pull/5937) [`842b4c6`](https://github.com/finos/legend-studio/commit/842b4c6496313c520dad97dced62bebd539b5522) ([@Divisha-Singh](https://github.com/Divisha-Singh)) - Bump versions so these packages are published (and their npm trusted publisher configurations validated); point `@finos/legend-extension-application-studio-depot-dashboard`'s `repository.url` at the GitHub repository.
+
 ## 16.1.5
 
 ### Patch Changes
