@@ -20,7 +20,6 @@ import {
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   DataProductAccessPointSource,
   INGEST_DATASET_SOURCE_DEFINITION,
-  IngestDatasetQualifier,
   IngestDatasetSource,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
   RelationalTableSource,
@@ -50,7 +49,7 @@ import type {
   CubeIngestDefinitionCandidate,
   CubeIngestEnvironmentKey,
 } from '../graph-manager/CubeIngestCatalog.js';
-import { getCubeIngestMetadataSchema } from '../graph-manager/protocol/pure/CubeProtocolJson.js';
+import { getCubeIngestSourceSchema } from '../graph-manager/protocol/pure/CubeProtocolJson.js';
 import { isCubeProjectHost, mixesCubeLakehouseSources } from './CubeHost.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 
@@ -193,12 +192,7 @@ const bindIngestSteps = async (
       );
     }
     const { qualifier } = source;
-    const schema =
-      qualifier === IngestDatasetQualifier.METADATA
-        ? getCubeIngestMetadataSchema()
-        : dataSet.isPickable
-          ? dataSet.schema
-          : undefined;
+    const schema = getCubeIngestSourceSchema(dataSet, qualifier);
     if (!schema) {
       throw new CubeLambdaReadError(
         CubeLambdaReadErrorKind.SOURCE,

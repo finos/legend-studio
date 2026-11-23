@@ -2123,6 +2123,172 @@
     align-items: center;
     gap: 0.6rem;
   }
+
+  // a view's Flow, for owners: beside Query, in the view's colour
+  &__action-btn--flow {
+    min-width: 6.4rem;
+    border-color: #7e57c2;
+    color: #5e35b1;
+
+    &:hover {
+      background: #f3effa;
+    }
+  }
+
+  // where a row that isn't a view has no Flow, so Query lines up
+  &__action-spacer {
+    display: inline-block;
+    width: 6.4rem;
+  }
+
+  &__note {
+    font-size: 1.2rem;
+  }
+
+  &__data-set {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  // a materialized view: a data set its ingest definition computes
+  &__view-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 1.6rem;
+    padding: 0 0.5rem;
+    border: 1px solid #7e57c2;
+    border-radius: 0.3rem;
+    background: #f3effa;
+    color: #5e35b1;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  &__checking {
+    color: #8a94a1;
+    font-size: 1.1rem;
+    font-style: italic;
+  }
+
+  &__view-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: 'Roboto Mono', monospace;
+
+    svg {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
+
+  // what a view reads, its key, and the access points that read it
+  &__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 2.4rem;
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  &__fact {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+
+    dt {
+      color: var(--color-dark-theme-text-muted);
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    dd {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem 0.6rem;
+      margin: 0;
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &--code {
+      font-family: 'Roboto Mono', monospace;
+    }
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 2.2rem;
+    padding: 0 0.7rem;
+    border: 1px solid var(--color-dark-theme-border-light);
+    border-radius: 1.1rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 1.15rem;
+
+    svg {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__name {
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    &--link {
+      border-color: #7e57c2;
+      cursor: pointer;
+
+      &:hover {
+        background: rgb(126 87 194 / 12%);
+      }
+    }
+  }
+}
+
+// a view's definition, opened from Producer Info, over the right of the page
+.data-product__viewer__producer-view-panel {
+  width: min(72vw, 112rem);
+  background: var(--color-dark-theme-bg-primary) !important;
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.6rem 2rem 2rem;
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__crumb {
+    color: var(--color-dark-theme-text-muted);
+    font-size: 1.15rem;
+  }
+
+  &__close {
+    display: inline-flex;
+    padding: 0.4rem;
+    border: 0;
+    background: transparent;
+    color: var(--color-dark-theme-text-muted);
+    font-size: 1.6rem;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-dark-theme-text-primary);
+    }
+  }
 }
 
 .data-product__viewer__producer-info {

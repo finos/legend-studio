@@ -39,6 +39,7 @@ import {
   CopyIcon,
   CopyableId,
   QueryIcon,
+  DatabaseImportIcon,
   Snowflake_BrandIcon,
   Databricks_BrandIcon,
 } from '@finos/legend-art';
@@ -82,6 +83,7 @@ import {
 import {
   Accordion,
   AccordionDetails,
+  Alert,
   AccordionSummary,
   Box,
   Button,
@@ -101,6 +103,7 @@ import {
   isEmpty,
   isNonNullable,
   noop,
+  uniq,
 } from '@finos/legend-shared';
 import {
   type DataProductAccessPointCodeConfiguration,
@@ -141,6 +144,8 @@ import {
   buildIngestDefinitionUrnFromDataset,
 } from '../../utils/DataProductIngestUtils.js';
 import { UserAvatarGroupWithPopover } from './UserAvatarGroupWithPopover.js';
+import { DataProductIngestViewTag } from './DataProductProducerViewPanel.js';
+import type { DataProductProducerViewsState } from '../../stores/DataProduct/DataProductProducerViewsState.js';
 import {
   CollapsibleChevron,
   CollapsibleWikiSection,
@@ -1075,6 +1080,86 @@ export const DataProductProducerEnvironmentInfo = observer(
   },
 );
 
+/**
+ * A data set's name, for an owner: a view is tagged so, and the data sets of
+ * an ingest definition still loading say they're being checked
+ */
+const IngestionDataSetCell = observer(
+  (props: {
+    producerViewsState: DataProductProducerViewsState;
+    row: IngestionDataSetRow;
+  }) => {
+    const { producerViewsState, row } = props;
+    const isView = Boolean(
+      producerViewsState.getView(row.ingestDefinitionPath, row.dataset),
+    );
+    const isChecking = Boolean(
+      producerViewsState.loadStates.get(row.ingestDefinitionPath)?.isInProgress,
+    );
+    return (
+      <span className="data-product__viewer__producer-view__data-set">
+        {row.dataset}
+        {isView && <DataProductIngestViewTag />}
+        {isChecking && (
+          <span className="data-product__viewer__producer-view__checking">
+            checking…
+          </span>
+        )}
+      </span>
+    );
+  },
+);
+
+/** For an owner, on a view's row: opens its definition in the side panel */
+const IngestionViewFlowButton = observer(
+  (props: {
+    producerViewsState: DataProductProducerViewsState;
+    row: IngestionDataSetRow;
+  }) => {
+    const { producerViewsState, row } = props;
+    const view = producerViewsState.getView(
+      row.ingestDefinitionPath,
+      row.dataset,
+    );
+    return view ? (
+      <button
+        type="button"
+        className="data-product__viewer__producer-view__action-btn data-product__viewer__producer-view__action-btn--flow"
+        title={`See how ${view.name} is made`}
+        onClick={() => producerViewsState.showView(view)}
+      >
+        <DatabaseImportIcon />
+        <span>Flow</span>
+      </button>
+    ) : (
+      <span className="data-product__viewer__producer-view__action-spacer" />
+    );
+  },
+);
+
+/** For an owner: the group's ingest definitions Depot couldn't give */
+const IngestionDefinitionsUnloadedNote = observer(
+  (props: {
+    producerViewsState: DataProductProducerViewsState;
+    paths: string[];
+  }) => {
+    const { producerViewsState, paths } = props;
+    const failed = paths.filter(
+      (path) => producerViewsState.loadStates.get(path)?.hasFailed,
+    );
+    return failed.length ? (
+      <Alert
+        severity="warning"
+        className="data-product__viewer__producer-view__note"
+      >
+        {`Couldn't load ${failed.join(', ')} from Depot, so ${
+          failed.length === 1 ? 'its' : 'their'
+        } views aren't marked and have no flow here.`}
+      </Alert>
+    ) : null;
+  },
+);
+
 export const ApgIngestionDataSetsScreen = observer(
   (props: {
     apgState: DataProductAPGState;
@@ -1105,6 +1190,33 @@ export const ApgIngestionDataSetsScreen = observer(
         entitlementsDetails,
       ],
     );
+
+    // the data product's owners see which data sets are views, and how each
+    // is made, from the ingest definitions Depot gives
+    const producerViewsState =
+      apgState.dataProductViewerState.producerViewsState;
+    const showsViews = isOwner && producerViewsState.canLoad;
+    const ingestDefinitionPaths = useMemo(
+      () => uniq(rows.map((row) => row.ingestDefinitionPath)),
+      [rows],
+    );
+    useEffect(() => {
+      if (showsViews) {
+        flowResult(
+          producerViewsState.loadIngestDefinitions(ingestDefinitionPaths),
+        ).catch(apgState.applicationStore.alertUnhandledError);
+      }
+    }, [
+      showsViews,
+      producerViewsState,
+      ingestDefinitionPaths,
+      apgState.applicationStore,
+    ]);
+    const hasViews =
+      showsViews &&
+      rows.some((row) =>
+        producerViewsState.getView(row.ingestDefinitionPath, row.dataset),
+      );
 
     // Resolve the (location-relative) operations path against the current
     // application base address via the navigation service so the link stays on
@@ -1196,13 +1308,31 @@ export const ApgIngestionDataSetsScreen = observer(
           );
         },
       },
-      { headerName: 'Dataset', field: 'dataset', flex: 1.4 },
+      {
+        headerName: 'Dataset',
+        field: 'dataset',
+        flex: 1.4,
+        ...(showsViews
+          ? {
+              cellRenderer: (params: {
+                data: IngestionDataSetRow | undefined;
+              }) =>
+                params.data ? (
+                  <IngestionDataSetCell
+                    producerViewsState={producerViewsState}
+                    row={params.data}
+                  />
+                ) : null,
+            }
+          : {}),
+      },
       {
         headerName: 'Actions',
         colId: 'actions',
-        width: 110,
-        minWidth: 110,
-        maxWidth: 140,
+        // room for Flow beside Query
+        width: hasViews ? 190 : 110,
+        minWidth: hasViews ? 190 : 110,
+        maxWidth: hasViews ? 220 : 140,
         sortable: false,
         filter: false,
         resizable: false,
@@ -1221,6 +1351,12 @@ export const ApgIngestionDataSetsScreen = observer(
             : 'Open in Legend Query';
           return (
             <div className="data-product__viewer__producer-view__action-cell">
+              {hasViews && (
+                <IngestionViewFlowButton
+                  producerViewsState={producerViewsState}
+                  row={params.data}
+                />
+              )}
               <button
                 type="button"
                 className="data-product__viewer__producer-view__action-btn"
@@ -1254,6 +1390,12 @@ export const ApgIngestionDataSetsScreen = observer(
             {rows.length === 1 ? '' : 's'}
           </span>
         </Box>
+        {showsViews && (
+          <IngestionDefinitionsUnloadedNote
+            producerViewsState={producerViewsState}
+            paths={ingestDefinitionPaths}
+          />
+        )}
         {rows.length === 0 ? (
           <TabMessageScreen message="No ingestion datasets declared for this access point group." />
         ) : (

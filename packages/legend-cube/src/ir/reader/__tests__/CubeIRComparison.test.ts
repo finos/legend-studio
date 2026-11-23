@@ -74,6 +74,18 @@ describe('Comparing lambdas Cube reads with the ones it writes', () => {
     ).toBe(true);
   });
 
+  test('Tells every qualifier of a data set from the others, and from its rows', () => {
+    const path = ['sales::OrdersIngest', 'TRADES'] as const;
+    const reads = [undefined, ...Object.values(IngestDatasetQualifier)].map(
+      (qualifier) => ingestAccessor(path, undefined, undefined, qualifier),
+    );
+    reads.forEach((one, i) =>
+      reads.forEach((other, j) =>
+        expect(isSameCubeIR(one, other)).toBe(i === j),
+      ),
+    );
+  });
+
   test('Compares numbers by value, within their kind', () => {
     const float = (value: string): IR => literal({ kind: 'float', value });
     expect(isSameCubeIR(float('0.0'), float('0'))).toBe(true);

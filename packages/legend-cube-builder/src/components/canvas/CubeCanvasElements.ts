@@ -347,9 +347,12 @@ export const getCubeCanvasNodeLabel = (
     return { title: node.accessPoint, detail: node.dataProductName };
   }
   if (node instanceof IngestDatasetSource) {
-    // a data set's batch metadata, `#I{…|metadata}#`, e.g. "TRADES metadata"
+    // with a qualifier, `#I{…|metadata}#`, e.g. "TRADES metadata"
     return {
-      title: node.readsMetadata ? `${node.dataSet} metadata` : node.dataSet,
+      title:
+        node.qualifier === undefined
+          ? node.dataSet
+          : `${node.dataSet} ${node.qualifier}`,
       detail: node.ingestDefinitionName,
     };
   }

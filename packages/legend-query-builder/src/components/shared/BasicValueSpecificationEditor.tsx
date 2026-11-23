@@ -204,8 +204,10 @@ const VariableExpressionParameterEditor = observer(
     resetValue: () => void;
     className?: string | undefined;
     isConstant?: boolean;
+    readOnly?: boolean | undefined;
   }) => {
-    const { valueSpecification, resetValue, isConstant, className } = props;
+    const { valueSpecification, resetValue, isConstant, className, readOnly } =
+      props;
     const varName = valueSpecification.name;
     return (
       <>
@@ -231,14 +233,16 @@ const VariableExpressionParameterEditor = observer(
               </div>
             </VariableInfoTooltip>
 
-            <button
-              className="value-spec-editor__variable__reset-btn"
-              name="Reset"
-              title="Reset"
-              onClick={resetValue}
-            >
-              <RefreshIcon />
-            </button>
+            {!readOnly && (
+              <button
+                className="value-spec-editor__variable__reset-btn"
+                name="Reset"
+                title="Reset"
+                onClick={resetValue}
+              >
+                <RefreshIcon />
+              </button>
+            )}
           </div>
         </div>
       </>
@@ -1489,6 +1493,7 @@ interface DateInstanceValueEditorProps<
   updateValueSpecification: CustomDatePickerUpdateValueSpecification<T>;
   typeCheckOption: TypeCheckOption | V1_TypeCheckOption;
   displayAsEditableValue?: boolean | undefined;
+  absoluteDateOnly?: boolean | undefined;
 }
 
 const DateInstanceValueEditorInner = <
@@ -1504,6 +1509,7 @@ const DateInstanceValueEditorInner = <
     handleBlur,
     typeCheckOption,
     displayAsEditableValue,
+    absoluteDateOnly,
     className,
     readOnly,
   } = props;
@@ -1521,6 +1527,7 @@ const DateInstanceValueEditorInner = <
         }
         handleBlur={handleBlur}
         displayAsEditableValue={displayAsEditableValue}
+        absoluteDateOnly={absoluteDateOnly}
         readOnly={readOnly}
       />
       {!displayAsEditableValue && (
@@ -1906,6 +1913,7 @@ export const BasicValueSpecificationEditor = forwardRef<
         className={className}
         resetValue={resetValue}
         isConstant={Boolean(isConstant)}
+        readOnly={readOnly}
       />
     );
   } else if (valueSpecification instanceof INTERNAL__PropagatedValue) {

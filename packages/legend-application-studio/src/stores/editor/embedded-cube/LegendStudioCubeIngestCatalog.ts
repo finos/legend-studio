@@ -24,6 +24,7 @@ import {
   CubeIngestProducer,
   formatCubeIngestUrn,
   parseCubeIngestUrn,
+  getCubeIngestSourceSchema,
   readCubeIngestDataSets,
   type CubeDataProductProject,
   type CubeIngestCatalog,
@@ -282,17 +283,16 @@ export class LegendStudioCubeIngestCatalog
         const dataSet = read.find((each) => each.name === source.dataSet);
         return [
           nodeId,
-          dataSet?.schema && dataSet.isPickable
-            ? dataSet.schema
-            : new CubeEngineError(
-                CubeEngineErrorKind.COMPILE,
-                dataSet?.disabledReason ??
-                  LEGEND_STUDIO_CUBE_MESSAGE.NO_DATA_SET(
-                    source.dataSet,
-                    source.ingestDefinition,
-                  ),
-                nodeId,
-              ),
+          getCubeIngestSourceSchema(dataSet, source.qualifier) ??
+            new CubeEngineError(
+              CubeEngineErrorKind.COMPILE,
+              dataSet?.disabledReason ??
+                LEGEND_STUDIO_CUBE_MESSAGE.NO_DATA_SET(
+                  source.dataSet,
+                  source.ingestDefinition,
+                ),
+              nodeId,
+            ),
         ];
       }),
     );

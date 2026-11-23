@@ -16,6 +16,7 @@
 
 import {
   type CubeType,
+  IngestDatasetQualifier,
   OpaqueType,
   PRIMITIVE_TYPE_PATH,
   PrimitiveType,
@@ -35,8 +36,9 @@ import {
   type V1_WriteMode,
   V1_deserializeIngestDefinitionContent,
   V1_getIngestMetadataRelationType,
+  V1_IngestPreprocessorType,
 } from '@finos/legend-graph';
-import type { PlainObject } from '@finos/legend-shared';
+import { isPlainObject, type PlainObject } from '@finos/legend-shared';
 import { CubeIngestDataSet } from '../../../CubeIngestCatalog.js';
 
 // A deployed ingest definition's data sets, typed from what the definition
@@ -113,6 +115,77 @@ const milestoningColumns = (
     );
   }
   return columns;
+};
+
+/** The columns the engine adds to a data set's append log, as it names them */
+const APPEND_LOG_COLUMNS = {
+  BATCH_ID: 'LAKE_BATCH_ID',
+  APPEND_TIME: 'LAKE_APPEND_TIME',
+  IN_Z: 'LAKE_IN_Z',
+  OUT_Z: 'LAKE_OUT_Z',
+} as const;
+
+/** Whether a data set, as its content declares it, has a preprocessor of that type */
+const hasPreprocessor = (
+  declared: unknown,
+  type: V1_IngestPreprocessorType,
+): boolean => {
+  const preprocessors = isPlainObject(declared)
+    ? declared.preprocessors
+    : undefined;
+  return (
+    Array.isArray(preprocessors) &&
+    preprocessors.some((each) => isPlainObject(each) && each._type === type)
+  );
+};
+
+/**
+ * The columns a data set's append log adds after its own, as the engine adds
+ * them to `#I{…|incoming}#` whatever the write mode: the digest, when the
+ * write mode keeps one, then the batch each row came in with and when it was
+ * appended, then, for a data set that keeps them, the times it is in the lake
+ * from and until. A batch-milestoned data set keeps no digest when it
+ * overwrites on snapshot. Typed as the milestoning columns are.
+ */
+const appendLogColumns = (
+  writeMode: V1_WriteMode | undefined,
+  declared: unknown,
+): SchemaColumn[] => {
+  const type = writeMode?._type;
+  const keepsDigest =
+    type === V1_WriteModeType.BATCH_MILESTONED_BUSINESS_TEMPORAL ||
+    (type === V1_WriteModeType.BATCH_MILESTONED &&
+      !hasPreprocessor(
+        declared,
+        V1_IngestPreprocessorType.OVERWRITE_ON_SNAPSHOT,
+      ));
+  const timestamp = PrimitiveType.get(PRIMITIVE_TYPE_PATH.TIMESTAMP);
+  return [
+    ...(keepsDigest
+      ? [
+          new SchemaColumn(
+            MILESTONE_INGEST_COLUMNS.INGEST_LAKE_DIGEST,
+            PrimitiveType.get(PRIMITIVE_TYPE_PATH.STRING),
+            false,
+          ),
+        ]
+      : []),
+    new SchemaColumn(
+      APPEND_LOG_COLUMNS.BATCH_ID,
+      PrimitiveType.get(PRIMITIVE_TYPE_PATH.INTEGER),
+      false,
+    ),
+    new SchemaColumn(APPEND_LOG_COLUMNS.APPEND_TIME, timestamp, false),
+    ...(hasPreprocessor(
+      declared,
+      V1_IngestPreprocessorType.INCLUDE_INZ_OUTZ_TIMESTAMP,
+    )
+      ? [
+          new SchemaColumn(APPEND_LOG_COLUMNS.IN_Z, timestamp, false),
+          new SchemaColumn(APPEND_LOG_COLUMNS.OUT_Z, timestamp, false),
+        ]
+      : []),
+  ];
 };
 
 /**
@@ -193,35 +266,49 @@ const isMaterializedView = (dataset: V1_IngestDataset): boolean =>
   (dataset.source as V1_IngestDatasetSource | undefined)?._type ===
   MATERIALIZED_VIEW_SOURCE;
 
-/** A data set's schema, or why it can't be picked */
+/**
+ * A data set's schema, and its columns as `#I{…|incoming}#` reads them, or why
+ * it can't be picked. Those are none for a data set with a column of its own
+ * named as one the append log adds; it can still be picked for its rows.
+ */
 const readSchema = (
   dataset: V1_IngestDataset,
   definitionWriteMode: V1_WriteMode | undefined,
-): { schema: Schema } | { reason: string } => {
+  declared: unknown,
+):
+  | { schema: Schema; incomingSchema: Schema | undefined }
+  | { reason: string } => {
   if (isMaterializedView(dataset)) {
     return { reason: V1_CUBE_INGEST_DATA_SET_REASON.MATERIALIZED_VIEW };
   }
   // the protocol types the schema as always there, but saved content may lack it
   const source = dataset.source as V1_IngestDatasetSource | undefined;
   const schema: V1_IngestDatasetSchema | undefined = source?.schema;
-  const declared = schema?.columns ?? [];
-  if (!declared.length) {
+  const columns = schema?.columns ?? [];
+  if (!columns.length) {
     return { reason: V1_CUBE_INGEST_DATA_SET_REASON.NO_COLUMNS };
   }
-  const read = readColumns(declared);
+  const read = readColumns(columns);
   if ('reason' in read) {
     return read;
   }
+  const writeMode = dataset.writeMode ?? definitionWriteMode;
+  let rows: Schema;
   try {
-    return {
-      schema: new Schema([
-        ...read.columns,
-        ...milestoningColumns(dataset.writeMode ?? definitionWriteMode),
-      ]),
-    };
+    rows = new Schema([...read.columns, ...milestoningColumns(writeMode)]);
   } catch (error) {
     return { reason: error instanceof Error ? error.message : String(error) };
   }
+  let incoming: Schema | undefined;
+  try {
+    incoming = new Schema([
+      ...read.columns,
+      ...appendLogColumns(writeMode, declared),
+    ]);
+  } catch {
+    incoming = undefined;
+  }
+  return { schema: rows, incomingSchema: incoming };
 };
 
 let metadataSchema: Schema | undefined;
@@ -243,6 +330,22 @@ export const V1_getCubeIngestMetadataSchema = (): Schema => {
 };
 
 /**
+ * The columns a source reads of an ingest data set, as the engine types the
+ * accessor with its qualifier: its batch metadata's, whatever the data set,
+ * else the data set's, by what the qualifier says; `undefined` when the data
+ * set can't be read
+ */
+export const V1_getCubeIngestSourceSchema = (
+  dataSet: CubeIngestDataSet | undefined,
+  qualifier: IngestDatasetQualifier | undefined,
+): Schema | undefined =>
+  qualifier === IngestDatasetQualifier.METADATA
+    ? V1_getCubeIngestMetadataSchema()
+    : dataSet?.isPickable
+      ? dataSet.getSchemaRead(qualifier)
+      : undefined;
+
+/**
  * The data sets of an ingest definition's content (its protocol JSON), in
  * order. Throws when the content can't be read at all.
  */
@@ -250,14 +353,24 @@ export const V1_readCubeIngestDataSets = (
   content: PlainObject,
 ): CubeIngestDataSet[] => {
   const definition = V1_deserializeIngestDefinitionContent(content);
+  // what the protocol model leaves out, e.g. a data set's preprocessors
+  const declared: unknown[] = Array.isArray(content.datasets)
+    ? content.datasets
+    : [];
   return (definition.datasets ?? []).map((dataset) => {
-    const read = readSchema(dataset, definition.writeMode);
+    const read = readSchema(
+      dataset,
+      definition.writeMode,
+      declared.find(
+        (each) => isPlainObject(each) && each.name === dataset.name,
+      ),
+    );
     return new CubeIngestDataSet({
       name: dataset.name,
       primaryKey: dataset.primaryKey,
       isMaterializedView: isMaterializedView(dataset),
       ...('schema' in read
-        ? { schema: read.schema }
+        ? { schema: read.schema, incomingSchema: read.incomingSchema }
         : { disabledReason: read.reason }),
     });
   });

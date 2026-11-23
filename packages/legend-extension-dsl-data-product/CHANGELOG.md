@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.12
+
+## 0.2.11
+
+### Patch Changes
+
+- [#5926](https://github.com/finos/legend-studio/pull/5926) [`0ce7a95`](https://github.com/finos/legend-studio/commit/0ce7a9568c5596c8d20554ab721670ca621fb911) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - An access point's definition flow opens the calls of user-defined functions (PLAN §11.33): the viewer state takes a `loadFunctions` action, beside `loadIngestDefinition`, and Marketplace gives it `createDepotFunctionLoader`, which reads every function of the data product's project and its dependencies from Depot in one request, kept for the page. The functions load before the ingest definitions, as a function's body may read some; a function's Pure shows under the flow; a line says when a function drawn as one box leaves the steps after it unchecked; and the flow's telemetry counts the calls opened and the ones drawn as one box, by why.
+
+- [#5926](https://github.com/finos/legend-studio/pull/5926) [`0ce7a95`](https://github.com/finos/legend-studio/commit/0ce7a9568c5596c8d20554ab721670ca621fb911) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - The function loader of an access point's definition flow reads Depot's answer into Depot's `ProjectVersionEntities` and `StoredEntity`, asks for `CORE_PURE_PATH.FUNCTION` and names a dependency with `generateGAVCoordinates`; a function's Pure is printed through the graph manager's `entitiesToPureCode`; the loader's type is Cube's `CubeDefinitionFunctionLoader` (the `DataProductFunctionLoader` alias, never released, is gone).
+
 ## 0.2.10
 
 ### Patch Changes

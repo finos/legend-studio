@@ -491,6 +491,7 @@ interface CustomDatePickerProps<
   typeCheckOption: TypeCheckOption | V1_TypeCheckOption;
   displayAsEditableValue?: boolean | undefined;
   handleBlur?: (() => void) | undefined;
+  absoluteDateOnly?: boolean | undefined;
 }
 
 export const CustomDatePicker = <
@@ -507,16 +508,19 @@ export const CustomDatePicker = <
     displayAsEditableValue,
     handleBlur,
     readOnly,
+    absoluteDateOnly,
   } = props;
   const applicationStore = useApplicationStore();
   // For some cases where types need to be matched strictly.
   // Some options need to be filtered out for DateTime.
-  const targetDateOptionsEnum = typeCheckOption.match
-    ? Object.values([
-        CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
-        CUSTOM_DATE_PICKER_OPTION.NOW,
-      ])
-    : Object.values(CUSTOM_DATE_PICKER_OPTION);
+  const targetDateOptionsEnum = absoluteDateOnly
+    ? [CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE]
+    : typeCheckOption.match
+      ? Object.values([
+          CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME,
+          CUSTOM_DATE_PICKER_OPTION.NOW,
+        ])
+      : Object.values(CUSTOM_DATE_PICKER_OPTION);
   const [datePickerOption, setDatePickerOption] = useState(
     buildDatePickerOption(valueSpecification, applicationStore),
   );

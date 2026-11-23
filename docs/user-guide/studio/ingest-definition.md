@@ -90,4 +90,9 @@ data set in Legend Cube and, above its data sets, set **Read** to **Batch metada
 a materialized view too. Its first step is named after the data set, e.g. **FIRM metadata**, in its flow and in Legend
 Cube, and **Save MatView** keeps it reading the batch metadata.
 
+An incremental view reads the data set's incoming rows instead: those it has not read yet, `#I{…|incoming}#` or
+`#I{…|incomingMilestoned}#`. Legend Cube opens such a view, names its first step after the data set and what it reads,
+e.g. **FIRM incoming**, and **Save MatView** keeps it. The data set's `incoming` rows have the columns of its append
+log, such as `LAKE_BATCH_ID`. Legend Cube does not start an incremental view yet: write it in Pure.
+
 The [Legend Cube guide](https://legend.finos.org/guides/cube) explains Legend Cube's steps.

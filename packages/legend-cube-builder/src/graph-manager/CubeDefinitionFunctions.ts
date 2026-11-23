@@ -18,6 +18,7 @@ import {
   CubeLambdaReadError,
   findCubeFreeVariables,
   getCubeRelationInputCount,
+  IngestDatasetQualifier,
   type CubeLambdaParts,
   type IR,
   type Schema,
@@ -668,15 +669,16 @@ export const expandCubeDefinitionFunctions = (
 };
 
 /**
- * The ingest definitions the IR reads the rows of, by path, in the order it
- * reads them; a data set's batch metadata needs no definition
+ * The ingest definitions the IR reads the columns of, by path, in the order
+ * it reads them: its rows', or what a qualifier reads of them. A data set's
+ * batch metadata needs no definition
  */
 export const findCubeIngestDefinitionsRead = (ir: unknown): string[] => {
   const paths: string[] = [];
   visitIR(ir, (node) => {
     if (
       node.k === 'ingestAccessor' &&
-      node.qualifier === undefined &&
+      node.qualifier !== IngestDatasetQualifier.METADATA &&
       node.path[0] !== CUBE_DEFINITION_INPUT_STAND_IN &&
       !paths.includes(node.path[0])
     ) {

@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.1.5
+
+### Patch Changes
+
+- [#5933](https://github.com/finos/legend-studio/pull/5933) [`4087303`](https://github.com/finos/legend-studio/commit/40873036ccddf2fba74ce7c22a1e38137abda820) ([@yash0024](https://github.com/yash0024)) - Bump versions so these packages are published (and their npm trusted publisher configurations validated); point `@finos/legend-extension-application-studio-depot-dashboard`'s `repository.url` at the GitHub repository.
+
 ## 16.1.4
 
 ## 16.1.3

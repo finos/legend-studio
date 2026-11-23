@@ -2588,6 +2588,19 @@
       "_type": "class",
       "name": "PackageableRuntime",
       "package": "meta::pure::runtime"
+    },
+    {
+      "_type": "Enumeration",
+      "name": "DataDNSEnv",
+      "package": "meta::datalake::functions",
+      "values": [
+        {
+          "value": "PROD"
+        },
+        {
+          "value": "QA"
+        }
+      ]
     }
   ]
 }

@@ -15,7 +15,12 @@
  */
 
 import { jest } from '@jest/globals';
-import { PrimitiveType, Schema, SchemaColumn } from '@finos/legend-cube';
+import {
+  PRIMITIVE_TYPE_PATH,
+  PrimitiveType,
+  Schema,
+  SchemaColumn,
+} from '@finos/legend-cube';
 import { CubeDataProductEnvironmentType } from '../graph-manager/CubeDataProduct.js';
 import {
   CubeEngineError,
@@ -28,6 +33,7 @@ import {
   CubeIngestEnvironment,
   CubeIngestProducer,
 } from '../graph-manager/CubeIngestCatalog.js';
+import { getCubeIngestSourceSchema } from '../graph-manager/protocol/pure/CubeProtocolJson.js';
 
 // A fake of the deployed ingest definitions, for the Ingest tab's and the
 // editor's tests: producer deployment 1234, named Sales Feed in the
@@ -56,6 +62,17 @@ export const FAKE_INGEST_TRADES_SCHEMA = new Schema([
   ),
 ]);
 
+/** TRADES as `#I{…TRADES|incoming}#` reads it: its append log's columns after its own */
+export const FAKE_INGEST_TRADES_INCOMING_SCHEMA = new Schema([
+  ...FAKE_INGEST_TRADES_SCHEMA.columns,
+  new SchemaColumn('LAKE_BATCH_ID', PrimitiveType.get('Integer'), false),
+  new SchemaColumn(
+    'LAKE_APPEND_TIME',
+    PrimitiveType.get(PRIMITIVE_TYPE_PATH.TIMESTAMP),
+    false,
+  ),
+]);
+
 export const FAKE_INGEST_DESKS_SCHEMA = new Schema([
   new SchemaColumn('DESK', PrimitiveType.get('String'), false),
 ]);
@@ -67,6 +84,7 @@ const DATA_SETS: ReadonlyMap<string, readonly CubeIngestDataSet[]> = new Map([
       new CubeIngestDataSet({
         name: 'TRADES',
         schema: FAKE_INGEST_TRADES_SCHEMA,
+        incomingSchema: FAKE_INGEST_TRADES_INCOMING_SCHEMA,
         primaryKey: ['TRADE_ID'],
       }),
       new CubeIngestDataSet({
@@ -202,9 +220,12 @@ export const createFakeCubeIngestCatalog = (): FakeCubeIngestCatalog => {
         new Map(
           [...sources].map(([nodeId, source]) => [
             nodeId,
-            DATA_SETS.get(source.ingestDefinition)?.find(
-              (dataSet) => dataSet.name === source.dataSet,
-            )?.schema ??
+            getCubeIngestSourceSchema(
+              DATA_SETS.get(source.ingestDefinition)?.find(
+                (dataSet) => dataSet.name === source.dataSet,
+              ),
+              source.qualifier,
+            ) ??
               new CubeEngineError(
                 CubeEngineErrorKind.COMPILE,
                 `Ingest definition ${source.ingestDefinition} has no data set ${source.dataSet}`,

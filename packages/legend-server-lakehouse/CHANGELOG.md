@@ -1,5 +1,13 @@
 # @finos/legend-server-lakehouse
 
+## 0.4.9
+
+## 0.4.8
+
+### Patch Changes
+
+- [#5928](https://github.com/finos/legend-studio/pull/5928) [`61b2e69`](https://github.com/finos/legend-studio/commit/61b2e6919f5688fb984cf3378f33264cdd7cd461) ([@TharunRajeev](https://github.com/TharunRajeev)) - Send the approval and rejection text for permit entitlement tasks as `comment` (optional for approve, mandatory for reject) instead of `justification`; cancellation continues to send `justification`.
+
 ## 0.4.7
 
 ## 0.4.6

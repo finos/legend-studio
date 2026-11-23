@@ -57,7 +57,7 @@ import {
 } from './CubeDefinitionFunctions.js';
 import {
   CUBE_EXPRESSION_CODEC,
-  getCubeIngestMetadataSchema,
+  getCubeIngestSourceSchema,
   readCubeIngestDataSets,
   readCubeLambdaJson,
   readCubeLambdaParameters,
@@ -440,15 +440,13 @@ const createBindSource = (
     const isStandIn = ingestDefinition === CUBE_DEFINITION_INPUT_STAND_IN;
     // a data set's batch metadata has the same columns whatever the data
     // set, so is known without its definition
-    const readsMetadata = qualifier === IngestDatasetQualifier.METADATA;
     const read =
-      isStandIn || readsMetadata
+      isStandIn || qualifier === IngestDatasetQualifier.METADATA
         ? undefined
         : dataSetOf(ingestDefinition, dataSet);
-    const schema =
-      !isStandIn && readsMetadata
-        ? getCubeIngestMetadataSchema()
-        : read?.schema;
+    const schema = isStandIn
+      ? undefined
+      : getCubeIngestSourceSchema(read, qualifier);
     if (!schema && !isStandIn) {
       // a view's columns aren't unknown for want of its definition: Cube
       // doesn't type a view yet
@@ -504,10 +502,11 @@ const expand = (
   });
 
 /**
- * The ingest definitions a definition reads the rows of, by path, in the
- * order it reads them: what a host loads before reading it
- * (`getIngestDefinition`); none when Cube can't read it. A data set's batch
- * metadata needs no definition: its columns are the same for every data set.
+ * The ingest definitions a definition reads the columns of, by path, in the
+ * order it reads them: its rows', or what a qualifier reads of them. What a
+ * host loads before reading it (`getIngestDefinition`); none when Cube can't
+ * read it. A data set's batch metadata needs no definition: its columns are
+ * the same for every data set.
  */
 export const findCubeDefinitionIngestDefinitions = (
   lambda: unknown,
@@ -527,7 +526,8 @@ export const findCubeDefinitionIngestDefinitions = (
     return [
       ...new Set(
         sources.flatMap((source) =>
-          source.k === 'ingestAccessor' && source.qualifier === undefined
+          source.k === 'ingestAccessor' &&
+          source.qualifier !== IngestDatasetQualifier.METADATA
             ? [source.path[0]]
             : [],
         ),

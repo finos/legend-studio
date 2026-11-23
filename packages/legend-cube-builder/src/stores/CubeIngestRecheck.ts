@@ -33,7 +33,7 @@ import {
 } from '../graph-manager/CubeIngestCatalog.js';
 import { getCubeIngestMetadataSchema } from '../graph-manager/protocol/pure/CubeProtocolJson.js';
 
-/** The columns of data sets' rows, through the catalog */
+/** The columns of data sets' rows, or of what a qualifier reads of them, through the catalog */
 const recheckCubeIngestRows = async (
   catalog: CubeIngestCatalog | undefined,
   model: ModelContext,
@@ -73,6 +73,7 @@ const recheckCubeIngestRows = async (
             ingestDefinitionUrn: source.ingestDefinitionUrn,
             ingestDefinition: source.ingestDefinition,
             dataSet: source.dataSet,
+            qualifier: source.qualifier,
           },
         ]),
       ),

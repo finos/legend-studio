@@ -15,7 +15,7 @@
  */
 
 import { describe, expect, jest, test } from '@jest/globals';
-import type { Schema } from '@finos/legend-cube';
+import { IngestDatasetQualifier, type Schema } from '@finos/legend-cube';
 import {
   LakehouseContractServerClient,
   LakehouseIngestServerClient,
@@ -360,6 +360,52 @@ describe('The deployed ingest definitions of a lakehouse', () => {
     expect(
       (await catalog.describe(ORDERS_URN, PROD)).map((each) => each.name),
     ).toEqual(['TRADES', 'DAILY']);
+  });
+
+  test('Resolves a source by what its qualifier reads of its data set: its append log for incoming, its rows otherwise', async () => {
+    const { catalog } = setUp();
+    const location = (
+      dataSet: string,
+      qualifier?: IngestDatasetQualifier,
+    ): {
+      ingestDefinitionUrn: string;
+      ingestDefinition: string;
+      dataSet: string;
+      qualifier?: IngestDatasetQualifier;
+    } => ({
+      ingestDefinitionUrn: ORDERS_URN,
+      ingestDefinition: ORDERS,
+      dataSet,
+      ...(qualifier === undefined ? {} : { qualifier }),
+    });
+    const resolved = await catalog.resolveSchemas(
+      PROD,
+      new Map([
+        ['rows', location('TRADES')],
+        ['incoming', location('TRADES', IngestDatasetQualifier.INCOMING)],
+        ['milestoned', location('TRADES', IngestDatasetQualifier.MILESTONED)],
+        [
+          'incomingMilestoned',
+          location('TRADES', IngestDatasetQualifier.INCOMING_MILESTONED),
+        ],
+        // a materialized view isn't read, whatever the qualifier
+        ['viewIncoming', location('DAILY', IngestDatasetQualifier.INCOMING)],
+      ]),
+    );
+    const namesOf = (nodeId: string): string[] =>
+      (resolved.get(nodeId) as Schema).columns.map((each) => each.name);
+    expect(namesOf('rows')).toEqual(['ID']);
+    // append only, the digest kept by no write mode, then the batch and when
+    expect(namesOf('incoming')).toEqual([
+      'ID',
+      'LAKE_BATCH_ID',
+      'LAKE_APPEND_TIME',
+    ]);
+    expect(namesOf('milestoned')).toEqual(['ID']);
+    expect(namesOf('incomingMilestoned')).toEqual(['ID']);
+    const view = resolved.get('viewIncoming') as CubeEngineError;
+    expect(view).toBeInstanceOf(CubeEngineError);
+    expect(view.nodeId).toBe('viewIncoming');
   });
 
   test('Resolves each saved source to its data set’s schema, or its node’s error', async () => {
