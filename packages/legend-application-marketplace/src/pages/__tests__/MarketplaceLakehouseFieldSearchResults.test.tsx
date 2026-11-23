@@ -362,7 +362,7 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
 
     expect(mockVisitAddress).toHaveBeenCalledWith(
       expect.stringContaining(
-        '/dataspace/com.example.legacy:legacy-without-context:1.0.0/test::LegacyWithoutContext',
+        '/dataspace/com.example.legacy%3Alegacy-without-context%3A1.0.0/test%3A%3ALegacyWithoutContext',
       ),
     );
     expect(logWarnSpy).toHaveBeenCalled();

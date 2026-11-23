@@ -193,6 +193,7 @@ type ConstantChange_TelemetryData = QueryBuilderTelemetryContext & {
 type WatermarkChange_TelemetryData = QueryBuilderTelemetryContext & {
   change: {
     enabled: boolean;
+    mode?: 'standard' | 'dataDNS';
   };
 };
 

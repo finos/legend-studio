@@ -35,6 +35,7 @@ import {
   SnowflakeScalingPolicy as V1_SnowflakeScalingPolicy,
   DatabricksClusterSize as V1_DatabricksClusterSize,
   DatabricksSpotInstancePolicy as V1_DatabricksSpotInstancePolicy,
+  SinglestoreClusterSize as V1_SinglestoreClusterSize,
 } from '../../../../../../../graph/metamodel/pure/compute/Compute.js';
 
 export {
@@ -44,6 +45,7 @@ export {
   V1_SnowflakeScalingPolicy,
   V1_DatabricksClusterSize,
   V1_DatabricksSpotInstancePolicy,
+  V1_SinglestoreClusterSize,
 };
 
 export const V1_COMPUTE_ELEMENT_PROTOCOL_TYPE = 'compute';
@@ -51,6 +53,7 @@ export const V1_COMPUTE_ELEMENT_PROTOCOL_TYPE = 'compute';
 export enum V1_ComputeSpecificationType {
   SNOWFLAKE = 'snowflakeComputeSpecification',
   DATABRICKS = 'databricksComputeSpecification',
+  SINGLESTORE = 'singlestoreComputeSpecification',
 }
 
 export abstract class V1_ComputeSpecification implements Hashable {
@@ -151,6 +154,20 @@ export class V1_DatabricksComputeSpecification
       this.enablePhoton?.toString() ?? '',
       this.spotInstancePolicy ?? '',
       hashArray(this.tags),
+    ]);
+  }
+}
+
+export class V1_SinglestoreComputeSpecification
+  extends V1_ComputeSpecification
+  implements Hashable
+{
+  clusterSize: V1_SinglestoreClusterSize | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.SINGLESTORE_COMPUTE_SPECIFICATION,
+      this.clusterSize ?? '',
     ]);
   }
 }

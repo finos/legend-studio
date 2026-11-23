@@ -1365,6 +1365,44 @@ export const V1_buildGroupByFunctionExpression = (
   );
 };
 
+export const V1_buildDataDNSWatermarkFunctionExpression = (
+  functionName: string,
+  parameters: V1_ValueSpecification[],
+  openVariables: string[],
+  compileContext: V1_GraphBuilderContext,
+  processingContext: V1_ProcessingContext,
+): SimpleFunctionExpression | undefined => {
+  assertTrue(
+    parameters.length === 5,
+    `Can't build forDataDNSWatermark() expression: forDataDNSWatermark() expects 5 arguments`,
+  );
+  const builtParameters = parameters.map((parameter) =>
+    guaranteeNonNullable(parameter).accept_ValueSpecificationVisitor(
+      new V1_ValueSpecificationBuilder(
+        compileContext,
+        processingContext,
+        openVariables,
+      ),
+    ),
+  );
+  const precedingExpression = guaranteeNonNullable(builtParameters[0]);
+  assertNonNullable(
+    precedingExpression.genericType,
+    `Can't build forDataDNSWatermark() expression: preceding expression return type is missing`,
+  );
+
+  const expression = V1_buildBaseSimpleFunctionExpression(
+    builtParameters,
+    functionName,
+    compileContext,
+  );
+
+  expression.genericType = precedingExpression.genericType;
+  expression.multiplicity = precedingExpression.multiplicity;
+
+  return expression;
+};
+
 export const V1_buildWatermarkFunctionExpression = (
   functionName: string,
   parameters: V1_ValueSpecification[],

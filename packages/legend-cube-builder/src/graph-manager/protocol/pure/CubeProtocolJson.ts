@@ -16,6 +16,7 @@
 
 import type {
   CubeExpressionCodec,
+  IngestDatasetQualifier,
   IR,
   JsonObject,
   Schema,
@@ -30,6 +31,7 @@ import type { CubeFunctionDefinition } from '../../CubeDefinitionFunctions.js';
 import { V1_readCubeFunctionDefinition } from './v1/V1_CubeFunctionDefinition.js';
 import {
   V1_getCubeIngestMetadataSchema,
+  V1_getCubeIngestSourceSchema,
   V1_readCubeIngestDataSets,
 } from './v1/V1_CubeIngestDefinition.js';
 import { V1_serializeCubeLambda } from './v1/V1_CubeLambdaSerializer.js';
@@ -77,6 +79,17 @@ export interface CubeSqlSources {
  */
 export const findCubeSqlSources = (sql: string): CubeSqlSources =>
   V1_findCubeSqlSources(sql);
+
+/**
+ * The columns a source reads of an ingest data set, as the engine types the
+ * accessor with its qualifier: its batch metadata's, whatever the data set,
+ * else the data set's, by what the qualifier says; `undefined` when the data
+ * set can't be read
+ */
+export const getCubeIngestSourceSchema = (
+  dataSet: CubeIngestDataSet | undefined,
+  qualifier: IngestDatasetQualifier | undefined,
+): Schema | undefined => V1_getCubeIngestSourceSchema(dataSet, qualifier);
 
 /**
  * A user-defined function's element, its content (protocol JSON) as Depot or

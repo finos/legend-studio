@@ -1,5 +1,11 @@
 # @finos/legend-cube
 
+## 0.0.12
+
+### Patch Changes
+
+- [#5926](https://github.com/finos/legend-studio/pull/5926) [`0ce7a95`](https://github.com/finos/legend-studio/commit/0ce7a9568c5596c8d20554ab721670ca621fb911) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - A host can read a call as one step whose inputs are its relations (`bindCall` on `readCubeQuery`), e.g. a user-defined function a definition's flow can't open; and a definition's flow can draw containers inside containers (`StepContainer.parentId`). The reader's free-variable walker (`findCubeFreeVariables`) and relation-input table (`getCubeRelationInputCount`) are exported, for a host that opens calls itself.
+
 ## 0.0.11
 
 ### Patch Changes

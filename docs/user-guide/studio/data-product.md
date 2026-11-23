@@ -88,6 +88,9 @@ function returns, such as after the function changes.
 **Operational** describes the data: the regions it covers, **Coverage Regions** (APAC, EMEA, LAMR and NAMR), and how
 often it is updated, **Update Frequency**, from **INTRADAY** to **YEARLY**, or **ON_DEMAND**.
 
+**Accessibility Jurisdictions** limits where the data product may be made accessible. Add **US**, **CHINA**, or both;
+each can appear once. Leave it empty for no restriction.
+
 ## Tests
 
 **Testing** holds test suites, which check what access points return. A suite gives rows of test data for the data sets

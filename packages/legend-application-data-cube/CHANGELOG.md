@@ -1,5 +1,13 @@
 # @finos/legend-application-data-cube
 
+## 0.7.125
+
+### Patch Changes
+
+- [#5931](https://github.com/finos/legend-studio/pull/5931) [`40f3cd0`](https://github.com/finos/legend-studio/commit/40f3cd0916ebec36c034c37a480af9330668ced6) ([@TharunRajeev](https://github.com/TharunRajeev)) - Search Lakehouse data products with the marketplace's search in the Lakehouse consumer source builder. With `marketplace.serverUrl` configured, the Data Product picker searches the marketplace as one types (debounced, the first 100 matches of the chosen environment, a hint when there are more) instead of loading and filtering the whole list in the browser. The chosen data product stays in the field as text to edit, and emptying the field drops the choice. Without the setting, the list is loaded and filtered as before.
+
+## 0.7.124
+
 ## 0.7.123
 
 ### Patch Changes

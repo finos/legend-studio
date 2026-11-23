@@ -45,15 +45,22 @@ import {
   deleteEntry,
   guaranteeNonNullable,
   isNonNullable,
+  isString,
 } from '@finos/legend-shared';
 import { useApplicationStore } from '@finos/legend-application';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import {
   COLUMN_SORT_TYPE,
+  DATA_DNS_ENV,
   QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
 } from '../../graph/QueryBuilderMetaModelConst.js';
-import { useCallback, useEffect, useState } from 'react';
+import {
+  type QueryBuilderWatermark,
+  QueryBuilderDataDNSWatermark,
+  QueryBuilderStandardWatermark,
+} from '../../stores/watermark/QueryBuilderWatermarkState.js';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { QueryBuilderProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
 import {
@@ -63,6 +70,7 @@ import {
 import {
   type ValueSpecification,
   VariableExpression,
+  PrimitiveInstanceValue,
   PrimitiveType,
   Multiplicity,
   areMultiplicitiesEqual,
@@ -77,13 +85,62 @@ import {
 } from '@finos/legend-graph';
 import {
   BasicValueSpecificationEditor,
+  DateInstanceValueEditor,
   QUERY_BUILDER_VARIABLE_DND_TYPE,
   type QueryBuilderVariableDragSource,
 } from '../shared/BasicValueSpecificationEditor.js';
 import { useDrop } from 'react-dnd';
+import { buildPrimitiveInstanceValue } from '../../stores/shared/ValueSpecificationEditorHelper.js';
 import { MilestoningParameterEditor } from '../explorer/QueryBuilderMilestoningParameterEditor.js';
 import { QueryBuilderSimpleConstantExpressionState } from '../../stores/QueryBuilderConstantsState.js';
 import { LambdaParameterState } from '../../stores/shared/LambdaParameterState.js';
+
+type DataDNSWatermarkDraft = {
+  env: DATA_DNS_ENV;
+  registryUri: string;
+  // the business date parameter of the query, or a date of the user's own
+  date: PrimitiveInstanceValue | VariableExpression | undefined;
+  milestone: string;
+};
+
+const getStandardWatermarkValue = (
+  watermark: QueryBuilderWatermark | undefined,
+): ValueSpecification | undefined =>
+  watermark instanceof QueryBuilderStandardWatermark
+    ? watermark.value
+    : undefined;
+
+const toDataDNSWatermarkDraft = (
+  watermark: QueryBuilderWatermark | undefined,
+): DataDNSWatermarkDraft | undefined =>
+  watermark instanceof QueryBuilderDataDNSWatermark
+    ? {
+        env: watermark.env,
+        registryUri: watermark.registryUri,
+        date: watermark.date,
+        milestone: watermark.milestone,
+      }
+    : undefined;
+
+const createDataDNSWatermarkDraft = (
+  businessDateVariable: VariableExpression | undefined,
+): DataDNSWatermarkDraft => ({
+  env: DATA_DNS_ENV.PROD,
+  registryUri: '',
+  date: businessDateVariable,
+  milestone: '',
+});
+
+const createDataDNSWatermark = (
+  draft: DataDNSWatermarkDraft,
+): QueryBuilderDataDNSWatermark => {
+  const watermark = new QueryBuilderDataDNSWatermark();
+  watermark.setEnv(draft.env);
+  watermark.setRegistryUri(draft.registryUri.trim());
+  watermark.setDate(draft.date);
+  watermark.setMilestone(draft.milestone.trim());
+  return watermark;
+};
 
 const ColumnSortEditor = observer(
   (props: {
@@ -276,8 +333,30 @@ export const QueryResultModifierModal = observer(
       [number | undefined, number | undefined]
     >(stateSlice ?? [undefined, undefined]);
     const watermarkState = tdsState.queryBuilderState.watermarkState;
+    // the modal edits a draft of the watermark; the state only holds one watermark, so switching
+    // between standard and Data DNS discards the draft of the other kind
+    const stateWatermark = watermarkState.watermark;
     const [watermarkValue, setWatermarkValue] = useState(
-      deepClone(watermarkState.value),
+      deepClone(getStandardWatermarkValue(stateWatermark)),
+    );
+    const [dataDNSWatermark, setDataDNSWatermark] = useState<
+      DataDNSWatermarkDraft | undefined
+    >(toDataDNSWatermarkDraft(stateWatermark));
+    const isWatermarkEnabled = Boolean(watermarkValue ?? dataDNSWatermark);
+    const graph = watermarkState.queryBuilderState.graphManagerState.graph;
+    const observerContext = watermarkState.queryBuilderState.observerContext;
+    // the date picker needs a date value to show before a date is picked: it has no value
+    const customDateValue = useMemo(
+      () =>
+        (dataDNSWatermark?.date instanceof PrimitiveInstanceValue
+          ? dataDNSWatermark.date
+          : undefined) ??
+        new PrimitiveInstanceValue(
+          GenericTypeExplicitReference.create(
+            new GenericType(PrimitiveType.STRICTDATE),
+          ),
+        ),
+      [dataDNSWatermark?.date],
     );
 
     // Sync temp state with tdsState when modal is opened/closed
@@ -286,10 +365,11 @@ export const QueryResultModifierModal = observer(
       setDistinct(stateDistinct);
       setLimitResults(stateLimitResults);
       setSlice(stateSlice ?? [undefined, undefined]);
-      setWatermarkValue(deepClone(watermarkState.value));
+      setWatermarkValue(deepClone(getStandardWatermarkValue(stateWatermark)));
+      setDataDNSWatermark(toDataDNSWatermarkDraft(stateWatermark));
     }, [
       resultSetModifierState.showModal,
-      watermarkState.value,
+      stateWatermark,
       stateSortColumns,
       stateDistinct,
       stateLimitResults,
@@ -355,12 +435,24 @@ export const QueryResultModifierModal = observer(
       [setWatermarkValue],
     );
     const toggleWatermark = (): void => {
-      if (watermarkValue) {
+      if (isWatermarkEnabled) {
         setWatermarkValue(undefined);
+        setDataDNSWatermark(undefined);
       } else {
         setWatermarkValue(watermarkState.getDefaultValue());
       }
     };
+    const selectStandardMode = (): void => {
+      if (!dataDNSWatermark) {
+        return;
+      }
+      setDataDNSWatermark(undefined);
+      setWatermarkValue(watermarkState.getDefaultValue());
+    };
+    const updateDataDNSWatermark = (
+      change: Partial<DataDNSWatermarkDraft>,
+    ): void =>
+      setDataDNSWatermark((draft) => (draft ? { ...draft, ...change } : draft));
     const [{ isParameterValueDragOver }, dropConnector] = useDrop<
       QueryBuilderVariableDragSource,
       void,
@@ -430,6 +522,35 @@ export const QueryResultModifierModal = observer(
         milestoningState.processingDate,
       ),
     );
+
+    // The Data DNS watermark date can be the business date parameter of the query: the watermark follows its value.
+    // That is only possible when the query has one: not when querying all versions, or when the class has no
+    // business date.
+    const businessDateVariable =
+      !isAllVersionsEnabled && businessDate instanceof VariableExpression
+        ? businessDate
+        : undefined;
+    const isUsingBusinessDate =
+      dataDNSWatermark?.date instanceof VariableExpression &&
+      dataDNSWatermark.date.name === businessDateVariable?.name;
+    const dataDNSWatermarkToApply = dataDNSWatermark
+      ? createDataDNSWatermark({
+          ...dataDNSWatermark,
+          date: isUsingBusinessDate
+            ? businessDateVariable
+            : dataDNSWatermark.date,
+        })
+      : undefined;
+    const isInvalidDataDNSWatermark =
+      dataDNSWatermarkToApply !== undefined &&
+      !dataDNSWatermarkToApply.isValid(businessDateVariable);
+    const selectDataDNSMode = (): void => {
+      if (dataDNSWatermark) {
+        return;
+      }
+      setWatermarkValue(undefined);
+      setDataDNSWatermark(createDataDNSWatermarkDraft(businessDateVariable));
+    };
     const [startDateValue, setStartDateValue] = useState(
       milestoningState.getMilestoningParameterValue(milestoningState.startDate),
     );
@@ -647,7 +768,7 @@ export const QueryResultModifierModal = observer(
     };
 
     const applyChanges = (): void => {
-      const previousWatermarkValue = watermarkState.value;
+      const previousWatermark = watermarkState.watermark;
       const previousBusinessDate = milestoningState.businessDate;
       const previousProcessingDate = milestoningState.processingDate;
       const wasAllVersionsEnabled = milestoningState.isAllVersionsEnabled;
@@ -674,14 +795,22 @@ export const QueryResultModifierModal = observer(
           },
         },
       );
-      watermarkState.setValue(watermarkValue);
-      if (watermarkValue !== previousWatermarkValue) {
+      const newWatermark =
+        dataDNSWatermarkToApply ??
+        (watermarkValue
+          ? new QueryBuilderStandardWatermark(watermarkValue)
+          : undefined);
+      if (previousWatermark?.hashCode !== newWatermark?.hashCode) {
+        watermarkState.setWatermark(newWatermark);
         QueryBuilderTelemetryHelper.logEvent_WatermarkChanged(
           applicationStore.telemetryService,
           {
             ...tdsState.queryBuilderState.safeGetTelemetryContext(),
             change: {
-              enabled: watermarkValue !== undefined,
+              enabled: isWatermarkEnabled,
+              ...(isWatermarkEnabled
+                ? { mode: dataDNSWatermark ? 'dataDNS' : 'standard' }
+                : {}),
             },
           },
         );
@@ -1098,18 +1227,210 @@ export const QueryResultModifierModal = observer(
                       'panel__content__form__section__toggler__btn',
                       {
                         'panel__content__form__section__toggler__btn--toggled':
-                          watermarkValue,
+                          isWatermarkEnabled,
                       },
                     )}
                     onClick={toggleWatermark}
                     tabIndex={-1}
                   >
-                    {watermarkValue ? <CheckSquareIcon /> : <SquareIcon />}
+                    {isWatermarkEnabled ? <CheckSquareIcon /> : <SquareIcon />}
                     <div className="panel__content__form__section__toggler__prompt">
                       Enable Watermark
                     </div>
                   </button>
                 </PanelFormSection>
+                {isWatermarkEnabled && (
+                  <PanelFormSection>
+                    <div className="query-builder__result__watermark-mode">
+                      {[
+                        { label: 'Standard Watermark', isDataDNS: false },
+                        { label: 'Data DNS Watermark', isDataDNS: true },
+                      ].map(({ label, isDataDNS }) => (
+                        <button
+                          key={label}
+                          className={clsx(
+                            'query-builder__result__watermark-mode__btn',
+                            {
+                              'query-builder__result__watermark-mode__btn--selected':
+                                Boolean(dataDNSWatermark) === isDataDNS,
+                            },
+                          )}
+                          aria-pressed={Boolean(dataDNSWatermark) === isDataDNS}
+                          onClick={
+                            isDataDNS ? selectDataDNSMode : selectStandardMode
+                          }
+                          tabIndex={-1}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </PanelFormSection>
+                )}
+                {dataDNSWatermark && (
+                  <div data-testid="query-builder__result-modifier__data-dns-watermark">
+                    <PanelFormSection>
+                      <div className="panel__content__form__section__header__label">
+                        Environment
+                      </div>
+                      <CustomSelectorInput
+                        options={Object.values(DATA_DNS_ENV).map((env) => ({
+                          label: env,
+                          value: env,
+                        }))}
+                        onChange={(val: { value: DATA_DNS_ENV } | null): void =>
+                          updateDataDNSWatermark({
+                            env: val?.value ?? DATA_DNS_ENV.PROD,
+                          })
+                        }
+                        value={{
+                          label: dataDNSWatermark.env,
+                          value: dataDNSWatermark.env,
+                        }}
+                        darkMode={
+                          !applicationStore.layoutService
+                            .TEMPORARY__isLightColorThemeEnabled
+                        }
+                      />
+                    </PanelFormSection>
+                    <PanelFormSection>
+                      <div className="panel__content__form__section__header__label">
+                        Registry URI
+                      </div>
+                      <InputWithInlineValidation
+                        className="input--dark panel__content__form__section__input"
+                        spellCheck={false}
+                        data-testid="query-builder__result-modifier__data-dns-watermark__registry-uri"
+                        value={dataDNSWatermark.registryUri}
+                        onChange={(event) =>
+                          updateDataDNSWatermark({
+                            registryUri: event.target.value,
+                          })
+                        }
+                        error={
+                          dataDNSWatermark.registryUri.trim()
+                            ? undefined
+                            : 'Registry URI is required'
+                        }
+                      />
+                    </PanelFormSection>
+                    <PanelFormSection>
+                      <div className="panel__content__form__section__header__label">
+                        Date
+                      </div>
+                      <div className="query-builder__result__watermark-mode__businessDate">
+                        {[
+                          { label: 'Business Date', useBusinessDate: true },
+                          { label: 'Custom Date', useBusinessDate: false },
+                        ].map(({ label, useBusinessDate }) => (
+                          <button
+                            key={label}
+                            className={clsx(
+                              'query-builder__result__watermark-mode__btn',
+                              {
+                                'query-builder__result__watermark-mode__btn--selected':
+                                  isUsingBusinessDate === useBusinessDate,
+                              },
+                            )}
+                            aria-pressed={
+                              isUsingBusinessDate === useBusinessDate
+                            }
+                            disabled={useBusinessDate && !businessDateVariable}
+                            title={
+                              useBusinessDate && !businessDateVariable
+                                ? 'The query has no business date parameter to use'
+                                : undefined
+                            }
+                            onClick={() => {
+                              // moving to a date of the user's own starts without a date
+                              if (isUsingBusinessDate !== useBusinessDate) {
+                                updateDataDNSWatermark({
+                                  date: useBusinessDate
+                                    ? businessDateVariable
+                                    : undefined,
+                                });
+                              }
+                            }}
+                            tabIndex={-1}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      {businessDateVariable && isUsingBusinessDate ? (
+                        <div
+                          className="query-builder__milestoning-panel__variable-editor__variable"
+                          data-testid="query-builder__result-modifier__data-dns-watermark__business-date"
+                        >
+                          <BasicValueSpecificationEditor
+                            valueSpecification={businessDateVariable}
+                            graph={
+                              milestoningState.queryBuilderState
+                                .graphManagerState.graph
+                            }
+                            observerContext={
+                              milestoningState.queryBuilderState.observerContext
+                            }
+                            typeCheckOption={{
+                              expectedType: PrimitiveType.DATE,
+                            }}
+                            setValueSpecification={() => undefined}
+                            resetValue={() => undefined}
+                            readOnly={true}
+                          />
+                        </div>
+                      ) : (
+                        <div data-testid="query-builder__result-modifier__data-dns-watermark__date">
+                          <DateInstanceValueEditor<PrimitiveInstanceValue>
+                            valueSpecification={customDateValue}
+                            valueSelector={(value) =>
+                              (value.values[0] as string | undefined) ?? null
+                            }
+                            typeCheckOption={{
+                              expectedType: PrimitiveType.STRICTDATE,
+                            }}
+                            updateValueSpecification={(
+                              _value,
+                              date,
+                              options,
+                            ) => {
+                              if (isString(date)) {
+                                updateDataDNSWatermark({
+                                  date: buildPrimitiveInstanceValue(
+                                    graph,
+                                    options?.primitiveTypeEnum ??
+                                      PRIMITIVE_TYPE.STRICTDATE,
+                                    date,
+                                    observerContext,
+                                  ),
+                                });
+                              }
+                            }}
+                            resetValue={() =>
+                              updateDataDNSWatermark({ date: undefined })
+                            }
+                            absoluteDateOnly={true}
+                          />
+                        </div>
+                      )}
+                    </PanelFormSection>
+                    <PanelFormSection>
+                      <div className="panel__content__form__section__header__label">
+                        Milestone (optional)
+                      </div>
+                      <InputWithInlineValidation
+                        className="input--dark panel__content__form__section__input"
+                        spellCheck={false}
+                        value={dataDNSWatermark.milestone}
+                        onChange={(event) =>
+                          updateDataDNSWatermark({
+                            milestone: event.target.value,
+                          })
+                        }
+                      />
+                    </PanelFormSection>
+                  </div>
+                )}
                 {watermarkValue && (
                   <>
                     <PanelFormSection>
@@ -1166,7 +1487,7 @@ export const QueryResultModifierModal = observer(
             <ModalFooterButton
               onClick={applyChanges}
               text="Apply"
-              disabled={isInvalidSlice}
+              disabled={isInvalidSlice || isInvalidDataDNSWatermark}
             />
             <ModalFooterButton
               onClick={closeModal}

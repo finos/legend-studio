@@ -498,7 +498,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       expect(mockVisitAddress).toHaveBeenCalledWith(
         expect.stringContaining(
-          '/dataspace/com.example.legacy:legacy-data-product:2.0.0/test::Legacy_Data_Product',
+          '/dataspace/com.example.legacy%3Alegacy-data-product%3A2.0.0/test%3A%3ALegacy_Data_Product',
         ),
       );
     });
@@ -764,7 +764,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       expect(mockVisitAddress).toHaveBeenCalledWith(
         expect.stringContaining(
-          '/dataspace/com.example.legacy:test-legacy-data-product:1.0.0/test::dataproduct::LegacyDataProduct',
+          '/dataspace/com.example.legacy%3Atest-legacy-data-product%3A1.0.0/test%3A%3Adataproduct%3A%3ALegacyDataProduct',
         ),
       );
     });

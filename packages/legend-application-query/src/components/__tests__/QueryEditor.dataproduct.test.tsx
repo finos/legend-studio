@@ -42,7 +42,7 @@ import {
   generateGAVCoordinates,
   parseGAVCoordinates,
 } from '@finos/legend-storage';
-import { matchPath } from '@finos/legend-application/browser';
+import { matchPath, matchRoutes } from '@finos/legend-application/browser';
 
 const TEST_DATA__DataProductEntities = [
   {
@@ -217,7 +217,7 @@ describe('DataProduct Info', () => {
           'grp1',
         );
         expect(route).toContain('/data-product/model/');
-        expect(route).toContain('test::MyDataProduct');
+        expect(route).toContain('test%3A%3AMyDataProduct');
         expect(route).toContain('grp1');
       },
     );
@@ -624,7 +624,7 @@ describe('Route generation - completeness', () => {
         'lhAP',
       );
       expect(route).toContain('/data-product/lakehouse/');
-      expect(route).toContain('test::MyDataProduct');
+      expect(route).toContain('test%3A%3AMyDataProduct');
       expect(route).toContain('lhAP');
     },
   );
@@ -646,6 +646,19 @@ describe('Route generation - completeness', () => {
   );
 });
 
+// `<Routes>` (and so `useParams`) decodes the matched params, unlike a bare
+// `matchPath`, so match the way the application does.
+const matchDataProductRouteParams = (
+  route: string,
+): Record<string, string | undefined> => {
+  const matches = matchRoutes(
+    [{ path: LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT }],
+    route,
+  );
+  expect(matches).not.toBeNull();
+  return (matches as NonNullable<typeof matches>)[0]?.params ?? {};
+};
+
 describe('Route round-trip', () => {
   test(
     unitTest(
@@ -659,9 +672,7 @@ describe('Route round-trip', () => {
         'prod::ModelDP',
         'modelGrp',
       );
-      const match = matchPath(LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT, route);
-      expect(match).not.toBeNull();
-      const params = (match as NonNullable<typeof match>).params;
+      const params = matchDataProductRouteParams(route);
       const result = resolveQueryableElement(
         params,
         params,
@@ -688,9 +699,7 @@ describe('Route round-trip', () => {
         'lake::DP',
         'lakeAP',
       );
-      const match = matchPath(LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT, route);
-      expect(match).not.toBeNull();
-      const params = (match as NonNullable<typeof match>).params;
+      const params = matchDataProductRouteParams(route);
       const result = resolveQueryableElement(
         params,
         params,
@@ -715,11 +724,10 @@ describe('Route round-trip', () => {
       'dp::Path',
       'ap1',
     );
-    const match = matchPath(LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT, route);
-    expect(match).not.toBeNull();
-    const gavParam = (match as NonNullable<typeof match>).params[
-      DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV
-    ];
+    const gavParam =
+      matchDataProductRouteParams(route)[
+        DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV
+      ];
     expect(gavParam).toBeDefined();
     const parsed = parseGAVCoordinates(gavParam as string);
     expect(parsed.groupId).toBe(groupId);

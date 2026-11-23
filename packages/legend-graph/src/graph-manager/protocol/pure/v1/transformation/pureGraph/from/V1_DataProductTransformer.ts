@@ -35,6 +35,7 @@ import {
 import {
   type V1_AccessPoint,
   type V1_DataProductIcon,
+  type V1_DataJurisdiction,
   type V1_DataProductRegion,
   type V1_DeliveryFrequency,
   V1_AccessPointGroup,
@@ -314,6 +315,8 @@ export const V1_transformDataProduct = (
       .updateFrequency as V1_DeliveryFrequency | undefined;
     operationalMetadata.coverageRegions = element.operationalMetadata
       .coverageRegions as V1_DataProductRegion[] | undefined;
+    operationalMetadata.accessibilityJurisdictions = element.operationalMetadata
+      .accessibilityJurisdictions as V1_DataJurisdiction[] | undefined;
     product.operationalMetadata = operationalMetadata;
   }
 

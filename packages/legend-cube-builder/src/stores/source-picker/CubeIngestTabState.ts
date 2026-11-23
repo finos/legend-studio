@@ -388,7 +388,7 @@ export class CubeIngestTabState implements CubeSourcePickerTab {
   getSchema(dataSet: CubeIngestDataSet): Schema | undefined {
     return this.qualifier === IngestDatasetQualifier.METADATA
       ? getCubeIngestMetadataSchema()
-      : dataSet.schema;
+      : dataSet.getSchemaRead(this.qualifier);
   }
 
   /** The definition of the data set picked last */

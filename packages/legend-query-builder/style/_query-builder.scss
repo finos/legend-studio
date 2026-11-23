@@ -1543,6 +1543,40 @@
     }
   }
 
+  &__watermark-mode {
+    display: flex;
+    border-radius: 0.2rem;
+    overflow: hidden;
+
+    &__businessDate {
+      padding-bottom: 1rem;
+    }
+
+    &__btn {
+      height: 2.8rem;
+      padding: 0 1.2rem;
+      font-size: 1.2rem;
+      color: var(--color-text-muted);
+      background: var(--color-bg-input);
+      cursor: pointer;
+
+      &:not(:last-child) {
+        border-right: 0.1rem solid var(--color-border-default);
+      }
+
+      &:hover {
+        color: var(--color-text-primary);
+        background: var(--color-bg-hover);
+      }
+
+      &--selected,
+      &--selected:hover {
+        color: var(--color-text-primary);
+        background: var(--color-accent);
+      }
+    }
+  }
+
   &__slice {
     display: flex;
     align-items: center;

@@ -64,7 +64,7 @@ const buildStub = (overrides: Overrides = {}): unknown => ({
         .map((_, idx) => [String(idx), undefined]),
     ),
   },
-  watermarkState: { value: overrides.watermarkValue },
+  watermarkState: { isEnabled: overrides.watermarkValue !== undefined },
   unsupportedQueryState: { rawLambda: overrides.unsupportedRawLambda },
 });
 

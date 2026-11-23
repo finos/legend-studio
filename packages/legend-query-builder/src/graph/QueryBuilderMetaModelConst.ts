@@ -165,6 +165,7 @@ export enum QUERY_BUILDER_SUPPORTED_FUNCTIONS {
 
   // watermark
   WATERMARK = 'meta::datalake::functions::forWatermark',
+  DATA_DNS_WATERMARK = 'meta::datalake::functions::forDataDNSWatermark',
 
   // OLAP
   OLAP_GROUPBY = 'meta::pure::tds::olapGroupBy',
@@ -207,4 +208,12 @@ export enum TDS_COLUMN_GETTER {
 export enum COLUMN_SORT_TYPE {
   ASC = 'ASC',
   DESC = 'DESC',
+}
+
+export const DATA_DNS_ENV_ENUMERATION_PATH =
+  'meta::datalake::functions::DataDNSEnv';
+
+export enum DATA_DNS_ENV {
+  PROD = 'PROD',
+  QA = 'QA',
 }

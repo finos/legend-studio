@@ -58,7 +58,7 @@ import {
 import {
   CUBE_EXPRESSION_CODEC,
   findCubeSqlSources,
-  getCubeIngestMetadataSchema,
+  getCubeIngestSourceSchema,
   readCubeIngestDataSets,
   readCubeLambdaJson,
   readCubeLambdaParameters,
@@ -407,8 +407,14 @@ const createBindSource = (
   const schemaOf = (
     ingestDefinition: string,
     dataSet: string,
+    qualifier: IngestDatasetQualifier | undefined,
   ): Schema | undefined => {
-    if (!dataSets.has(ingestDefinition)) {
+    // a data set's batch metadata has the same columns whatever the data
+    // set, so is known without its definition
+    if (
+      qualifier !== IngestDatasetQualifier.METADATA &&
+      !dataSets.has(ingestDefinition)
+    ) {
       const content = options.getIngestDefinition?.(ingestDefinition);
       let read: readonly CubeIngestDataSet[] = [];
       try {
@@ -418,8 +424,10 @@ const createBindSource = (
       }
       dataSets.set(ingestDefinition, read);
     }
-    return dataSets.get(ingestDefinition)?.find((each) => each.name === dataSet)
-      ?.schema;
+    return getCubeIngestSourceSchema(
+      dataSets.get(ingestDefinition)?.find((each) => each.name === dataSet),
+      qualifier,
+    );
   };
   return (source: IR): CubeSourceStep => {
     if (source.k === 'sqlAccessor') {
@@ -442,13 +450,9 @@ const createBindSource = (
     const [ingestDefinition, dataSet] = source.path;
     const { qualifier } = source;
     const isStandIn = ingestDefinition === CUBE_DEFINITION_INPUT_STAND_IN;
-    // a data set's batch metadata has the same columns whatever the data
-    // set, so is known without its definition
     const schema = isStandIn
       ? undefined
-      : qualifier === IngestDatasetQualifier.METADATA
-        ? getCubeIngestMetadataSchema()
-        : schemaOf(ingestDefinition, dataSet);
+      : schemaOf(ingestDefinition, dataSet, qualifier);
     if (
       !schema &&
       !isStandIn &&
@@ -503,10 +507,11 @@ const expand = (
   });
 
 /**
- * The ingest definitions a definition reads the rows of, by path, in the
- * order it reads them: what a host loads before reading it
- * (`getIngestDefinition`); none when Cube can't read it. A data set's batch
- * metadata needs no definition: its columns are the same for every data set.
+ * The ingest definitions a definition reads the columns of, by path, in the
+ * order it reads them: its rows', or what a qualifier reads of them. What a
+ * host loads before reading it (`getIngestDefinition`); none when Cube can't
+ * read it. A data set's batch metadata needs no definition: its columns are
+ * the same for every data set.
  */
 export const findCubeDefinitionIngestDefinitions = (
   lambda: unknown,
@@ -529,7 +534,8 @@ export const findCubeDefinitionIngestDefinitions = (
     return [
       ...new Set(
         sources.flatMap((source) =>
-          source.k === 'ingestAccessor' && source.qualifier === undefined
+          source.k === 'ingestAccessor' &&
+          source.qualifier !== IngestDatasetQualifier.METADATA
             ? [source.path[0]]
             : [],
         ),

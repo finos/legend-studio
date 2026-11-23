@@ -21,7 +21,7 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import {
-  CUBE_INGEST_METADATA_READS_LABEL,
+  CUBE_INGEST_QUALIFIER_READS_LABEL,
   getIngestEnvironmentLabel,
 } from '../../__lib__/LegendCubeIngestLabels.js';
 import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
@@ -70,10 +70,12 @@ export const CubeIngestSourceEditor = observer((props: CubeNodeEditorProps) => {
         </dd>
         <dt className="text-[var(--color-text-secondary)]">Data set</dt>
         <dd className="min-w-0 break-all">{source.dataSet}</dd>
-        {source.readsMetadata && (
+        {source.qualifier !== undefined && (
           <>
             <dt className="text-[var(--color-text-secondary)]">Reads</dt>
-            <dd className="min-w-0">{CUBE_INGEST_METADATA_READS_LABEL}</dd>
+            <dd className="min-w-0">
+              {CUBE_INGEST_QUALIFIER_READS_LABEL[source.qualifier]}
+            </dd>
           </>
         )}
         {environment && (

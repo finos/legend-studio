@@ -54,22 +54,36 @@ export type DataProductIngestDefinitionLoader = (
 
 /**
  * Ingest definitions from Depot, at the data product's version: they are
- * deployed from the data product's own project
+ * deployed from the data product's own project. Each is asked for once and
+ * kept for the page, as a released version doesn't change: the access
+ * points' flows and Producer Info share it.
  */
-export const createDepotIngestDefinitionLoader =
-  (
-    depotServerClient: DepotServerClient,
-    projectGAV: ProjectGAVCoordinates,
-  ): DataProductIngestDefinitionLoader =>
-  async (path) =>
-    (
-      await depotServerClient.getVersionEntity(
-        projectGAV.groupId,
-        projectGAV.artifactId,
-        resolveVersion(projectGAV.versionId),
-        path,
-      )
-    ).content as PlainObject | undefined;
+export const createDepotIngestDefinitionLoader = (
+  depotServerClient: DepotServerClient,
+  projectGAV: ProjectGAVCoordinates,
+): DataProductIngestDefinitionLoader => {
+  const byPath = new Map<string, Promise<PlainObject | undefined>>();
+  return (path) => {
+    let content = byPath.get(path);
+    if (!content) {
+      content = depotServerClient
+        .getVersionEntity(
+          projectGAV.groupId,
+          projectGAV.artifactId,
+          resolveVersion(projectGAV.versionId),
+          path,
+        )
+        .then((entity) => entity.content as PlainObject | undefined)
+        .catch((error: unknown) => {
+          // a failure isn't kept: the next one to need it asks again
+          byPath.delete(path);
+          throw error;
+        });
+      byPath.set(path, content);
+    }
+    return content;
+  };
+};
 
 /**
  * Functions from Depot, at the data product's version: its project's and its

@@ -143,7 +143,7 @@ describe(integrationTest('DataSpaceAdvancedSearchModal'), () => {
 
     expect(goToLocation).toHaveBeenCalledTimes(1);
     expect(goToLocation).toHaveBeenCalledWith(
-      '/extensions/dataspace/test.group:test-artifact:0.0.0/test::domain::RelationExecutableDataProduct/default',
+      '/extensions/dataspace/test.group%3Atest-artifact%3A0.0.0/test%3A%3Adomain%3A%3ARelationExecutableDataProduct/default',
     );
   });
 
@@ -165,7 +165,7 @@ describe(integrationTest('DataSpaceAdvancedSearchModal'), () => {
 
     expect(goToLocation).toHaveBeenCalledTimes(1);
     expect(goToLocation).toHaveBeenCalledWith(
-      '/extensions/dataspace/test.group:test-artifact:0.0.0/test::domain::RelationExecutableDataProduct/secondary',
+      '/extensions/dataspace/test.group%3Atest-artifact%3A0.0.0/test%3A%3Adomain%3A%3ARelationExecutableDataProduct/secondary',
     );
   });
 
@@ -196,7 +196,7 @@ describe(integrationTest('DataSpaceAdvancedSearchModal'), () => {
 
     expect(visitAddress).toHaveBeenCalledTimes(1);
     expect(visitAddress).toHaveBeenCalledWith(
-      `${window.location.origin}${TEST_QUERY_BASE_URL}/create-from-service/test.group:test-artifact:0.0.0/test::service::FirmEmployees`,
+      `${window.location.origin}${TEST_QUERY_BASE_URL}/create-from-service/test.group%3Atest-artifact%3A0.0.0/test%3A%3Aservice%3A%3AFirmEmployees`,
     );
   });
 });

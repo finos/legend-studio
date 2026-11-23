@@ -57,7 +57,10 @@ import {
   type CubeIngestReadOptions,
 } from '../../../CubeIngestCatalog.js';
 import { V1_readCubeDeploymentNames } from './V1_CubeDeploymentName.js';
-import { V1_readCubeIngestDataSets } from './V1_CubeIngestDefinition.js';
+import {
+  V1_getCubeIngestSourceSchema,
+  V1_readCubeIngestDataSets,
+} from './V1_CubeIngestDefinition.js';
 import type { V1_CubeIngestDefinitionSource } from './V1_CubeIngestModel.js';
 
 // The deployed ingest definitions (PLAN §6.7), read as Data Cube's producer
@@ -858,17 +861,16 @@ export class V1_LegendCubeIngestCatalog
         const dataSet = read.find((each) => each.name === source.dataSet);
         return [
           nodeId,
-          dataSet?.schema && dataSet.isPickable
-            ? dataSet.schema
-            : new CubeEngineError(
-                CubeEngineErrorKind.COMPILE,
-                dataSet?.disabledReason ??
-                  V1_CUBE_INGEST_CATALOG_MESSAGE.NO_DATA_SET(
-                    source.dataSet,
-                    source.ingestDefinition,
-                  ),
-                nodeId,
-              ),
+          V1_getCubeIngestSourceSchema(dataSet, source.qualifier) ??
+            new CubeEngineError(
+              CubeEngineErrorKind.COMPILE,
+              dataSet?.disabledReason ??
+                V1_CUBE_INGEST_CATALOG_MESSAGE.NO_DATA_SET(
+                  source.dataSet,
+                  source.ingestDefinition,
+                ),
+              nodeId,
+            ),
         ];
       }),
     );
