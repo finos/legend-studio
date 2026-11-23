@@ -16,7 +16,7 @@
 
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
-import type { QueryNode, SourceNode } from '../../graph/QueryNode.js';
+import type { QueryNode } from '../../graph/QueryNode.js';
 import { computeRowOrders } from '../../inference/RowOrder.js';
 import {
   buildSchemasAndValidity,
@@ -136,8 +136,13 @@ export const CUBE_QUERY_READER_MESSAGE = {
 export interface CubeSourceStep {
   /** The step's type, which its id is made from */
   readonly type: string;
-  /** The step, with this id */
-  create(id: string): SourceNode;
+  /**
+   * The step, with this id. A source reads no step, but for an SQL island
+   * that reads the rows of lets of the lambda (`var('name')`): its step
+   * has one port per let, `inputCount` of them, read before it. The reader
+   * always gives the count: none for any other source.
+   */
+  create(id: string, inputCount?: number): QueryNode;
 }
 
 /**
@@ -284,11 +289,12 @@ const RELATION_INPUTS: ReadonlyMap<string, number> = new Map([
 export const getCubeRelationInputCount = (name: string): number | undefined =>
   RELATION_INPUTS.get(getCubeFunctionName(name));
 
-/** Whether the IR is a source: an accessor, or the call of a function of the model */
+/** Whether the IR is a source: an accessor, an SQL island, or the call of a function of the model */
 export const isCubeLambdaSource = (ir: IR): boolean =>
   ir.k === 'storeAccessor' ||
   ir.k === 'dataProductAccessor' ||
   ir.k === 'ingestAccessor' ||
+  ir.k === 'sqlAccessor' ||
   (ir.k === 'func' &&
     ir.name.includes('::') &&
     !RELATION_INPUTS.has(getCubeFunctionName(ir.name)));
@@ -302,6 +308,10 @@ export const findCubeLambdaSources = (parts: CubeLambdaParts): IR[] => {
   const visit = (ir: IR, lets: ReadonlySet<string>): void => {
     if (isCubeLambdaSource(ir)) {
       sources.push(ir);
+      // an SQL island reads the lets it names, `var('name')`: their sources too
+      if (ir.k === 'sqlAccessor') {
+        ir.variables.forEach((name) => visit({ k: 'var', name }, lets));
+      }
     } else if (ir.k === 'var') {
       const bound = parts.lets.get(ir.name);
       if (bound && !lets.has(ir.name)) {
@@ -371,6 +381,10 @@ export const findCubeFreeVariables = (
         return;
       case 'lambdaJson':
         visit(readExpression(node.json), bound);
+        return;
+      case 'sqlAccessor':
+        // its SQL reads them by name: `var('name')`
+        node.variables.forEach((name) => visit({ k: 'var', name }, bound));
         return;
       default:
         // values, accessors, elements and types read no variable; nor does
@@ -765,6 +779,10 @@ class CubeQueryReader {
         this.callInputsOf(ir, call).forEach(visit);
         return;
       }
+      if (ir.k === 'sqlAccessor') {
+        this.sqlInputsOf(ir).forEach(visit);
+        return;
+      }
       if (ir.k !== 'func' || isCubeLambdaSource(ir)) {
         return;
       }
@@ -787,6 +805,25 @@ class CubeQueryReader {
       ir.params.slice(0, inputCount).forEach(visit);
     };
     visit(this.parts.relation);
+  }
+
+  /**
+   * The lets whose rows an SQL island reads, as variables, in the order it
+   * reads them: its step's inputs. A let that binds a value, e.g. a date, is
+   * no input; nor is a parameter of the lambda.
+   */
+  private sqlInputsOf(ir: IR): IR[] {
+    return ir.k === 'sqlAccessor'
+      ? ir.variables.flatMap((name) => {
+          const bound = this.parts.lets.get(name);
+          return bound &&
+            (bound.k === 'func' ||
+              bound.k === 'var' ||
+              isCubeLambdaSource(bound))
+            ? [{ k: 'var', name } as IR]
+            : [];
+        })
+      : [];
   }
 
   /** The relations a call the host reads as one step takes, its inputs in order */
@@ -1004,7 +1041,25 @@ class CubeQueryReader {
     }
     if (isCubeLambdaSource(ir)) {
       const source = this.options.bindSource(ir);
-      return this.add(source.create(this.nextId(source.type)), [], ir);
+      // an SQL island reads the lets it names, each one whether or not its
+      // rows are an input
+      if (ir.k === 'sqlAccessor') {
+        ir.variables
+          .filter((name) => this.parts.lets.has(name))
+          .forEach((name) => this.readLets.add(name));
+      }
+      const inputs = this.sqlInputsOf(ir).map((input) =>
+        this.readRelation(input, lets),
+      );
+      const step = this.add(
+        source.create(this.nextId(source.type), inputs.length),
+        inputs,
+        ir,
+      );
+      // an island may read the lambda's parameters too, by name
+      return ir.k === 'sqlAccessor'
+        ? this.noteParameterReads(step, [ir])
+        : step;
     }
     if (ir.k !== 'func') {
       throw new CubeLambdaReadError(

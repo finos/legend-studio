@@ -80,6 +80,11 @@ export class DataProductDefinitionFlowState {
   readonly functionElements = new Map<string, PlainObject>();
   /** A user-defined function whose Pure shows under the flow */
   shownFunction: DataProductShownFunction | undefined;
+  /**
+   * The SQL of a step of the flow that is SQL, `#SQL{…}#`, which shows under
+   * the flow, in place of a function's Pure
+   */
+  shownSql: string | undefined;
 
   readonly readingDefinitionFlowState = ActionState.create();
 
@@ -97,6 +102,9 @@ export class DataProductDefinitionFlowState {
       readDefinitionFlow: flow,
       showFunction: flow,
       hideFunction: action,
+      shownSql: observable,
+      showSql: action,
+      hideSql: action,
       resetDefinitionFlow: action,
       failDefinitionFlow: action,
     });
@@ -196,6 +204,7 @@ export class DataProductDefinitionFlowState {
           }, {}),
           scalarFunctionSteps: reading.scalarFunctions.size,
           functionsUnloaded,
+          sqlSteps: reading.sqlIslands.length,
         });
       } else {
         this.definitionFlow = {
@@ -285,6 +294,7 @@ export class DataProductDefinitionFlowState {
   }): GeneratorFn<void> {
     const { path } = call;
     const content = path ? this.functionElements.get(path) : undefined;
+    this.shownSql = undefined;
     this.shownFunction = { ...call, pure: undefined };
     if (!path || !content) {
       this.shownFunction = {
@@ -309,6 +319,19 @@ export class DataProductDefinitionFlowState {
 
   hideFunction(): void {
     this.shownFunction = undefined;
+  }
+
+  /**
+   * Shows the SQL of a step that is SQL under the flow, as written: the
+   * flow's box shows only its first words
+   */
+  showSql(sql: string): void {
+    this.shownFunction = undefined;
+    this.shownSql = sql.trim();
+  }
+
+  hideSql(): void {
+    this.shownSql = undefined;
   }
 
   /** Forgets the definition's flow, to read it again */

@@ -5617,6 +5617,63 @@ describe('DataProductViewer', () => {
       });
     });
 
+    describe('SQL in a definition, #SQL{…}#', () => {
+      const SQL =
+        "select STATUS, sum(AMOUNT) as total\nfrom i('shop::ingest::OrdersIngest.ORDERS')\ngroup by STATUS";
+      /** `#SQL{…}#->limit(10)`, as the engine's grammar writes it */
+      const SQL_THEN_LIMIT = {
+        _type: 'lambda',
+        parameters: [],
+        body: [
+          {
+            _type: 'func',
+            function: 'limit',
+            parameters: [
+              { _type: 'classInstance', type: 'SQL', value: { sql: SQL } },
+              { _type: 'integer', value: 10 },
+            ],
+          },
+        ],
+      };
+
+      test('draws the SQL as one step where it was refused, says the steps after it are unchecked, and shows its SQL', async () => {
+        const { logEvent } = await setupDefinition(SQL_THEN_LIMIT);
+        const definition = await openDefinition();
+        // the SQL, then the limit
+        const [sqlStep] = await findFlowNodes(definition, 2);
+        expect(sqlStep?.textContent).toContain('SQL');
+        expect(sqlStep?.textContent).toContain('select STATUS, sum(AMOUNT)');
+        expect(sqlStep?.textContent).toContain('names ORDERS');
+        expect(
+          within(definition).getByText(
+            "The SQL is shown as one step, with no columns known, so the steps after it aren't checked.",
+          ),
+        ).toBeDefined();
+        expect(logEvent).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.SHOW_ACCESS_POINT_DEFINITION_FLOW,
+          expect.objectContaining({ steps: 2, sqlSteps: 1 }),
+        );
+        expect(within(definition).queryByLabelText('SQL of a step')).toBeNull();
+
+        await act(async () => {
+          fireEvent.click(guaranteeNonNullable(sqlStep));
+        });
+        const panel = await within(definition).findByLabelText('SQL of a step');
+        expect(
+          panel.querySelector('.data-product__viewer__code-box'),
+        ).not.toBeNull();
+        // its SQL as written, not the flow's one line
+        await act(async () => {
+          fireEvent.click(within(panel).getByLabelText('Copy SQL'));
+        });
+        expect(writeText).toHaveBeenLastCalledWith(SQL);
+        await act(async () => {
+          fireEvent.click(within(panel).getByText('Close'));
+        });
+        expect(within(definition).queryByLabelText('SQL of a step')).toBeNull();
+      });
+    });
+
     describe("Producer Info: how each materialized view is made, for the data product's owners", () => {
       const INGEST = FUNCTIONS.ingestDefinition;
       const PROJECT = {
@@ -5991,6 +6048,62 @@ describe('DataProductViewer', () => {
           within(panel).getByText('Flow').getAttribute('aria-disabled'),
         ).toBe('true');
         expect(lambdaToPureCode).toHaveBeenCalledTimes(1);
+      });
+
+      /** The ingest definition with OPEN_ORDERS written in SQL: `#SQL{…}#->limit(10)` */
+      const VIEW_SQL = `select * from i('${INGEST}.ORDERS') where STATUS = 'OPEN'`;
+      const loadIngestWithSqlView = async (
+        path: string,
+      ): Promise<PlainObject | undefined> =>
+        path === INGEST
+          ? {
+              ...INGEST_CONTENT,
+              datasets: INGEST_CONTENT.datasets.map((dataSet) =>
+                dataSet.name === 'OPEN_ORDERS'
+                  ? view(
+                      'OPEN_ORDERS',
+                      lambda({
+                        _type: 'func',
+                        function: 'limit',
+                        parameters: [
+                          {
+                            _type: 'classInstance',
+                            type: 'SQL',
+                            value: { sql: VIEW_SQL },
+                          },
+                          { _type: 'integer', value: 10 },
+                        ],
+                      }),
+                      ['ORDER_ID'],
+                    )
+                  : dataSet,
+              ),
+            }
+          : undefined;
+
+      test('draws a view written in SQL as one step, says the steps after it are unchecked, and shows its SQL', async () => {
+        const { producerInfo } = await setupProducerInfo({
+          isOwner: true,
+          loadIngestDefinition: loadIngestWithSqlView,
+        });
+        const panel = await openViewPanel(producerInfo, 'OPEN_ORDERS');
+        // the SQL, then the limit
+        const [sqlStep] = await findFlowNodes(panel, 2);
+        expect(sqlStep?.textContent).toContain('SQL');
+        expect(sqlStep?.textContent).toContain('names ORDERS');
+        expect(
+          within(panel).getByText(
+            "The SQL is shown as one step, with no columns known, so the steps after it aren't checked.",
+          ),
+        ).toBeDefined();
+        await act(async () => {
+          fireEvent.click(guaranteeNonNullable(sqlStep));
+        });
+        const sqlPanel = await within(panel).findByLabelText('SQL of a step');
+        await act(async () => {
+          fireEvent.click(within(sqlPanel).getByLabelText('Copy SQL'));
+        });
+        expect(writeText).toHaveBeenLastCalledWith(VIEW_SQL);
       });
 
       test('opens the calls of user-defined functions in a view into containers, and shows their Pure', async () => {

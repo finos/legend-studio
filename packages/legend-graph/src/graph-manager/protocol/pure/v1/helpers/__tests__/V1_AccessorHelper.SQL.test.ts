@@ -22,6 +22,7 @@ import { RawLambda } from '../../../../../../graph/metamodel/pure/rawValueSpecif
 import {
   V1_buildRelationTypeFromV1RelationType,
   V1_buildResolvedRelationTypeFromV1RelationType,
+  V1_extractAccessorsFromSQL,
   V1_resolveAccessorsFromRawLambda,
 } from '../V1_AccessorHelper.js';
 import { CORE_PURE_PATH } from '../../../../../../graph/MetaModelConst.js';
@@ -252,6 +253,26 @@ describe(
     });
   },
 );
+
+describe(unitTest('V1_extractAccessorsFromSQL'), () => {
+  test('finds what the SQL of an island names, each once, the data sets first', () => {
+    const accessors = V1_extractAccessorsFromSQL(
+      "select * from p('my::Product.orders') o join i('my::Ingest.ORDERS') a on 1 = 1 join i('my::Ingest.ORDERS') b on 1 = 1",
+    );
+    expect(
+      accessors.map((accessor) => [accessor.constructor, accessor.path]),
+    ).toEqual([
+      [V1_IngestDefinitionAccessor, ['my::Ingest', 'ORDERS']],
+      [V1_DataProductAccessor, ['my::Product', 'orders']],
+    ]);
+  });
+
+  test('finds none in SQL that names neither', () => {
+    expect(V1_extractAccessorsFromSQL("select 1 from tb('my::Db.T')")).toEqual(
+      [],
+    );
+  });
+});
 
 describe(unitTest('V1_buildRelationTypeFromV1RelationType'), () => {
   test('column tagged values carry the multi-line flag', () => {

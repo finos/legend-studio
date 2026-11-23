@@ -25,6 +25,7 @@ export {
   type CubeDefinitionFlowProps,
 } from './components/canvas/CubeDefinitionFlow.js';
 export {
+  describeCubeDefinitionUncheckedSql,
   findCubeDefinitionIngestDefinitions,
   readCubeDefinition,
   type CubeDefinitionDataSet,
@@ -38,6 +39,7 @@ export {
   type CubeDefinitionReading,
   type CubeDefinitionReadOptions,
   type CubeDefinitionRefusal,
+  type CubeDefinitionSqlIsland,
   type CubeDefinitionStep,
 } from './graph-manager/CubeDefinitionReader.js';
 // user-defined functions, opened into containers (PLAN §11.33)

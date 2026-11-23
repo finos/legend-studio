@@ -41,6 +41,7 @@ import {
   V1_readCubeValueSpecification,
 } from './v1/V1_CubeLambdaReader.js';
 import { V1_readCubeExpression } from './v1/V1_CubeExpression.js';
+import { V1_findCubeSqlSources } from './v1/V1_CubeSqlIsland.js';
 
 // Cube's readers of protocol JSON a host already has, which need no engine:
 // apart from the engine's clients (`CubeEngineBuilder`), so a page that only
@@ -62,6 +63,22 @@ export const readCubeIngestDataSets = (
  */
 export const getCubeIngestMetadataSchema = (): Schema =>
   V1_getCubeIngestMetadataSchema();
+
+/** What the SQL of an island, `#SQL{…}#`, names in its text */
+export interface CubeSqlSources {
+  /** Each ingest data set, `i('definition.dataSet')`: the definition's path, then the data set */
+  readonly dataSets: readonly (readonly [string, string])[];
+  /** Each access point, `p('dataProduct.accessPoint')`: the data product's path, then its id */
+  readonly accessPoints: readonly (readonly [string, string])[];
+}
+
+/**
+ * The ingest data sets and data product access points the SQL of an island
+ * names, each once, as legend-graph finds them in its text: Cube doesn't
+ * parse the SQL, so they are what it names, not all it reads
+ */
+export const findCubeSqlSources = (sql: string): CubeSqlSources =>
+  V1_findCubeSqlSources(sql);
 
 /**
  * The columns a source reads of an ingest data set, as the engine types the

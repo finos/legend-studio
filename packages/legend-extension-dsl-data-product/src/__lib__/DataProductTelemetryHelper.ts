@@ -118,6 +118,8 @@ export type DefinitionFlow_TelemetryData = {
   functionCallsClosed: Record<string, number>;
   scalarFunctionSteps: number;
   functionsUnloaded: boolean;
+  /** How many of its steps are SQL, `#SQL{…}#`, each one box */
+  sqlSteps: number;
 };
 
 /** Why Legend Cube can't read a definition, so it shows as Pure */
@@ -374,7 +376,8 @@ export class DataProductTelemetryHelper {
    * how long it took from opening the definition, and the calls of
    * user-defined functions in it (PLAN §11.33): how many Cube opened into
    * containers, how many it drew as one box, by why, how many steps call
-   * one in an expression, and whether the functions couldn't be loaded
+   * one in an expression, and whether the functions couldn't be loaded;
+   * and how many of its steps are SQL, `#SQL{…}#`, each drawn as one box
    */
   static logEvent_ShowAccessPointDefinitionFlow(
     telemetryService: TelemetryService,

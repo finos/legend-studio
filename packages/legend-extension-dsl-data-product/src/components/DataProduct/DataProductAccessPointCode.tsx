@@ -146,13 +146,18 @@ const CopyCodeButton: React.FC<{
   );
 };
 
-/** Pure code to read and copy: read-only, in the app's theme, as tall as its code */
+/**
+ * Code to read and copy: read-only, in the app's theme, as tall as its code;
+ * Pure, unless it says otherwise
+ */
 const ReadOnlyPureCode: React.FC<{
   value: string;
   /** Past this many lines, a long line's wrapped parts included, the code scrolls */
   maxLines?: number;
+  /** What the code is written in, e.g. the SQL of a step of the flow */
+  language?: CODE_EDITOR_LANGUAGE;
 }> = (props) => {
-  const { value, maxLines } = props;
+  const { value, maxLines, language } = props;
   // the code's height once the editor has laid it out, where a long line wraps
   // into several in a narrow box; until then, its lines'
   const [contentHeight, setContentHeight] = useState<number | undefined>();
@@ -170,7 +175,7 @@ const ReadOnlyPureCode: React.FC<{
       <CodeEditor
         inputValue={value}
         isReadOnly={true}
-        language={CODE_EDITOR_LANGUAGE.PURE}
+        language={language ?? CODE_EDITOR_LANGUAGE.PURE}
         hideMinimap={true}
         hideGutter={true}
         hideActionBar={true}
@@ -487,6 +492,38 @@ export const DataProductDefinitionSection = observer(
                 ) : (
                   <CodeLoadingIndicator />
                 )}
+              </section>
+            )}
+            {flowState.shownSql !== undefined && (
+              <section
+                className="data-product__viewer__definition__function"
+                aria-label="SQL of a step"
+              >
+                <div className="data-product__viewer__definition__header">
+                  <div className="data-product__viewer__definition__function__heading">
+                    <span className="data-product__viewer__definition__title data-product__viewer__definition__function__title">
+                      SQL
+                    </span>
+                    <span className="data-product__viewer__definition__caption">
+                      of a step of the flow, as written
+                    </span>
+                  </div>
+                  <span className="data-product__viewer__definition__actions">
+                    <CopyCodeButton value={flowState.shownSql} label="SQL" />
+                    <button
+                      type="button"
+                      className="data-product__viewer__definition-flow__failure__action"
+                      onClick={() => flowState.hideSql()}
+                    >
+                      Close
+                    </button>
+                  </span>
+                </div>
+                <ReadOnlyPureCode
+                  value={flowState.shownSql}
+                  maxLines={DEFINITION_MAX_LINES}
+                  language={CODE_EDITOR_LANGUAGE.SQL}
+                />
               </section>
             )}
           </>
