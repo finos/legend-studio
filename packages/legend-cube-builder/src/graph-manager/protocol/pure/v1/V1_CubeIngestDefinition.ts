@@ -260,6 +260,12 @@ const readColumns = (
   return { columns };
 };
 
+/** Whether a data set is a materialized view: its source is a function */
+const isMaterializedView = (dataset: V1_IngestDataset): boolean =>
+  // the protocol types the source as always there, but saved content may lack it
+  (dataset.source as V1_IngestDatasetSource | undefined)?._type ===
+  MATERIALIZED_VIEW_SOURCE;
+
 /**
  * A data set's schema, and its columns as `#I{…|incoming}#` reads them, or why
  * it can't be picked. Those are none for a data set with a column of its own
@@ -272,11 +278,11 @@ const readSchema = (
 ):
   | { schema: Schema; incomingSchema: Schema | undefined }
   | { reason: string } => {
-  // the protocol types both as always there, but saved content may lack them
-  const source = dataset.source as V1_IngestDatasetSource | undefined;
-  if (source?._type === MATERIALIZED_VIEW_SOURCE) {
+  if (isMaterializedView(dataset)) {
     return { reason: V1_CUBE_INGEST_DATA_SET_REASON.MATERIALIZED_VIEW };
   }
+  // the protocol types the schema as always there, but saved content may lack it
+  const source = dataset.source as V1_IngestDatasetSource | undefined;
   const schema: V1_IngestDatasetSchema | undefined = source?.schema;
   const columns = schema?.columns ?? [];
   if (!columns.length) {
@@ -362,6 +368,7 @@ export const V1_readCubeIngestDataSets = (
     return new CubeIngestDataSet({
       name: dataset.name,
       primaryKey: dataset.primaryKey,
+      isMaterializedView: isMaterializedView(dataset),
       ...('schema' in read
         ? { schema: read.schema, incomingSchema: read.incomingSchema }
         : { disabledReason: read.reason }),

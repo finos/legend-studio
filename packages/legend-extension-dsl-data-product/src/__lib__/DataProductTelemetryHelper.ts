@@ -113,6 +113,8 @@ export type IngestViewFlow_TelemetryData = {
 export type DefinitionFlow_TelemetryData = {
   steps: number;
   unknownDataSets: string[];
+  /** The materialized views it reads, which Cube doesn't type yet */
+  materializedViews: string[];
   durationMs: number;
   functionCallsOpened: number;
   functionCallsClosed: Record<string, number>;
@@ -371,7 +373,8 @@ export class DataProductTelemetryHelper {
   /**
    * An access point's definition, read by Legend Cube, opened as its flow:
    * how many steps it has, the data sets whose columns couldn't be loaded,
-   * how long it took from opening the definition, and the calls of
+   * the materialized views it reads, which Cube doesn't type yet, how long
+   * it took from opening the definition, and the calls of
    * user-defined functions in it (PLAN §11.33): how many Cube opened into
    * containers, how many it drew as one box, by why, how many steps call
    * one in an expression, and whether the functions couldn't be loaded

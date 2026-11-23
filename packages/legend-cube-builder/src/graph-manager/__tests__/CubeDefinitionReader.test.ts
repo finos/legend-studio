@@ -33,6 +33,7 @@ import {
 import type { PlainObject } from '@finos/legend-shared';
 import { CUBE_DEFINITION_FLOW_MESSAGE } from '../../__lib__/LegendCubeDefinitionFlowLabels.js';
 import {
+  describeCubeDefinitionMaterializedViews,
   findCubeDefinitionIngestDefinitions,
   readCubeDefinition,
   type CubeDefinitionFlowReading,
@@ -603,6 +604,139 @@ describe("Reading a definition of a data set's batch metadata", () => {
       reason: CubeLambdaReadErrorKind.SOURCE,
       message: expect.stringContaining('not #I{…|sideways}#'),
     });
+  });
+});
+
+/** A materialized view of the ingest definition, as its content declares one: a function over its data sets, no columns */
+const viewOf = (name: string): PlainObject => ({
+  name,
+  primaryKey: ['BUSINESS_DATE', 'DESK'],
+  source: {
+    _type: 'FunctionSource',
+    function: queryOf(
+      filterOf(EOD_POSITIONS, equalsText('STATUS', 'SIGNED_OFF')),
+    ),
+  },
+});
+
+/** The host's ingest definitions: the one the access points read, with two views of its data sets */
+const withViews = {
+  getIngestDefinition: (path: string): PlainObject | undefined =>
+    path === INGEST_DEFINITION
+      ? {
+          ...(DEFINITIONS.ingestDefinitionContent as PlainObject),
+          datasets: [
+            ...(
+              DEFINITIONS.ingestDefinitionContent as {
+                datasets: PlainObject[];
+              }
+            ).datasets,
+            viewOf('SIGNED_OFF_POSITIONS'),
+            viewOf('DESK_POSITIONS'),
+          ],
+        }
+      : undefined,
+};
+
+/** `#I{<definition>.<data set>}#`, as the engine's grammar gives one */
+const dataSetOf = (definition: string, dataSet: string): unknown => ({
+  _type: 'classInstance',
+  type: 'I',
+  value: { metadata: false, path: [definition, dataSet] },
+});
+
+/** `<relation>->concatenate(<other>)` */
+const concatenateOf = (relation: unknown, other: unknown): unknown => ({
+  _type: 'func',
+  function: 'concatenate',
+  parameters: [relation, other],
+});
+
+describe('Reading a definition of materialized views', () => {
+  test("Draws a view by name, the steps after it unchecked, and lists it as a view, not as columns that couldn't be loaded", () => {
+    const flow = asFlow(
+      readCubeDefinition(
+        queryOf(
+          filterOf(
+            dataSetOf(INGEST_DEFINITION, 'SIGNED_OFF_POSITIONS'),
+            equalsText('DESK', 'RATES'),
+          ),
+        ),
+        withViews,
+      ),
+    );
+    expect(stepTypes(flow)).toEqual([IngestDatasetSource.TYPE, 'filter']);
+    const [source, filter] = flow.steps;
+    expect(
+      (flow.query.getNode(source?.id ?? '') as IngestDatasetSource).resolution
+        .kind,
+    ).toBe('unresolved');
+    expect(flow.uncheckedStepIds).toEqual([filter?.id]);
+    expect(flow.unknownDataSets).toEqual([]);
+    expect(flow.materializedViews).toEqual([
+      { ingestDefinition: INGEST_DEFINITION, dataSet: 'SIGNED_OFF_POSITIONS' },
+    ]);
+    expect(describeCubeDefinitionMaterializedViews(flow)).toBe(
+      "SIGNED_OFF_POSITIONS is a materialized view, whose columns Cube doesn't read yet, so the steps after it aren't checked.",
+    );
+  });
+
+  test("Lists each view once, apart from a data set whose ingest definition the host doesn't have", () => {
+    const signedOff = dataSetOf(INGEST_DEFINITION, 'SIGNED_OFF_POSITIONS');
+    const flow = asFlow(
+      readCubeDefinition(
+        queryOf(
+          concatenateOf(
+            concatenateOf(
+              concatenateOf(signedOff, signedOff),
+              dataSetOf(INGEST_DEFINITION, 'DESK_POSITIONS'),
+            ),
+            dataSetOf('markets::ingest::OtherIngest', 'TRADES'),
+          ),
+        ),
+        withViews,
+      ),
+    );
+    expect(flow.materializedViews).toEqual([
+      { ingestDefinition: INGEST_DEFINITION, dataSet: 'SIGNED_OFF_POSITIONS' },
+      { ingestDefinition: INGEST_DEFINITION, dataSet: 'DESK_POSITIONS' },
+    ]);
+    // a definition the host doesn't have: its columns couldn't be loaded
+    expect(flow.unknownDataSets).toEqual([
+      { ingestDefinition: 'markets::ingest::OtherIngest', dataSet: 'TRADES' },
+    ]);
+    expect(describeCubeDefinitionMaterializedViews(flow)).toBe(
+      "SIGNED_OFF_POSITIONS and DESK_POSITIONS are materialized views, whose columns Cube doesn't read yet, so the steps after them aren't checked.",
+    );
+  });
+
+  test("Can't tell a view without its ingest definition, nor needs it for a view's batch metadata", () => {
+    const view = dataSetOf(INGEST_DEFINITION, 'SIGNED_OFF_POSITIONS');
+    // no definition: its columns couldn't be loaded, view or not
+    const unloaded = asFlow(readCubeDefinition(queryOf(view), {}));
+    expect(unloaded.materializedViews).toEqual([]);
+    expect(unloaded.unknownDataSets).toEqual([
+      { ingestDefinition: INGEST_DEFINITION, dataSet: 'SIGNED_OFF_POSITIONS' },
+    ]);
+    expect(describeCubeDefinitionMaterializedViews(unloaded)).toBeUndefined();
+    // a view's batch metadata has the columns of any data set's
+    const metadata = asFlow(
+      readCubeDefinition(
+        queryOf({
+          _type: 'classInstance',
+          type: 'I',
+          value: {
+            metadata: true,
+            accessorQualifier: 'metadata',
+            path: [INGEST_DEFINITION, 'SIGNED_OFF_POSITIONS'],
+          },
+        }),
+        withViews,
+      ),
+    );
+    expect(metadata.materializedViews).toEqual([]);
+    expect(metadata.unknownDataSets).toEqual([]);
+    expect(metadata.uncheckedStepIds).toEqual([]);
   });
 });
 

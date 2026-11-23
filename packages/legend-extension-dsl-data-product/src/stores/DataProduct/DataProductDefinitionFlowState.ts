@@ -182,6 +182,9 @@ export class DataProductDefinitionFlowState {
           unknownDataSets: reading.unknownDataSets.map(
             (each) => `${each.ingestDefinition}.${each.dataSet}`,
           ),
+          materializedViews: reading.materializedViews.map(
+            (each) => `${each.ingestDefinition}.${each.dataSet}`,
+          ),
           durationMs: Date.now() - startedAt,
           functionCallsOpened: reading.functionCalls.filter(
             (call) => call.opened,

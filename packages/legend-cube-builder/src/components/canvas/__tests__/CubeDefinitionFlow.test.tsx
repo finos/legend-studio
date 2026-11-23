@@ -171,6 +171,35 @@ describe("An access point's definition drawn read-only", () => {
     });
   });
 
+  test("Says in a materialized view's tooltip that Cube doesn't read a view's columns yet", async () => {
+    const content = DEFINITIONS.ingestDefinitionContent as {
+      datasets: PlainObject[];
+    };
+    const flow = flowOf(DEFINITIONS.accessPoints.POSITIONS_BY_BOOK, {
+      // EOD_POSITIONS as a view: a function over the definition's data sets
+      getIngestDefinition: () => ({
+        ...content,
+        datasets: [
+          ...content.datasets.filter((each) => each.name !== 'EOD_POSITIONS'),
+          {
+            name: 'EOD_POSITIONS',
+            primaryKey: [],
+            source: {
+              _type: 'FunctionSource',
+              function: { _type: 'lambda', parameters: [], body: [] },
+            },
+          },
+        ],
+      }),
+    });
+    await renderFlow(flow);
+    const source = await TEST__findCanvasNode(flow.steps[0]?.id ?? '');
+    expect(TEST__getCanvasNodeTooltip(source)).toEqual([
+      'Data set "EOD_POSITIONS" from ingest definition "TradePositionsIngest"',
+      CUBE_DEFINITION_FLOW_LABEL.MATERIALIZED_VIEW_COLUMNS,
+    ]);
+  });
+
   test('Tells the host which step was clicked, or picked with Enter or Space, and outlines the one it picked', async () => {
     const flow = flowOf(DEFINITIONS.accessPoints.POSITIONS_BY_DESK);
     const onSelectStep = jest.fn<(stepId: string) => void>();
