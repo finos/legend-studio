@@ -64,6 +64,21 @@ export const CUBE_ENGINE_TEST__grammarToJson_lambda = async (
     ).data,
   );
 
+/** The engine's tree of an SQL query, its protocol JSON, as its SQL grammar reads it, with no source information */
+export const CUBE_ENGINE_TEST__sqlToJson = async (
+  sql: string,
+): Promise<PlainObject> =>
+  (
+    await axios.post<unknown, AxiosResponse<PlainObject>>(
+      `${ENGINE_TEST_SUPPORT_API_URL}/sql/v1/grammar/grammarToJson`,
+      sql,
+      {
+        headers: { [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN },
+        params: { returnSourceInformation: false },
+      },
+    )
+  ).data;
+
 /** The relation types of a batch of lambdas: `{result, errors}`, keyed as the input */
 export const CUBE_ENGINE_TEST__lambdaRelationTypeBatch = async (
   input: object,

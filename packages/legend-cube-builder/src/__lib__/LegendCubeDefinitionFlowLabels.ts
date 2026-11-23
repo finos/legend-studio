@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import {
+  CubeSqlJoinType,
+  CubeSqlStepKind,
+} from '../graph-manager/CubeSqlStructure.js';
+
 // What a definition flow (`@finos/legend-cube-builder/definition-flow`)
 // says: a data product's access point definition, drawn read-only
 
@@ -25,6 +30,9 @@ export const CUBE_DEFINITION_FLOW_MESSAGE = {
   ACCESS_POINT: "a data product's access point, #P{…}#",
   FUNCTION: (name: string): string => `the function ${name}()`,
   OTHER: 'another source',
+  /** Why a function isn't opened: SQL in its body reads one of its values by name */
+  SQL_READS_VALUE: (name: string): string =>
+    `its SQL reads $${name}, a value of the function, by name.`,
 };
 
 /** `$a`, `$a and $b`, `$a, $b and $c` */
@@ -33,6 +41,20 @@ const listParameters = (names: readonly string[]): string => {
   return variables.length <= 1
     ? (variables[0] ?? '')
     : `${variables.slice(0, -1).join(', ')} and ${variables.at(-1)}`;
+};
+
+/** `LEFT` or `union all` as a title: `Left`, `Union all` */
+const capitalize = (words: string): string =>
+  `${words.charAt(0).toUpperCase()}${words.slice(1).toLowerCase()}`;
+
+/** What a source of SQL is, by the function that reads it */
+const SQL_SOURCES: Readonly<Record<string, string>> = {
+  table: 'Table',
+  tb: 'Table',
+  p: 'Access point',
+  func: 'Function',
+  csv: 'CSV',
+  service: 'Service',
 };
 
 export const CUBE_DEFINITION_FLOW_LABEL = {
@@ -80,6 +102,78 @@ export const CUBE_DEFINITION_FLOW_LABEL = {
   FOLD_CALL: 'Fold the function to one box',
   OPEN_CALL: 'Open the function',
   SHOW_FUNCTION: (name: string): string => `Show the Pure of ${name}`,
+  /** On a step that is SQL, `#SQL{…}#`, drawn as one box */
+  SQL: 'SQL',
+  /** Under its first line: what its SQL names, or that nothing is known of it */
+  SQL_NAMES: (names: readonly string[]): string =>
+    `names ${names.length <= 2 ? names.join(' and ') : `${names[0]} and ${names.length - 1} more`}`,
+  SQL_COLUMNS_UNKNOWN: 'columns not known',
+  /** In its tooltip */
+  SQL_ONE_STEP:
+    "Cube shows SQL as one step and doesn't read it, so its columns aren't known.",
+  SQL_NAMES_DATA_SETS: (names: readonly string[]): string =>
+    `Ingest data sets it names: ${names.join(', ')}`,
+  SQL_NAMES_ACCESS_POINTS: (names: readonly string[]): string =>
+    `Access points it names: ${names.join(', ')}`,
+  SHOW_SQL: 'Click to show its SQL.',
+  /** Why SQL the host gave the engine's tree of is one step all the same */
+  SQL_NOT_DRAWN: (what: string): string =>
+    `Its SQL has ${what}, which Cube doesn't draw as steps yet.`,
+  /** In the tooltip of SQL drawn as steps, and of each of its steps */
+  SQL_AS_STEPS:
+    "Its steps are what its SQL says, in the order it runs: Cube doesn't check them, so its columns aren't known.",
+  SQL_STEP_AS_WRITTEN: "As the SQL says it: Cube doesn't check it.",
+  SQL_ALIAS: (alias: string): string => `The SQL calls it ${alias}.`,
+  /** Under a data set of SQL: the name its clauses call it by */
+  SQL_AS: (alias: string): string => `as ${alias}`,
+  /** The buttons of SQL drawn as steps */
+  FOLD_SQL: 'Fold the SQL to one box',
+  OPEN_SQL: 'Open the SQL',
+  SHOW_SQL_BUTTON: 'Show the SQL',
+  /** A step of SQL: what it is, by its kind and what kind it is of its kind */
+  SQL_STEP: (kind: CubeSqlStepKind, variant?: string): string => {
+    switch (kind) {
+      case CubeSqlStepKind.JOIN:
+        return `${capitalize(variant ?? CubeSqlJoinType.INNER)} join`;
+      case CubeSqlStepKind.WHERE:
+        return 'Where';
+      case CubeSqlStepKind.GROUP_BY:
+        return 'Group by';
+      case CubeSqlStepKind.HAVING:
+        return 'Having';
+      case CubeSqlStepKind.SELECT:
+        return variant ? `Select ${variant}` : 'Select';
+      case CubeSqlStepKind.ORDER_BY:
+        return 'Order by';
+      case CubeSqlStepKind.OFFSET:
+        return 'Offset';
+      case CubeSqlStepKind.LIMIT:
+        return 'Limit';
+      case CubeSqlStepKind.SET:
+        return capitalize(variant ?? 'union');
+      case CubeSqlStepKind.NAMED:
+        return variant === 'with' ? 'With' : 'Subquery';
+      case CubeSqlStepKind.VARIABLE:
+        return 'Variable';
+      case CubeSqlStepKind.DATA_SET:
+        return 'Ingest data set';
+      case CubeSqlStepKind.SOURCE:
+      default:
+        return (
+          SQL_SOURCES[variant ?? ''] ?? (variant ? `${variant}()` : 'Source')
+        );
+    }
+  },
+  /** Under a Select: the columns its rows have */
+  SQL_ALL_COLUMNS: 'all columns',
+  /** Under a Limit or an Offset that is a number */
+  SQL_ROWS: (count: string): string =>
+    `${count} ${count === '1' ? 'row' : 'rows'}`,
+  /** A host's note above a flow whose SQL has steps after it */
+  SQL_UNCHECKED: (count: number): string =>
+    count === 1
+      ? "Cube doesn't check the SQL, so its columns aren't known and the steps after it aren't checked."
+      : "Cube doesn't check SQL, so its columns aren't known and the steps after each aren't checked.",
   /** How many steps a call holds */
   STEP_COUNT: (count: number): string =>
     `${count} ${count === 1 ? 'step' : 'steps'}`,

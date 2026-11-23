@@ -38,6 +38,7 @@ import {
   JOIN_KIND_PATH,
   lambda,
   literal,
+  sqlAccessor,
   aggregationColSpec,
   variable,
   type IR,
@@ -369,6 +370,26 @@ describe('Opening the page on a lambda', () => {
     );
     expect((await findBanner()).textContent).toContain(
       CUBE_LAMBDA_SOURCES_MESSAGE.MIXED,
+    );
+  });
+
+  test('Refuses a lambda holding SQL, saying so: the editor has no step for it', async () => {
+    await renderOn(
+      ingestHost(),
+      serializeCubeLambdaForHost(
+        lambda(
+          [],
+          [
+            func('concatenate', [
+              TRADES,
+              sqlAccessor("select * from i('sales::Ingest.TRADES')"),
+            ]),
+          ],
+        ),
+      ),
+    );
+    expect((await findBanner()).textContent).toContain(
+      CUBE_LAMBDA_SOURCES_MESSAGE.SQL,
     );
   });
 });

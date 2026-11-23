@@ -327,8 +327,19 @@ export const DataProductAccessPointDefinitionFlow = observer(
               .some((input) => call.stepIds.includes(input ?? '')),
         ),
     );
+    // SQL drawn as one box, its columns not known: the steps after it
+    // aren't checked
+    const uncheckedSql = entry.describeCubeDefinitionUncheckedSql(reading);
     return (
       <>
+        {uncheckedSql !== undefined && (
+          <div
+            className="data-product__viewer__definition__note data-product__viewer__definition__note--warning"
+            role="note"
+          >
+            {uncheckedSql}
+          </div>
+        )}
         {uncheckedCalls.length > 0 && (
           <div
             className="data-product__viewer__definition__note data-product__viewer__definition__note--warning"
@@ -378,6 +389,7 @@ export const DataProductAccessPointDefinitionFlow = observer(
                   flowState.viewerState.applicationStore.alertUnhandledError,
                 );
               }}
+              onShowSql={(island) => flowState.showSql(island.sql)}
               colorMode={
                 layoutService.TEMPORARY__isLightColorThemeEnabled
                   ? 'light'

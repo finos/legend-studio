@@ -945,6 +945,12 @@ export abstract class AbstractPureGraphManager {
     connection: RelationalDatabaseConnection,
     sql: string,
   ): Promise<string>;
+  /**
+   * The engine's tree of an SQL query, its protocol JSON, as the engine's
+   * SQL grammar reads it, with no model: what the SQL of an island,
+   * `#SQL{…}#`, says, for Legend Cube to draw as steps
+   */
+  abstract parseSQL(sql: string): Promise<PlainObject>;
 
   // ------------------------------------------- Function ------------------------------------createDataProductAccessor-------
 

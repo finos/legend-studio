@@ -60,10 +60,12 @@ export interface DataProductShownFunction {
 
 /**
  * A definition as Legend Cube's flow, read-only: an access point's, or a
- * materialized view's. Its function is read into steps in the browser, with
- * no engine call, once: Cube's code loads first, then the user-defined
- * functions it calls, which open into containers, then the ingest
- * definitions it reads, which type the columns of their data sets. Cube
+ * materialized view's. Its function is read into steps in the browser, once:
+ * Cube's code loads first, then the user-defined functions it calls, which
+ * open into containers, then, for a definition that holds SQL, `#SQL{…}#`,
+ * the engine's tree of the SQL, which Cube draws as steps, then the ingest
+ * definitions it reads, which type the columns of their data sets. The SQL's
+ * tree is the only engine call. Cube
  * reads all of a definition or none of it: what it can't read yet is
  * refused, and shows as Pure.
  */
@@ -80,6 +82,11 @@ export class DataProductDefinitionFlowState {
   readonly functionElements = new Map<string, PlainObject>();
   /** A user-defined function whose Pure shows under the flow */
   shownFunction: DataProductShownFunction | undefined;
+  /**
+   * The SQL of a step of the flow that is SQL, `#SQL{…}#`, which shows under
+   * the flow, in place of a function's Pure
+   */
+  shownSql: string | undefined;
 
   readonly readingDefinitionFlowState = ActionState.create();
 
@@ -97,6 +104,9 @@ export class DataProductDefinitionFlowState {
       readDefinitionFlow: flow,
       showFunction: flow,
       hideFunction: action,
+      shownSql: observable,
+      showSql: action,
+      hideSql: action,
       resetDefinitionFlow: action,
       failDefinitionFlow: action,
     });
@@ -164,12 +174,23 @@ export class DataProductDefinitionFlowState {
           );
         }
       }
+      // the engine's tree of the SQL it holds, `#SQL{…}#`, which Cube draws
+      // as steps; SQL with no tree is one box
+      const sqlTrees = (yield this.loadSqlTrees(
+        entry.findCubeDefinitionSql(lambda, { functions }),
+      )) as Map<string, PlainObject>;
+      const getSqlTree = (sql: string): PlainObject | undefined =>
+        sqlTrees.get(sql);
       const ingestDefinitions = (yield this.loadIngestDefinitions(
-        entry.findCubeDefinitionIngestDefinitions(lambda, { functions }),
+        entry.findCubeDefinitionIngestDefinitions(lambda, {
+          functions,
+          getSqlTree,
+        }),
       )) as Map<string, PlainObject>;
       const reading = entry.readCubeDefinition(lambda, {
         getIngestDefinition: (path) => ingestDefinitions.get(path),
         functions,
+        getSqlTree,
       });
       if (reading.kind === 'flow') {
         this.definitionFlow = {
@@ -196,6 +217,8 @@ export class DataProductDefinitionFlowState {
           }, {}),
           scalarFunctionSteps: reading.scalarFunctions.size,
           functionsUnloaded,
+          sqlSteps: reading.sqlIslands.length,
+          sqlOpened: reading.sqlIslands.filter((island) => island.steps).length,
         });
       } else {
         this.definitionFlow = {
@@ -213,6 +236,36 @@ export class DataProductDefinitionFlowState {
     } finally {
       this.readingDefinitionFlowState.complete();
     }
+  }
+
+  /**
+   * The engine's tree of each SQL, by the SQL, as its SQL grammar reads it:
+   * one the engine fails to parse, or has no route for, is left out, and its
+   * SQL is drawn as one box
+   */
+  private async loadSqlTrees(
+    sqls: string[],
+  ): Promise<Map<string, PlainObject>> {
+    const trees = new Map<string, PlainObject>();
+    const client = this.viewerState.engineServerClient;
+    const loaded = await Promise.allSettled(
+      sqls.map((sql) => client.SQLToJSON(sql)),
+    );
+    loaded.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        trees.set(guaranteeNonNullable(sqls[index]), result.value);
+      } else {
+        this.viewerState.applicationStore.logService.warn(
+          LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+          `Unable to parse the SQL of ${this.subject} for its flow: ${
+            result.reason instanceof Error
+              ? result.reason.message
+              : String(result.reason)
+          }`,
+        );
+      }
+    });
+    return trees;
   }
 
   /**
@@ -285,6 +338,7 @@ export class DataProductDefinitionFlowState {
   }): GeneratorFn<void> {
     const { path } = call;
     const content = path ? this.functionElements.get(path) : undefined;
+    this.shownSql = undefined;
     this.shownFunction = { ...call, pure: undefined };
     if (!path || !content) {
       this.shownFunction = {
@@ -309,6 +363,19 @@ export class DataProductDefinitionFlowState {
 
   hideFunction(): void {
     this.shownFunction = undefined;
+  }
+
+  /**
+   * Shows the SQL of a step that is SQL under the flow, as written: the
+   * flow's box shows only its first words
+   */
+  showSql(sql: string): void {
+    this.shownFunction = undefined;
+    this.shownSql = sql.trim();
+  }
+
+  hideSql(): void {
+    this.shownSql = undefined;
   }
 
   /** Forgets the definition's flow, to read it again */

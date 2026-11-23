@@ -109,6 +109,12 @@ interface IngestMaterializedViewFunctions {
   readonly specification: IngestDefinitionSpecification;
   /** By the view's name; none for a view whose functions failed to load */
   readonly byView: ReadonlyMap<string, CubeDefinitionFunctions | undefined>;
+  /**
+   * The engine's tree of the SQL the views hold, `#SQL{…}#`, by the SQL,
+   * which Cube draws as steps; none for SQL the engine failed to parse,
+   * drawn as one box
+   */
+  readonly sqlTrees: ReadonlyMap<string, PlainObject>;
 }
 
 /**
@@ -445,6 +451,7 @@ export class IngestDefinitionFlowState {
                 {
                   getIngestDefinition,
                   functions: viewFunctions.byView.get(view.name),
+                  getSqlTree: (sql) => viewFunctions.sqlTrees.get(sql),
                 },
               ),
             ];
@@ -559,9 +566,43 @@ export class IngestDefinitionFlowState {
         },
       ),
     )) as [string, CubeDefinitionFunctions | undefined][];
+    // the engine's tree of each SQL the views hold, those of the functions
+    // they call included
+    const sqls = [
+      ...new Set(
+        this.materializedViews.flatMap((view, index) =>
+          entry.findCubeDefinitionSql(
+            graphManager.serializeRawValueSpecification(
+              getMaterializedViewFunction(view),
+            ),
+            { functions: loaded[index]?.[1] },
+          ),
+        ),
+      ),
+    ];
+    const sqlTrees = new Map<string, PlainObject>();
+    (
+      (yield Promise.allSettled(
+        sqls.map((sql) => graphManager.parseSQL(sql)),
+      )) as PromiseSettledResult<PlainObject>[]
+    ).forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        sqlTrees.set(sqls[index] as string, result.value);
+      } else {
+        // its SQL is drawn as one box
+        editorStore.applicationStore.logService.warn(
+          LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERIC_FAILURE),
+          `Unable to parse the SQL of a materialized view of ingest definition '${this.editorState.ingest.path}': ${
+            result.reason instanceof Error
+              ? result.reason.message
+              : String(result.reason)
+          }`,
+        );
+      }
+    });
     // a newer specification loads its own
     if (specification === this.specification) {
-      this.viewFunctions = { specification, byView: new Map(loaded) };
+      this.viewFunctions = { specification, byView: new Map(loaded), sqlTrees };
     }
   }
 

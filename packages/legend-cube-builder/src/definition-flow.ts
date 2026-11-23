@@ -25,7 +25,11 @@ export {
   type CubeDefinitionFlowProps,
 } from './components/canvas/CubeDefinitionFlow.js';
 export {
+  CUBE_DEFINITION_SQL_OPEN_STEPS,
+  describeCubeDefinitionUncheckedSql,
   findCubeDefinitionIngestDefinitions,
+  findCubeDefinitionSql,
+  getCubeDefinitionSqlFoldedAtFirst,
   readCubeDefinition,
   type CubeDefinitionDataSet,
   type CubeDefinitionFlowReading,
@@ -38,8 +42,15 @@ export {
   type CubeDefinitionReading,
   type CubeDefinitionReadOptions,
   type CubeDefinitionRefusal,
+  type CubeDefinitionSqlIsland,
+  type CubeDefinitionSqlStep,
   type CubeDefinitionStep,
 } from './graph-manager/CubeDefinitionReader.js';
+// the steps of an island's SQL, read from the engine's tree of it
+export {
+  CubeSqlJoinType,
+  CubeSqlStepKind,
+} from './graph-manager/CubeSqlStructure.js';
 // user-defined functions, opened into containers (PLAN §11.33)
 export {
   CubeDefinitionFunctionClosedReason,

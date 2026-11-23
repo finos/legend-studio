@@ -1,0 +1,2655 @@
+{
+  "star": {
+    "sql": "select * from i('shop::ingest::OrdersIngest.ORDERS')",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "tableFunction",
+            "functionCall": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "stringLiteral",
+                  "value": "shop::ingest::OrdersIngest.ORDERS"
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["i"]
+              },
+              "orderBy": []
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "allColumns"
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "join-group-order-limit": {
+    "sql": "select c.REGION, sum(o.AMOUNT) as TOTAL_AMOUNT, count(*) as ORDERS\nfrom i('shop::ingest::OrdersIngest.ORDERS') o\njoin i('shop::ingest::OrdersIngest.CUSTOMERS') c on o.CUSTOMER_ID = c.CUSTOMER_ID\nwhere o.STATUS = 'ACTIVE'\ngroup by c.REGION\norder by TOTAL_AMOUNT desc\nlimit 10",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "join",
+            "criteria": {
+              "_type": "joinOn",
+              "expression": {
+                "_type": "comparisonExpression",
+                "left": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["o", "CUSTOMER_ID"]
+                  }
+                },
+                "operator": "EQUAL",
+                "right": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["c", "CUSTOMER_ID"]
+                  }
+                }
+              }
+            },
+            "left": {
+              "_type": "aliasedRelation",
+              "alias": "o",
+              "columnNames": [],
+              "relation": {
+                "_type": "tableFunction",
+                "functionCall": {
+                  "_type": "functionCall",
+                  "arguments": [
+                    {
+                      "_type": "stringLiteral",
+                      "value": "shop::ingest::OrdersIngest.ORDERS"
+                    }
+                  ],
+                  "distinct": false,
+                  "name": {
+                    "parts": ["i"]
+                  },
+                  "orderBy": []
+                }
+              }
+            },
+            "right": {
+              "_type": "aliasedRelation",
+              "alias": "c",
+              "columnNames": [],
+              "relation": {
+                "_type": "tableFunction",
+                "functionCall": {
+                  "_type": "functionCall",
+                  "arguments": [
+                    {
+                      "_type": "stringLiteral",
+                      "value": "shop::ingest::OrdersIngest.CUSTOMERS"
+                    }
+                  ],
+                  "distinct": false,
+                  "name": {
+                    "parts": ["i"]
+                  },
+                  "orderBy": []
+                }
+              }
+            },
+            "type": "INNER"
+          }
+        ],
+        "groupBy": [
+          {
+            "_type": "qualifiedNameReference",
+            "name": {
+              "parts": ["c", "REGION"]
+            }
+          }
+        ],
+        "limit": {
+          "_type": "integerLiteral",
+          "value": 10
+        },
+        "orderBy": [
+          {
+            "_type": "sortItem",
+            "nullOrdering": "UNDEFINED",
+            "ordering": "DESCENDING",
+            "sortKey": {
+              "_type": "qualifiedNameReference",
+              "name": {
+                "parts": ["TOTAL_AMOUNT"]
+              }
+            }
+          }
+        ],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["c", "REGION"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "TOTAL_AMOUNT",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["o", "AMOUNT"]
+                    }
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["sum"]
+                },
+                "orderBy": []
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "ORDERS",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [],
+                "distinct": false,
+                "name": {
+                  "parts": ["count"]
+                },
+                "orderBy": []
+              }
+            }
+          ]
+        },
+        "where": {
+          "_type": "comparisonExpression",
+          "left": {
+            "_type": "qualifiedNameReference",
+            "name": {
+              "parts": ["o", "STATUS"]
+            }
+          },
+          "operator": "EQUAL",
+          "right": {
+            "_type": "stringLiteral",
+            "value": "ACTIVE"
+          }
+        },
+        "windows": []
+      }
+    }
+  },
+  "where-mixed": {
+    "sql": "select ORDER_ID from i('shop::ingest::OrdersIngest.ORDERS') where (STATUS in ('ACTIVE', 'HELD') or STATUS like 'P%') and AMOUNT between 10 and 500 and CUSTOMER_ID is not null and not (REGION = 'EMEA' or REGION is null)",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "tableFunction",
+            "functionCall": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "stringLiteral",
+                  "value": "shop::ingest::OrdersIngest.ORDERS"
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["i"]
+              },
+              "orderBy": []
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["ORDER_ID"]
+                }
+              }
+            }
+          ]
+        },
+        "where": {
+          "_type": "logicalBinaryExpression",
+          "left": {
+            "_type": "logicalBinaryExpression",
+            "left": {
+              "_type": "logicalBinaryExpression",
+              "left": {
+                "_type": "logicalBinaryExpression",
+                "left": {
+                  "_type": "inPredicate",
+                  "value": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["STATUS"]
+                    }
+                  },
+                  "valueList": {
+                    "_type": "inListExpression",
+                    "values": [
+                      {
+                        "_type": "stringLiteral",
+                        "value": "ACTIVE"
+                      },
+                      {
+                        "_type": "stringLiteral",
+                        "value": "HELD"
+                      }
+                    ]
+                  }
+                },
+                "right": {
+                  "_type": "likePredicate",
+                  "ignoreCase": false,
+                  "pattern": {
+                    "_type": "stringLiteral",
+                    "value": "P%"
+                  },
+                  "value": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["STATUS"]
+                    }
+                  }
+                },
+                "type": "OR"
+              },
+              "right": {
+                "_type": "betweenPredicate",
+                "max": {
+                  "_type": "integerLiteral",
+                  "value": 500
+                },
+                "min": {
+                  "_type": "integerLiteral",
+                  "value": 10
+                },
+                "value": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["AMOUNT"]
+                  }
+                }
+              },
+              "type": "AND"
+            },
+            "right": {
+              "_type": "isNotNullPredicate",
+              "value": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["CUSTOMER_ID"]
+                }
+              }
+            },
+            "type": "AND"
+          },
+          "right": {
+            "_type": "notExpression",
+            "value": {
+              "_type": "logicalBinaryExpression",
+              "left": {
+                "_type": "comparisonExpression",
+                "left": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["REGION"]
+                  }
+                },
+                "operator": "EQUAL",
+                "right": {
+                  "_type": "stringLiteral",
+                  "value": "EMEA"
+                }
+              },
+              "right": {
+                "_type": "isNullPredicate",
+                "value": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["REGION"]
+                  }
+                }
+              },
+              "type": "OR"
+            }
+          },
+          "type": "AND"
+        },
+        "windows": []
+      }
+    }
+  },
+  "computed": {
+    "sql": "select ORDER_ID, (AMOUNT + 1) * 1.2 as GROSS, AMOUNT - (FEE - 1) as NET, -AMOUNT as NEGATIVE, upper(STATUS) as ST, case when AMOUNT > 100 then 'big' else 'small' end as SIZE, case STATUS when 'A' then 1 else 0 end as FLAG, coalesce(STATUS, 'it''s none') as S2, cast(AMOUNT as integer) as WHOLE, cast(AMOUNT as numeric(18, 2)) as FIXED, extract(year from ORDER_DATE) as YR, STATUS || '-x' as TAG from i('shop::ingest::OrdersIngest.ORDERS')",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "tableFunction",
+            "functionCall": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "stringLiteral",
+                  "value": "shop::ingest::OrdersIngest.ORDERS"
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["i"]
+              },
+              "orderBy": []
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["ORDER_ID"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "GROSS",
+              "expression": {
+                "_type": "arithmeticExpression",
+                "left": {
+                  "_type": "arithmeticExpression",
+                  "left": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["AMOUNT"]
+                    }
+                  },
+                  "right": {
+                    "_type": "integerLiteral",
+                    "value": 1
+                  },
+                  "type": "ADD"
+                },
+                "right": {
+                  "_type": "doubleLiteral",
+                  "value": 1.2
+                },
+                "type": "MULTIPLY"
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "NET",
+              "expression": {
+                "_type": "arithmeticExpression",
+                "left": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["AMOUNT"]
+                  }
+                },
+                "right": {
+                  "_type": "arithmeticExpression",
+                  "left": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["FEE"]
+                    }
+                  },
+                  "right": {
+                    "_type": "integerLiteral",
+                    "value": 1
+                  },
+                  "type": "SUBTRACT"
+                },
+                "type": "SUBTRACT"
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "NEGATIVE",
+              "expression": {
+                "_type": "negativeExpression",
+                "value": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["AMOUNT"]
+                  }
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "ST",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["STATUS"]
+                    }
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["upper"]
+                },
+                "orderBy": []
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "SIZE",
+              "expression": {
+                "_type": "searchedCaseExpression",
+                "defaultValue": {
+                  "_type": "stringLiteral",
+                  "value": "small"
+                },
+                "whenClauses": [
+                  {
+                    "_type": "whenClause",
+                    "operand": {
+                      "_type": "comparisonExpression",
+                      "left": {
+                        "_type": "qualifiedNameReference",
+                        "name": {
+                          "parts": ["AMOUNT"]
+                        }
+                      },
+                      "operator": "GREATER_THAN",
+                      "right": {
+                        "_type": "integerLiteral",
+                        "value": 100
+                      }
+                    },
+                    "result": {
+                      "_type": "stringLiteral",
+                      "value": "big"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "FLAG",
+              "expression": {
+                "_type": "simpleCaseExpression",
+                "defaultValue": {
+                  "_type": "integerLiteral",
+                  "value": 0
+                },
+                "operand": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["STATUS"]
+                  }
+                },
+                "whenClauses": [
+                  {
+                    "_type": "whenClause",
+                    "operand": {
+                      "_type": "stringLiteral",
+                      "value": "A"
+                    },
+                    "result": {
+                      "_type": "integerLiteral",
+                      "value": 1
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "S2",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["STATUS"]
+                    }
+                  },
+                  {
+                    "_type": "stringLiteral",
+                    "value": "it's none"
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["coalesce"]
+                },
+                "orderBy": []
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "WHOLE",
+              "expression": {
+                "_type": "cast",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["AMOUNT"]
+                  }
+                },
+                "type": {
+                  "_type": "columnType",
+                  "name": "integer",
+                  "parameters": []
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "FIXED",
+              "expression": {
+                "_type": "cast",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["AMOUNT"]
+                  }
+                },
+                "type": {
+                  "_type": "columnType",
+                  "name": "numeric",
+                  "parameters": [18, 2]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "YR",
+              "expression": {
+                "_type": "extract",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["ORDER_DATE"]
+                  }
+                },
+                "field": "YEAR"
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "TAG",
+              "expression": {
+                "_type": "stringConcatenate",
+                "values": [
+                  {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["STATUS"]
+                    }
+                  },
+                  {
+                    "_type": "stringLiteral",
+                    "value": "-x"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "having-distinct": {
+    "sql": "select distinct CUSTOMER_ID, count(distinct STATUS) as STATUSES from i('shop::ingest::OrdersIngest.ORDERS') group by CUSTOMER_ID having sum(AMOUNT) > 1000 and count(*) <> 1",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "tableFunction",
+            "functionCall": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "stringLiteral",
+                  "value": "shop::ingest::OrdersIngest.ORDERS"
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["i"]
+              },
+              "orderBy": []
+            }
+          }
+        ],
+        "groupBy": [
+          {
+            "_type": "qualifiedNameReference",
+            "name": {
+              "parts": ["CUSTOMER_ID"]
+            }
+          }
+        ],
+        "having": {
+          "_type": "logicalBinaryExpression",
+          "left": {
+            "_type": "comparisonExpression",
+            "left": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["AMOUNT"]
+                  }
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["sum"]
+              },
+              "orderBy": []
+            },
+            "operator": "GREATER_THAN",
+            "right": {
+              "_type": "integerLiteral",
+              "value": 1000
+            }
+          },
+          "right": {
+            "_type": "comparisonExpression",
+            "left": {
+              "_type": "functionCall",
+              "arguments": [],
+              "distinct": false,
+              "name": {
+                "parts": ["count"]
+              },
+              "orderBy": []
+            },
+            "operator": "NOT_EQUAL",
+            "right": {
+              "_type": "integerLiteral",
+              "value": 1
+            }
+          },
+          "type": "AND"
+        },
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": true,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["CUSTOMER_ID"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "STATUSES",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["STATUS"]
+                    }
+                  }
+                ],
+                "distinct": true,
+                "name": {
+                  "parts": ["count"]
+                },
+                "orderBy": []
+              }
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "order-offset": {
+    "sql": "select ORDER_ID, AMOUNT from i('shop::ingest::OrdersIngest.ORDERS') order by AMOUNT desc nulls last, ORDER_ID limit 10 offset 20",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "tableFunction",
+            "functionCall": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "stringLiteral",
+                  "value": "shop::ingest::OrdersIngest.ORDERS"
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["i"]
+              },
+              "orderBy": []
+            }
+          }
+        ],
+        "groupBy": [],
+        "limit": {
+          "_type": "integerLiteral",
+          "value": 10
+        },
+        "offset": {
+          "_type": "integerLiteral",
+          "value": 20
+        },
+        "orderBy": [
+          {
+            "_type": "sortItem",
+            "nullOrdering": "LAST",
+            "ordering": "DESCENDING",
+            "sortKey": {
+              "_type": "qualifiedNameReference",
+              "name": {
+                "parts": ["AMOUNT"]
+              }
+            }
+          },
+          {
+            "_type": "sortItem",
+            "nullOrdering": "UNDEFINED",
+            "ordering": "ASCENDING",
+            "sortKey": {
+              "_type": "qualifiedNameReference",
+              "name": {
+                "parts": ["ORDER_ID"]
+              }
+            }
+          }
+        ],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["ORDER_ID"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["AMOUNT"]
+                }
+              }
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "joins": {
+    "sql": "select o.ORDER_ID, c.CUSTOMER_NAME, p.TITLE from i('shop::ingest::OrdersIngest.ORDERS') o left join i('shop::ingest::OrdersIngest.CUSTOMERS') c on o.CUSTOMER_ID = c.CUSTOMER_ID and c.REGION <> 'NONE' full outer join p('shop::Product.products') p using (PRODUCT_ID) cross join tb('shop::Store.SALES.REGIONS') r",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "join",
+            "left": {
+              "_type": "join",
+              "criteria": {
+                "_type": "joinUsing",
+                "columns": ["PRODUCT_ID"]
+              },
+              "left": {
+                "_type": "join",
+                "criteria": {
+                  "_type": "joinOn",
+                  "expression": {
+                    "_type": "logicalBinaryExpression",
+                    "left": {
+                      "_type": "comparisonExpression",
+                      "left": {
+                        "_type": "qualifiedNameReference",
+                        "name": {
+                          "parts": ["o", "CUSTOMER_ID"]
+                        }
+                      },
+                      "operator": "EQUAL",
+                      "right": {
+                        "_type": "qualifiedNameReference",
+                        "name": {
+                          "parts": ["c", "CUSTOMER_ID"]
+                        }
+                      }
+                    },
+                    "right": {
+                      "_type": "comparisonExpression",
+                      "left": {
+                        "_type": "qualifiedNameReference",
+                        "name": {
+                          "parts": ["c", "REGION"]
+                        }
+                      },
+                      "operator": "NOT_EQUAL",
+                      "right": {
+                        "_type": "stringLiteral",
+                        "value": "NONE"
+                      }
+                    },
+                    "type": "AND"
+                  }
+                },
+                "left": {
+                  "_type": "aliasedRelation",
+                  "alias": "o",
+                  "columnNames": [],
+                  "relation": {
+                    "_type": "tableFunction",
+                    "functionCall": {
+                      "_type": "functionCall",
+                      "arguments": [
+                        {
+                          "_type": "stringLiteral",
+                          "value": "shop::ingest::OrdersIngest.ORDERS"
+                        }
+                      ],
+                      "distinct": false,
+                      "name": {
+                        "parts": ["i"]
+                      },
+                      "orderBy": []
+                    }
+                  }
+                },
+                "right": {
+                  "_type": "aliasedRelation",
+                  "alias": "c",
+                  "columnNames": [],
+                  "relation": {
+                    "_type": "tableFunction",
+                    "functionCall": {
+                      "_type": "functionCall",
+                      "arguments": [
+                        {
+                          "_type": "stringLiteral",
+                          "value": "shop::ingest::OrdersIngest.CUSTOMERS"
+                        }
+                      ],
+                      "distinct": false,
+                      "name": {
+                        "parts": ["i"]
+                      },
+                      "orderBy": []
+                    }
+                  }
+                },
+                "type": "LEFT"
+              },
+              "right": {
+                "_type": "aliasedRelation",
+                "alias": "p",
+                "columnNames": [],
+                "relation": {
+                  "_type": "tableFunction",
+                  "functionCall": {
+                    "_type": "functionCall",
+                    "arguments": [
+                      {
+                        "_type": "stringLiteral",
+                        "value": "shop::Product.products"
+                      }
+                    ],
+                    "distinct": false,
+                    "name": {
+                      "parts": ["p"]
+                    },
+                    "orderBy": []
+                  }
+                }
+              },
+              "type": "FULL"
+            },
+            "right": {
+              "_type": "aliasedRelation",
+              "alias": "r",
+              "columnNames": [],
+              "relation": {
+                "_type": "tableFunction",
+                "functionCall": {
+                  "_type": "functionCall",
+                  "arguments": [
+                    {
+                      "_type": "stringLiteral",
+                      "value": "shop::Store.SALES.REGIONS"
+                    }
+                  ],
+                  "distinct": false,
+                  "name": {
+                    "parts": ["tb"]
+                  },
+                  "orderBy": []
+                }
+              }
+            },
+            "type": "CROSS"
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["o", "ORDER_ID"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["c", "CUSTOMER_NAME"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["p", "TITLE"]
+                }
+              }
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "right-join-comma": {
+    "sql": "select * from i('shop::ingest::OrdersIngest.ORDERS') o right join i('shop::ingest::OrdersIngest.CUSTOMERS') c on o.CUSTOMER_ID = c.CUSTOMER_ID, SALES.REGIONS",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "join",
+            "criteria": {
+              "_type": "joinOn",
+              "expression": {
+                "_type": "comparisonExpression",
+                "left": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["o", "CUSTOMER_ID"]
+                  }
+                },
+                "operator": "EQUAL",
+                "right": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["c", "CUSTOMER_ID"]
+                  }
+                }
+              }
+            },
+            "left": {
+              "_type": "aliasedRelation",
+              "alias": "o",
+              "columnNames": [],
+              "relation": {
+                "_type": "tableFunction",
+                "functionCall": {
+                  "_type": "functionCall",
+                  "arguments": [
+                    {
+                      "_type": "stringLiteral",
+                      "value": "shop::ingest::OrdersIngest.ORDERS"
+                    }
+                  ],
+                  "distinct": false,
+                  "name": {
+                    "parts": ["i"]
+                  },
+                  "orderBy": []
+                }
+              }
+            },
+            "right": {
+              "_type": "aliasedRelation",
+              "alias": "c",
+              "columnNames": [],
+              "relation": {
+                "_type": "tableFunction",
+                "functionCall": {
+                  "_type": "functionCall",
+                  "arguments": [
+                    {
+                      "_type": "stringLiteral",
+                      "value": "shop::ingest::OrdersIngest.CUSTOMERS"
+                    }
+                  ],
+                  "distinct": false,
+                  "name": {
+                    "parts": ["i"]
+                  },
+                  "orderBy": []
+                }
+              }
+            },
+            "type": "RIGHT"
+          },
+          {
+            "_type": "table",
+            "name": {
+              "parts": ["SALES", "REGIONS"]
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "allColumns"
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "var-let": {
+    "sql": "select REGION, sum(AMOUNT) as TOTAL_AMOUNT from var('active') a where a.ORDER_DATE > var('since') group by REGION",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "aliasedRelation",
+            "alias": "a",
+            "columnNames": [],
+            "relation": {
+              "_type": "tableFunction",
+              "functionCall": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "stringLiteral",
+                    "value": "active"
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["var"]
+                },
+                "orderBy": []
+              }
+            }
+          }
+        ],
+        "groupBy": [
+          {
+            "_type": "qualifiedNameReference",
+            "name": {
+              "parts": ["REGION"]
+            }
+          }
+        ],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["REGION"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "TOTAL_AMOUNT",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["AMOUNT"]
+                    }
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["sum"]
+                },
+                "orderBy": []
+              }
+            }
+          ]
+        },
+        "where": {
+          "_type": "comparisonExpression",
+          "left": {
+            "_type": "qualifiedNameReference",
+            "name": {
+              "parts": ["a", "ORDER_DATE"]
+            }
+          },
+          "operator": "GREATER_THAN",
+          "right": {
+            "_type": "functionCall",
+            "arguments": [
+              {
+                "_type": "stringLiteral",
+                "value": "since"
+              }
+            ],
+            "distinct": false,
+            "name": {
+              "parts": ["var"]
+            },
+            "orderBy": []
+          }
+        },
+        "windows": []
+      }
+    }
+  },
+  "func-csv-service": {
+    "sql": "select f.ORDER_ID from func('shop::orders::ordersOver_Integer_1__Relation_1_', minimum => 100) f join csv('a,b\n1,2') c on f.ORDER_ID = c.a join service('/orders') s on s.ID = f.ORDER_ID",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "join",
+            "criteria": {
+              "_type": "joinOn",
+              "expression": {
+                "_type": "comparisonExpression",
+                "left": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["s", "ID"]
+                  }
+                },
+                "operator": "EQUAL",
+                "right": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["f", "ORDER_ID"]
+                  }
+                }
+              }
+            },
+            "left": {
+              "_type": "join",
+              "criteria": {
+                "_type": "joinOn",
+                "expression": {
+                  "_type": "comparisonExpression",
+                  "left": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["f", "ORDER_ID"]
+                    }
+                  },
+                  "operator": "EQUAL",
+                  "right": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["c", "a"]
+                    }
+                  }
+                }
+              },
+              "left": {
+                "_type": "aliasedRelation",
+                "alias": "f",
+                "columnNames": [],
+                "relation": {
+                  "_type": "tableFunction",
+                  "functionCall": {
+                    "_type": "functionCall",
+                    "arguments": [
+                      {
+                        "_type": "stringLiteral",
+                        "value": "shop::orders::ordersOver_Integer_1__Relation_1_"
+                      },
+                      {
+                        "_type": "namedArgumentExpression",
+                        "expression": {
+                          "_type": "integerLiteral",
+                          "value": 100
+                        },
+                        "name": "minimum"
+                      }
+                    ],
+                    "distinct": false,
+                    "name": {
+                      "parts": ["func"]
+                    },
+                    "orderBy": []
+                  }
+                }
+              },
+              "right": {
+                "_type": "aliasedRelation",
+                "alias": "c",
+                "columnNames": [],
+                "relation": {
+                  "_type": "tableFunction",
+                  "functionCall": {
+                    "_type": "functionCall",
+                    "arguments": [
+                      {
+                        "_type": "stringLiteral",
+                        "value": "a,b\n1,2"
+                      }
+                    ],
+                    "distinct": false,
+                    "name": {
+                      "parts": ["csv"]
+                    },
+                    "orderBy": []
+                  }
+                }
+              },
+              "type": "INNER"
+            },
+            "right": {
+              "_type": "aliasedRelation",
+              "alias": "s",
+              "columnNames": [],
+              "relation": {
+                "_type": "tableFunction",
+                "functionCall": {
+                  "_type": "functionCall",
+                  "arguments": [
+                    {
+                      "_type": "stringLiteral",
+                      "value": "/orders"
+                    }
+                  ],
+                  "distinct": false,
+                  "name": {
+                    "parts": ["service"]
+                  },
+                  "orderBy": []
+                }
+              }
+            },
+            "type": "INNER"
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["f", "ORDER_ID"]
+                }
+              }
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "subquery": {
+    "sql": "select t.STATUS, t.TOTAL from (select STATUS, sum(AMOUNT) as TOTAL from i('shop::ingest::OrdersIngest.ORDERS') group by STATUS) t where t.TOTAL > 100",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "aliasedRelation",
+            "alias": "t",
+            "columnNames": [],
+            "relation": {
+              "_type": "tableSubquery",
+              "query": {
+                "_type": "query",
+                "queryBody": {
+                  "_type": "querySpecification",
+                  "from": [
+                    {
+                      "_type": "tableFunction",
+                      "functionCall": {
+                        "_type": "functionCall",
+                        "arguments": [
+                          {
+                            "_type": "stringLiteral",
+                            "value": "shop::ingest::OrdersIngest.ORDERS"
+                          }
+                        ],
+                        "distinct": false,
+                        "name": {
+                          "parts": ["i"]
+                        },
+                        "orderBy": []
+                      }
+                    }
+                  ],
+                  "groupBy": [
+                    {
+                      "_type": "qualifiedNameReference",
+                      "name": {
+                        "parts": ["STATUS"]
+                      }
+                    }
+                  ],
+                  "orderBy": [],
+                  "select": {
+                    "_type": "select",
+                    "distinct": false,
+                    "selectItems": [
+                      {
+                        "_type": "singleColumn",
+                        "expression": {
+                          "_type": "qualifiedNameReference",
+                          "name": {
+                            "parts": ["STATUS"]
+                          }
+                        }
+                      },
+                      {
+                        "_type": "singleColumn",
+                        "alias": "TOTAL",
+                        "expression": {
+                          "_type": "functionCall",
+                          "arguments": [
+                            {
+                              "_type": "qualifiedNameReference",
+                              "name": {
+                                "parts": ["AMOUNT"]
+                              }
+                            }
+                          ],
+                          "distinct": false,
+                          "name": {
+                            "parts": ["sum"]
+                          },
+                          "orderBy": []
+                        }
+                      }
+                    ]
+                  },
+                  "windows": []
+                }
+              }
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["t", "STATUS"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["t", "TOTAL"]
+                }
+              }
+            }
+          ]
+        },
+        "where": {
+          "_type": "comparisonExpression",
+          "left": {
+            "_type": "qualifiedNameReference",
+            "name": {
+              "parts": ["t", "TOTAL"]
+            }
+          },
+          "operator": "GREATER_THAN",
+          "right": {
+            "_type": "integerLiteral",
+            "value": 100
+          }
+        },
+        "windows": []
+      }
+    }
+  },
+  "ctes": {
+    "sql": "with totals as (select CUSTOMER_ID, sum(AMOUNT) as TOTAL from i('shop::ingest::OrdersIngest.ORDERS') group by CUSTOMER_ID), big (CID, TOTAL) as (select * from totals where TOTAL > 1000) select n.CUSTOMER_NAME, b.TOTAL from big b join i('shop::ingest::OrdersIngest.CUSTOMERS') n on b.CID = n.CUSTOMER_ID",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "queryWithScope",
+        "queryBody": {
+          "_type": "querySpecification",
+          "from": [
+            {
+              "_type": "join",
+              "criteria": {
+                "_type": "joinOn",
+                "expression": {
+                  "_type": "comparisonExpression",
+                  "left": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["b", "CID"]
+                    }
+                  },
+                  "operator": "EQUAL",
+                  "right": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["n", "CUSTOMER_ID"]
+                    }
+                  }
+                }
+              },
+              "left": {
+                "_type": "aliasedRelation",
+                "alias": "b",
+                "columnNames": [],
+                "relation": {
+                  "_type": "table",
+                  "name": {
+                    "parts": ["big"]
+                  }
+                }
+              },
+              "right": {
+                "_type": "aliasedRelation",
+                "alias": "n",
+                "columnNames": [],
+                "relation": {
+                  "_type": "tableFunction",
+                  "functionCall": {
+                    "_type": "functionCall",
+                    "arguments": [
+                      {
+                        "_type": "stringLiteral",
+                        "value": "shop::ingest::OrdersIngest.CUSTOMERS"
+                      }
+                    ],
+                    "distinct": false,
+                    "name": {
+                      "parts": ["i"]
+                    },
+                    "orderBy": []
+                  }
+                }
+              },
+              "type": "INNER"
+            }
+          ],
+          "groupBy": [],
+          "orderBy": [],
+          "select": {
+            "_type": "select",
+            "distinct": false,
+            "selectItems": [
+              {
+                "_type": "singleColumn",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["n", "CUSTOMER_NAME"]
+                  }
+                }
+              },
+              {
+                "_type": "singleColumn",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["b", "TOTAL"]
+                  }
+                }
+              }
+            ]
+          },
+          "windows": []
+        },
+        "with": {
+          "_type": "with",
+          "recursive": false,
+          "withQueries": [
+            {
+              "_type": "withQuery",
+              "columns": [],
+              "name": "totals",
+              "query": {
+                "_type": "query",
+                "queryBody": {
+                  "_type": "querySpecification",
+                  "from": [
+                    {
+                      "_type": "tableFunction",
+                      "functionCall": {
+                        "_type": "functionCall",
+                        "arguments": [
+                          {
+                            "_type": "stringLiteral",
+                            "value": "shop::ingest::OrdersIngest.ORDERS"
+                          }
+                        ],
+                        "distinct": false,
+                        "name": {
+                          "parts": ["i"]
+                        },
+                        "orderBy": []
+                      }
+                    }
+                  ],
+                  "groupBy": [
+                    {
+                      "_type": "qualifiedNameReference",
+                      "name": {
+                        "parts": ["CUSTOMER_ID"]
+                      }
+                    }
+                  ],
+                  "orderBy": [],
+                  "select": {
+                    "_type": "select",
+                    "distinct": false,
+                    "selectItems": [
+                      {
+                        "_type": "singleColumn",
+                        "expression": {
+                          "_type": "qualifiedNameReference",
+                          "name": {
+                            "parts": ["CUSTOMER_ID"]
+                          }
+                        }
+                      },
+                      {
+                        "_type": "singleColumn",
+                        "alias": "TOTAL",
+                        "expression": {
+                          "_type": "functionCall",
+                          "arguments": [
+                            {
+                              "_type": "qualifiedNameReference",
+                              "name": {
+                                "parts": ["AMOUNT"]
+                              }
+                            }
+                          ],
+                          "distinct": false,
+                          "name": {
+                            "parts": ["sum"]
+                          },
+                          "orderBy": []
+                        }
+                      }
+                    ]
+                  },
+                  "windows": []
+                }
+              }
+            },
+            {
+              "_type": "withQuery",
+              "columns": ["CID", "TOTAL"],
+              "name": "big",
+              "query": {
+                "_type": "query",
+                "queryBody": {
+                  "_type": "querySpecification",
+                  "from": [
+                    {
+                      "_type": "table",
+                      "name": {
+                        "parts": ["totals"]
+                      }
+                    }
+                  ],
+                  "groupBy": [],
+                  "orderBy": [],
+                  "select": {
+                    "_type": "select",
+                    "distinct": false,
+                    "selectItems": [
+                      {
+                        "_type": "allColumns"
+                      }
+                    ]
+                  },
+                  "where": {
+                    "_type": "comparisonExpression",
+                    "left": {
+                      "_type": "qualifiedNameReference",
+                      "name": {
+                        "parts": ["TOTAL"]
+                      }
+                    },
+                    "operator": "GREATER_THAN",
+                    "right": {
+                      "_type": "integerLiteral",
+                      "value": 1000
+                    }
+                  },
+                  "windows": []
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "union-all": {
+    "sql": "select ORDER_ID, AMOUNT from i('shop::ingest::OrdersIngest.ORDERS') where STATUS = 'ACTIVE' union all select ORDER_ID, AMOUNT from i('shop::ingest::OrdersIngest.ARCHIVE') order by AMOUNT limit 5",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "union",
+        "distinct": false,
+        "left": {
+          "_type": "querySpecification",
+          "from": [
+            {
+              "_type": "tableFunction",
+              "functionCall": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "stringLiteral",
+                    "value": "shop::ingest::OrdersIngest.ORDERS"
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["i"]
+                },
+                "orderBy": []
+              }
+            }
+          ],
+          "groupBy": [],
+          "orderBy": [],
+          "select": {
+            "_type": "select",
+            "distinct": false,
+            "selectItems": [
+              {
+                "_type": "singleColumn",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["ORDER_ID"]
+                  }
+                }
+              },
+              {
+                "_type": "singleColumn",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["AMOUNT"]
+                  }
+                }
+              }
+            ]
+          },
+          "where": {
+            "_type": "comparisonExpression",
+            "left": {
+              "_type": "qualifiedNameReference",
+              "name": {
+                "parts": ["STATUS"]
+              }
+            },
+            "operator": "EQUAL",
+            "right": {
+              "_type": "stringLiteral",
+              "value": "ACTIVE"
+            }
+          },
+          "windows": []
+        },
+        "limit": {
+          "_type": "integerLiteral",
+          "value": 5
+        },
+        "orderBy": [
+          {
+            "_type": "sortItem",
+            "nullOrdering": "UNDEFINED",
+            "ordering": "ASCENDING",
+            "sortKey": {
+              "_type": "qualifiedNameReference",
+              "name": {
+                "parts": ["AMOUNT"]
+              }
+            }
+          }
+        ],
+        "right": {
+          "_type": "querySpecification",
+          "from": [
+            {
+              "_type": "tableFunction",
+              "functionCall": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "stringLiteral",
+                    "value": "shop::ingest::OrdersIngest.ARCHIVE"
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["i"]
+                },
+                "orderBy": []
+              }
+            }
+          ],
+          "groupBy": [],
+          "orderBy": [],
+          "select": {
+            "_type": "select",
+            "distinct": false,
+            "selectItems": [
+              {
+                "_type": "singleColumn",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["ORDER_ID"]
+                  }
+                }
+              },
+              {
+                "_type": "singleColumn",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["AMOUNT"]
+                  }
+                }
+              }
+            ]
+          },
+          "windows": []
+        }
+      }
+    }
+  },
+  "except": {
+    "sql": "select CUSTOMER_ID from i('shop::ingest::OrdersIngest.CUSTOMERS') except select CUSTOMER_ID from i('shop::ingest::OrdersIngest.ORDERS')",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "except",
+        "distinct": true,
+        "left": {
+          "_type": "querySpecification",
+          "from": [
+            {
+              "_type": "tableFunction",
+              "functionCall": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "stringLiteral",
+                    "value": "shop::ingest::OrdersIngest.CUSTOMERS"
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["i"]
+                },
+                "orderBy": []
+              }
+            }
+          ],
+          "groupBy": [],
+          "orderBy": [],
+          "select": {
+            "_type": "select",
+            "distinct": false,
+            "selectItems": [
+              {
+                "_type": "singleColumn",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["CUSTOMER_ID"]
+                  }
+                }
+              }
+            ]
+          },
+          "windows": []
+        },
+        "orderBy": [],
+        "right": {
+          "_type": "querySpecification",
+          "from": [
+            {
+              "_type": "tableFunction",
+              "functionCall": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "stringLiteral",
+                    "value": "shop::ingest::OrdersIngest.ORDERS"
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["i"]
+                },
+                "orderBy": []
+              }
+            }
+          ],
+          "groupBy": [],
+          "orderBy": [],
+          "select": {
+            "_type": "select",
+            "distinct": false,
+            "selectItems": [
+              {
+                "_type": "singleColumn",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["CUSTOMER_ID"]
+                  }
+                }
+              }
+            ]
+          },
+          "windows": []
+        }
+      }
+    }
+  },
+  "window": {
+    "sql": "select ORDER_ID, row_number() over (partition by CUSTOMER_ID order by AMOUNT desc) as RN, sum(AMOUNT) over (partition by CUSTOMER_ID) as CUSTOMER_TOTAL from i('shop::ingest::OrdersIngest.ORDERS')",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "tableFunction",
+            "functionCall": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "stringLiteral",
+                  "value": "shop::ingest::OrdersIngest.ORDERS"
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["i"]
+              },
+              "orderBy": []
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["ORDER_ID"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "RN",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [],
+                "distinct": false,
+                "name": {
+                  "parts": ["row_number"]
+                },
+                "orderBy": [],
+                "window": {
+                  "_type": "window",
+                  "orderBy": [
+                    {
+                      "_type": "sortItem",
+                      "nullOrdering": "UNDEFINED",
+                      "ordering": "DESCENDING",
+                      "sortKey": {
+                        "_type": "qualifiedNameReference",
+                        "name": {
+                          "parts": ["AMOUNT"]
+                        }
+                      }
+                    }
+                  ],
+                  "partitions": [
+                    {
+                      "_type": "qualifiedNameReference",
+                      "name": {
+                        "parts": ["CUSTOMER_ID"]
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "CUSTOMER_TOTAL",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["AMOUNT"]
+                    }
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["sum"]
+                },
+                "orderBy": [],
+                "window": {
+                  "_type": "window",
+                  "orderBy": [],
+                  "partitions": [
+                    {
+                      "_type": "qualifiedNameReference",
+                      "name": {
+                        "parts": ["CUSTOMER_ID"]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "no-from": {
+    "sql": "select 1 as ONE",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "alias": "ONE",
+              "expression": {
+                "_type": "integerLiteral",
+                "value": 1
+              }
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "in-subquery": {
+    "sql": "select * from i('shop::ingest::OrdersIngest.ORDERS') where CUSTOMER_ID in (select CUSTOMER_ID from i('shop::ingest::OrdersIngest.CUSTOMERS') where REGION = 'EMEA')",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "tableFunction",
+            "functionCall": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "stringLiteral",
+                  "value": "shop::ingest::OrdersIngest.ORDERS"
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["i"]
+              },
+              "orderBy": []
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "allColumns"
+            }
+          ]
+        },
+        "where": {
+          "_type": "inPredicate",
+          "value": {
+            "_type": "qualifiedNameReference",
+            "name": {
+              "parts": ["CUSTOMER_ID"]
+            }
+          },
+          "valueList": {
+            "_type": "subqueryExpression",
+            "query": {
+              "_type": "query",
+              "queryBody": {
+                "_type": "querySpecification",
+                "from": [
+                  {
+                    "_type": "tableFunction",
+                    "functionCall": {
+                      "_type": "functionCall",
+                      "arguments": [
+                        {
+                          "_type": "stringLiteral",
+                          "value": "shop::ingest::OrdersIngest.CUSTOMERS"
+                        }
+                      ],
+                      "distinct": false,
+                      "name": {
+                        "parts": ["i"]
+                      },
+                      "orderBy": []
+                    }
+                  }
+                ],
+                "groupBy": [],
+                "orderBy": [],
+                "select": {
+                  "_type": "select",
+                  "distinct": false,
+                  "selectItems": [
+                    {
+                      "_type": "singleColumn",
+                      "expression": {
+                        "_type": "qualifiedNameReference",
+                        "name": {
+                          "parts": ["CUSTOMER_ID"]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "where": {
+                  "_type": "comparisonExpression",
+                  "left": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["REGION"]
+                    }
+                  },
+                  "operator": "EQUAL",
+                  "right": {
+                    "_type": "stringLiteral",
+                    "value": "EMEA"
+                  }
+                },
+                "windows": []
+              }
+            }
+          }
+        },
+        "windows": []
+      }
+    }
+  },
+  "exists": {
+    "sql": "select * from i('shop::ingest::OrdersIngest.CUSTOMERS') c where exists (select 1 from i('shop::ingest::OrdersIngest.ORDERS') o where o.CUSTOMER_ID = c.CUSTOMER_ID)",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "aliasedRelation",
+            "alias": "c",
+            "columnNames": [],
+            "relation": {
+              "_type": "tableFunction",
+              "functionCall": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "stringLiteral",
+                    "value": "shop::ingest::OrdersIngest.CUSTOMERS"
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["i"]
+                },
+                "orderBy": []
+              }
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "allColumns"
+            }
+          ]
+        },
+        "where": {
+          "_type": "existsPredicate",
+          "query": {
+            "_type": "tableSubquery",
+            "query": {
+              "_type": "query",
+              "queryBody": {
+                "_type": "querySpecification",
+                "from": [
+                  {
+                    "_type": "aliasedRelation",
+                    "alias": "o",
+                    "columnNames": [],
+                    "relation": {
+                      "_type": "tableFunction",
+                      "functionCall": {
+                        "_type": "functionCall",
+                        "arguments": [
+                          {
+                            "_type": "stringLiteral",
+                            "value": "shop::ingest::OrdersIngest.ORDERS"
+                          }
+                        ],
+                        "distinct": false,
+                        "name": {
+                          "parts": ["i"]
+                        },
+                        "orderBy": []
+                      }
+                    }
+                  }
+                ],
+                "groupBy": [],
+                "orderBy": [],
+                "select": {
+                  "_type": "select",
+                  "distinct": false,
+                  "selectItems": [
+                    {
+                      "_type": "singleColumn",
+                      "expression": {
+                        "_type": "integerLiteral",
+                        "value": 1
+                      }
+                    }
+                  ]
+                },
+                "where": {
+                  "_type": "comparisonExpression",
+                  "left": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["o", "CUSTOMER_ID"]
+                    }
+                  },
+                  "operator": "EQUAL",
+                  "right": {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["c", "CUSTOMER_ID"]
+                    }
+                  }
+                },
+                "windows": []
+              }
+            }
+          }
+        },
+        "windows": []
+      }
+    }
+  },
+  "recursive": {
+    "sql": "with recursive t as (select 1 as N union all select N + 1 from t where N < 5) select N from t",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "queryWithScope",
+        "queryBody": {
+          "_type": "querySpecification",
+          "from": [
+            {
+              "_type": "table",
+              "name": {
+                "parts": ["t"]
+              }
+            }
+          ],
+          "groupBy": [],
+          "orderBy": [],
+          "select": {
+            "_type": "select",
+            "distinct": false,
+            "selectItems": [
+              {
+                "_type": "singleColumn",
+                "expression": {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["N"]
+                  }
+                }
+              }
+            ]
+          },
+          "windows": []
+        },
+        "with": {
+          "_type": "with",
+          "recursive": true,
+          "withQueries": [
+            {
+              "_type": "withQuery",
+              "columns": [],
+              "name": "t",
+              "query": {
+                "_type": "query",
+                "queryBody": {
+                  "_type": "union",
+                  "distinct": false,
+                  "left": {
+                    "_type": "querySpecification",
+                    "from": [],
+                    "groupBy": [],
+                    "orderBy": [],
+                    "select": {
+                      "_type": "select",
+                      "distinct": false,
+                      "selectItems": [
+                        {
+                          "_type": "singleColumn",
+                          "alias": "N",
+                          "expression": {
+                            "_type": "integerLiteral",
+                            "value": 1
+                          }
+                        }
+                      ]
+                    },
+                    "windows": []
+                  },
+                  "orderBy": [],
+                  "right": {
+                    "_type": "querySpecification",
+                    "from": [
+                      {
+                        "_type": "table",
+                        "name": {
+                          "parts": ["t"]
+                        }
+                      }
+                    ],
+                    "groupBy": [],
+                    "orderBy": [],
+                    "select": {
+                      "_type": "select",
+                      "distinct": false,
+                      "selectItems": [
+                        {
+                          "_type": "singleColumn",
+                          "expression": {
+                            "_type": "arithmeticExpression",
+                            "left": {
+                              "_type": "qualifiedNameReference",
+                              "name": {
+                                "parts": ["N"]
+                              }
+                            },
+                            "right": {
+                              "_type": "integerLiteral",
+                              "value": 1
+                            },
+                            "type": "ADD"
+                          }
+                        }
+                      ]
+                    },
+                    "where": {
+                      "_type": "comparisonExpression",
+                      "left": {
+                        "_type": "qualifiedNameReference",
+                        "name": {
+                          "parts": ["N"]
+                        }
+                      },
+                      "operator": "LESS_THAN",
+                      "right": {
+                        "_type": "integerLiteral",
+                        "value": 5
+                      }
+                    },
+                    "windows": []
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "window-frame": {
+    "sql": "select ORDER_ID, sum(AMOUNT) over (order by ORDER_DATE rows between 2 preceding and current row) as MOVING from i('shop::ingest::OrdersIngest.ORDERS')",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "tableFunction",
+            "functionCall": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "stringLiteral",
+                  "value": "shop::ingest::OrdersIngest.ORDERS"
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["i"]
+              },
+              "orderBy": []
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["ORDER_ID"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "MOVING",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["AMOUNT"]
+                    }
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["sum"]
+                },
+                "orderBy": [],
+                "window": {
+                  "_type": "window",
+                  "orderBy": [
+                    {
+                      "_type": "sortItem",
+                      "nullOrdering": "UNDEFINED",
+                      "ordering": "ASCENDING",
+                      "sortKey": {
+                        "_type": "qualifiedNameReference",
+                        "name": {
+                          "parts": ["ORDER_DATE"]
+                        }
+                      }
+                    }
+                  ],
+                  "partitions": [],
+                  "windowFrame": {
+                    "_type": "windowFrame",
+                    "end": {
+                      "_type": "frameBound",
+                      "type": "CURRENT_ROW"
+                    },
+                    "mode": "ROWS",
+                    "start": {
+                      "_type": "frameBound",
+                      "type": "PRECEDING",
+                      "value": {
+                        "_type": "integerLiteral",
+                        "value": 2
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "windows": []
+      }
+    }
+  },
+  "named-window": {
+    "sql": "select ORDER_ID, sum(AMOUNT) over w as T from i('shop::ingest::OrdersIngest.ORDERS') window w as (partition by CUSTOMER_ID)",
+    "tree": {
+      "_type": "query",
+      "queryBody": {
+        "_type": "querySpecification",
+        "from": [
+          {
+            "_type": "tableFunction",
+            "functionCall": {
+              "_type": "functionCall",
+              "arguments": [
+                {
+                  "_type": "stringLiteral",
+                  "value": "shop::ingest::OrdersIngest.ORDERS"
+                }
+              ],
+              "distinct": false,
+              "name": {
+                "parts": ["i"]
+              },
+              "orderBy": []
+            }
+          }
+        ],
+        "groupBy": [],
+        "orderBy": [],
+        "select": {
+          "_type": "select",
+          "distinct": false,
+          "selectItems": [
+            {
+              "_type": "singleColumn",
+              "expression": {
+                "_type": "qualifiedNameReference",
+                "name": {
+                  "parts": ["ORDER_ID"]
+                }
+              }
+            },
+            {
+              "_type": "singleColumn",
+              "alias": "T",
+              "expression": {
+                "_type": "functionCall",
+                "arguments": [
+                  {
+                    "_type": "qualifiedNameReference",
+                    "name": {
+                      "parts": ["AMOUNT"]
+                    }
+                  }
+                ],
+                "distinct": false,
+                "name": {
+                  "parts": ["sum"]
+                },
+                "orderBy": [],
+                "window": {
+                  "_type": "window",
+                  "orderBy": [],
+                  "partitions": [],
+                  "windowRef": "w"
+                }
+              }
+            }
+          ]
+        },
+        "windows": [
+          {
+            "_type": "namedWindow",
+            "name": "w",
+            "window": {
+              "_type": "window",
+              "orderBy": [],
+              "partitions": [
+                {
+                  "_type": "qualifiedNameReference",
+                  "name": {
+                    "parts": ["CUSTOMER_ID"]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

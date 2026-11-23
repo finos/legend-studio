@@ -1437,6 +1437,10 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
+  async transformSQLToJSON(sql: string): Promise<PlainObject> {
+    return this.engineServerClient.SQLToJSON(sql);
+  }
+
   // ------------------------------------------- Function -------------------------------------------
 
   async getAvailableFunctionActivators(): Promise<V1_FunctionActivatorInfo[]> {

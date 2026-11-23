@@ -66,6 +66,7 @@ export const CUBE_LAMBDA_SOURCES_MESSAGE = {
   MIXED:
     'A cube reads one kind of source, and this query reads several: tables, data products or ingest data sets.',
   NOT_YET: 'Cube reads tables, data products and ingest data sets so far.',
+  SQL: "Cube's editor can't hold SQL, #SQL{…}#, yet.",
   NO_INGEST: 'This page has no ingest data sets to read.',
   NO_DATA_PRODUCTS: 'This page has no data products to read.',
   INGEST_SETTINGS:
@@ -534,6 +535,13 @@ export const bindCubeLambdaSources = async (
   sources: readonly IR[],
 ): Promise<CubeLambdaBinding> => {
   const kinds = new Set(sources.map((source) => source.k));
+  if (kinds.has('sqlAccessor')) {
+    // a definition's flow draws an island as one step; the editor has no step for it
+    throw new CubeLambdaReadError(
+      CubeLambdaReadErrorKind.SOURCE,
+      CUBE_LAMBDA_SOURCES_MESSAGE.SQL,
+    );
+  }
   if (!kinds.size) {
     throw new CubeLambdaReadError(
       CubeLambdaReadErrorKind.SOURCE,
