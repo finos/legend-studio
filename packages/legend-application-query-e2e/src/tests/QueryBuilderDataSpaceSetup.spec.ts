@@ -127,7 +127,9 @@ test('the data space query setup link can be copied to the clipboard', async ({
   // same project coordinates, data space, and execution context
   const link = await page.evaluate(() => navigator.clipboard.readText());
   expect(link).toContain('/query/');
-  expect(link).toContain('org.finos.legend.test:legend-query-test:0.0.1');
-  expect(link).toContain('test::DataSpace');
+  expect(link).toContain(
+    encodeURIComponent('org.finos.legend.test:legend-query-test:0.0.1'),
+  );
+  expect(link).toContain(encodeURIComponent('test::DataSpace'));
   expect(link).toContain('dummyContext');
 });

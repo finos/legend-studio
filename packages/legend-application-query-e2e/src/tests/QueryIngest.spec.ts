@@ -52,7 +52,7 @@ import {
  */
 
 const ingestUrl = (ingestPath: string, dataSet: string): string =>
-  `ingest/${TEST_PROJECT_GAV}/${ingestPath}/${dataSet}`;
+  `ingest/${encodeURIComponent(TEST_PROJECT_GAV)}/${encodeURIComponent(ingestPath)}/${encodeURIComponent(dataSet)}`;
 const COVID_CASES_URL = ingestUrl(COVID_INGEST_PATH, 'CovidCases');
 
 let captured: CapturedEngineRequests;
