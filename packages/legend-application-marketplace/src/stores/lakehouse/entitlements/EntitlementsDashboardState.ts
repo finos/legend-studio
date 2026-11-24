@@ -65,6 +65,8 @@ import {
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import {
+  buildContractErrorsRoot,
+  buildSyncErrorLayer,
   getDataProductFromDetails,
   stringifyOrganizationalScope,
   type ContractErrorLayer,
@@ -77,20 +79,19 @@ import {
   flowResult,
   action,
   computed,
+  runInAction,
 } from 'mobx';
 import type { LakehouseEntitlementsStore } from './LakehouseEntitlementsStore.js';
+import {
+  buildAccessStatusErrorLayer,
+  ContractSyncStatusResponseModelSchema,
+  deriveContractAccessStatus,
+  type ContractAccessStatusDetail,
+} from '../../../utils/EntitlementsUtils.js';
 
-export enum ContractSyncStatus {
-  NEVER_SYNCED = 'NEVER_SYNCED',
-  NOT_FULLY_SYNCED = 'NOT_FULLY_SYNCED',
-}
-
-export type LakehouseContractSyncStatusResponse = {
-  status: string;
-  unsyncedUsers?: { username: string }[];
-  unsyncedAccessPoints?: { accessPointName: string }[];
-  unsyncedTargetAccounts?: string[];
-};
+// Sync status calls are expensive for the contract server, so no more than this
+// many are made at once, whatever the number of rows asking for one.
+export const SYNC_STATUS_MAX_CONCURRENT_CALLS = 5;
 
 export enum TaskApprovalAction {
   APPROVE = 'approve',
@@ -229,12 +230,30 @@ export class EntitlementsDashboardState {
   pendingDataRequestIds: Set<string> = new Set();
   pendingDataRequestDetailsMap: Map<string, V1_DataRequestWithWorkflow> =
     new Map();
+  // Sync-based status of approved contracts / data requests, keyed by id.
+  contractAccessStatuses: Map<string, ContractAccessStatusDetail> = new Map();
 
   readonly initializationState = ActionState.create();
   readonly fetchingPendingTasksState = ActionState.create();
   readonly fetchingContractsForUserState = ActionState.create();
   readonly fetchingContractsByUserState = ActionState.create();
   readonly fetchingDataRequestsCreatedByUserState = ActionState.create();
+
+  // The unsynced entities of the contracts / data requests whose sync status call
+  // succeeded, so that opening one reuses what was fetched for its row instead of
+  // calling the contract server again. An id that is here was already fetched. A
+  // failed call is not remembered, so it is tried again. Only what is derived from
+  // the response is kept, as the response can be large.
+  private readonly syncErrorLayers = new Map<
+    string,
+    ContractErrorLayer | undefined
+  >();
+  // Ids waiting for their sync status call, in order, each with the number of rows
+  // waiting for it. A row that is no longer on screen takes itself out.
+  private readonly accessStatusQueue = new Map<string, number>();
+  // The sync status calls being made.
+  private readonly accessStatusCalls = new Map<string, Promise<void>>();
+  private accessStatusToken: string | undefined;
 
   private graphManagerPromise: Promise<V1_PureGraphManager> | undefined;
   private readonly dataProductDetailsPromises = new Map<
@@ -254,6 +273,7 @@ export class EntitlementsDashboardState {
       dataRequestsCreatedByUser: observable,
       pendingDataRequestIds: observable,
       pendingDataRequestDetailsMap: observable,
+      contractAccessStatuses: observable,
       pendingTaskContracts: computed,
       allContractsCreatedByUser: computed,
       setSelectedTaskIds: action,
@@ -276,6 +296,107 @@ export class EntitlementsDashboardState {
 
   get allContractsCreatedByUser(): ContractCreatedByUserDetails[] {
     return Array.from(this.allContractsCreatedByUserMap.values());
+  }
+
+  /**
+   * Asks for the sync status of a contract / data request, to show its access
+   * status. The call is queued and made when fewer than
+   * SYNC_STATUS_MAX_CONCURRENT_CALLS are running. Nothing is called for an id that
+   * was already fetched or is being fetched.
+   *
+   * Returns a function that takes the id out of the queue if its call has not
+   * started yet, for when the row asking for it is no longer on screen.
+   */
+  requestAccessStatus(id: string, token: string | undefined): () => void {
+    this.accessStatusToken = token;
+    if (this.syncErrorLayers.has(id) || this.accessStatusCalls.has(id)) {
+      return () => undefined;
+    }
+    this.accessStatusQueue.set(id, (this.accessStatusQueue.get(id) ?? 0) + 1);
+    this.processAccessStatusQueue();
+    return () => this.cancelAccessStatusRequest(id);
+  }
+
+  /**
+   * Fetches the sync status of a contract / data request again, for when it is
+   * refreshed. The status shown stays until the new one arrives.
+   */
+  async refreshAccessStatus(
+    id: string,
+    token: string | undefined,
+  ): Promise<void> {
+    this.syncErrorLayers.delete(id);
+    await this.callSyncStatus(id, token);
+  }
+
+  private cancelAccessStatusRequest(id: string): void {
+    const waiting = this.accessStatusQueue.get(id);
+    if (waiting === undefined) {
+      return;
+    }
+    if (waiting > 1) {
+      this.accessStatusQueue.set(id, waiting - 1);
+    } else {
+      this.accessStatusQueue.delete(id);
+    }
+  }
+
+  private processAccessStatusQueue(): void {
+    while (this.accessStatusCalls.size < SYNC_STATUS_MAX_CONCURRENT_CALLS) {
+      const next = this.accessStatusQueue.keys().next();
+      if (next.done) {
+        return;
+      }
+      this.callSyncStatus(next.value, this.accessStatusToken).catch(
+        this.lakehouseEntitlementsStore.applicationStore.alertUnhandledError,
+      );
+    }
+  }
+
+  /**
+   * Makes the sync status call of an id, or joins the one being made. It never
+   * rejects: when the call, or what it returns, is not usable the access status
+   * is "Not checked".
+   */
+  private callSyncStatus(id: string, token: string | undefined): Promise<void> {
+    this.accessStatusQueue.delete(id);
+    const inFlight = this.accessStatusCalls.get(id);
+    if (inFlight) {
+      return inFlight;
+    }
+    const call = this.fetchSyncStatus(id, token).finally(() => {
+      this.accessStatusCalls.delete(id);
+      this.processAccessStatusQueue();
+    });
+    this.accessStatusCalls.set(id, call);
+    return call;
+  }
+
+  private async fetchSyncStatus(
+    id: string,
+    token: string | undefined,
+  ): Promise<void> {
+    let detail: ContractAccessStatusDetail;
+    try {
+      const response = deserialize(
+        ContractSyncStatusResponseModelSchema,
+        await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getContractSyncStatus(
+          id,
+          token,
+        ),
+      );
+      detail = deriveContractAccessStatus(response);
+      // what is unsynced, or else what the access status says
+      this.syncErrorLayers.set(
+        id,
+        buildSyncErrorLayer(response) ?? buildAccessStatusErrorLayer(detail),
+      );
+    } catch {
+      detail = deriveContractAccessStatus(undefined);
+    }
+    runInAction(() => {
+      this.contractAccessStatuses.set(id, detail);
+    });
   }
 
   setSelectedTaskIds(ids: Set<string>): void {
@@ -852,76 +973,54 @@ export class EntitlementsDashboardState {
     contractId: string,
     token: string | undefined,
   ): Promise<ContractErrorLayer | undefined> {
-    try {
-      const response =
-        (await this.lakehouseEntitlementsStore.lakehouseContractServerClient.getContractSyncStatus(
-          contractId,
-          token,
-        )) as LakehouseContractSyncStatusResponse;
-
-      const status = response.status.toUpperCase();
-
-      if (status === ContractSyncStatus.NEVER_SYNCED) {
-        return { title: 'Sync Error: Contract Never Synced' };
-      }
-
-      if (status === ContractSyncStatus.NOT_FULLY_SYNCED) {
-        const unsyncedUsers =
-          response.unsyncedUsers?.map((user) => user.username) ?? [];
-        const unsyncedAccessPoints =
-          response.unsyncedAccessPoints?.map(
-            (accessPoint) => accessPoint.accessPointName,
-          ) ?? [];
-        const unsyncedTargetAccounts = response.unsyncedTargetAccounts ?? [];
-
-        const syncGroupingLayers: ContractErrorLayer[] = [
-          { title: 'Users:', errorItems: unsyncedUsers },
-          { title: 'Target Accounts:', errorItems: unsyncedTargetAccounts },
-          { title: 'Access Points:', errorItems: unsyncedAccessPoints },
-        ].filter((layer) => layer.errorItems.length > 0);
-
-        if (syncGroupingLayers.length === 0) {
-          return undefined;
-        }
-
-        return {
-          title: 'Unsynced Entities:',
-          childLayers: syncGroupingLayers,
-        };
-      }
-
-      return undefined;
-    } catch (error) {
-      assertErrorThrown(error);
-      return undefined;
+    // Reuses what was fetched for the row, and only calls when there is nothing
+    if (!this.syncErrorLayers.has(contractId)) {
+      await this.callSyncStatus(contractId, token);
     }
+    return this.syncErrorLayers.get(contractId);
   }
 
+  /**
+   * Looks up the errors of a contract / data request: the missing ingests, and the
+   * unsynced entities when `checkSyncStatus` is set.
+   *
+   * The two take very different times: the unsynced entities are usually already
+   * known from the status shown for the row, while the missing ingests take several
+   * calls, and may never answer. So `onProgress`, when given, gets the errors each
+   * time a part comes in, instead of the errors being held back until both are in.
+   */
   async getContractErrors(
     contract: V1_LiteAccessRequest,
     token: string | undefined,
     checkSyncStatus = false,
+    onProgress?: (errors: ContractErrorLayer | undefined) => void,
   ): Promise<ContractErrorLayer | undefined> {
-    const [unverifiedIngestDefinitions, syncErrorsLayer] = await Promise.all([
-      this.getUnverifiedIngestDefinitions(contract, token),
+    let ingestsLayer: ContractErrorLayer | undefined;
+    let syncErrorsLayer: ContractErrorLayer | undefined;
+    const currentErrors = (): ContractErrorLayer | undefined =>
+      buildContractErrorsRoot([ingestsLayer, syncErrorsLayer]);
+
+    await Promise.all([
+      this.getUnverifiedIngestDefinitions(contract, token).then(
+        (unverifiedIngestDefinitions) => {
+          ingestsLayer =
+            unverifiedIngestDefinitions.length > 0
+              ? {
+                  title: `Ingest${unverifiedIngestDefinitions.length === 1 ? '' : 's'} Not Found:`,
+                  errorItems: unverifiedIngestDefinitions,
+                }
+              : undefined;
+          onProgress?.(currentErrors());
+        },
+      ),
       checkSyncStatus
-        ? this.getContractSyncErrors(contract.guid, token)
-        : Promise.resolve(undefined),
+        ? this.getContractSyncErrors(contract.guid, token).then((layer) => {
+            syncErrorsLayer = layer;
+            onProgress?.(currentErrors());
+          })
+        : Promise.resolve(),
     ]);
-
-    const childLayers: ContractErrorLayer[] = [
-      unverifiedIngestDefinitions.length > 0
-        ? {
-            title: `Ingest${unverifiedIngestDefinitions.length === 1 ? '' : 's'} Not Found:`,
-            errorItems: unverifiedIngestDefinitions,
-          }
-        : undefined,
-      syncErrorsLayer,
-    ].filter(isNonNullable);
-
-    return childLayers.length > 0
-      ? { title: 'Contract Errors:', childLayers }
-      : undefined;
+    return currentErrors();
   }
 
   filterByUserEnvironment(

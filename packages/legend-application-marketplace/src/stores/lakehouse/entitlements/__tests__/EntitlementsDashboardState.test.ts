@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect, type jest } from '@jest/globals';
 import { flowResult } from 'mobx';
 import { createSpy } from '@finos/legend-shared/test';
 import {
@@ -31,7 +31,9 @@ import {
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_PureGraphManager,
 } from '@finos/legend-graph';
-import type { PlainObject } from '@finos/legend-shared';
+import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import type { ContractErrorLayer } from '@finos/legend-extension-dsl-data-product';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import {
   TEST_FULL_PATH,
@@ -43,7 +45,9 @@ import {
   ContractCreatedByUserDetails,
   TaskApprovalAction,
   TASK_ACTION_BATCH_SIZE,
+  SYNC_STATUS_MAX_CONCURRENT_CALLS,
 } from '../EntitlementsDashboardState.js';
+import { ContractAccessStatus } from '../../../../utils/EntitlementsUtils.js';
 import { LakehouseEntitlementsStore } from '../LakehouseEntitlementsStore.js';
 
 const PROD_DEPLOYMENT_ID = 100;
@@ -517,6 +521,432 @@ describe('EntitlementsDashboardState', () => {
       );
       expect(setBlockingAlertSpy).toHaveBeenLastCalledWith(undefined);
       expect(dashboardState.pendingTasks).not.toBe(tasks);
+    });
+  });
+
+  describe('sync status requests', () => {
+    const NOT_SYNCED = {
+      status: 'NOT_FULLY_SYNCED',
+      subscriptions: [{ guid: 'sub-1' }],
+      unsyncedUsers: [{ username: 'USER1' }],
+    };
+    const SYNCED = {
+      status: 'FULLY_SYNCED',
+      subscriptions: [{ guid: 'sub-1' }],
+    };
+    const UNSYNCED_USERS_LAYER = {
+      title: 'Unsynced Entities:',
+      childLayers: [{ title: 'Users:', errorItems: ['USER1'] }],
+    };
+
+    // lets the calls that are made finish: they only take a few ticks
+    const settle = (): Promise<void> =>
+      new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Calls that the test finishes by hand, in the order they were made
+    const holdCalls = (
+      dashboardState: EntitlementsDashboardState,
+    ): {
+      spy: jest.SpiedFunction<
+        LakehouseContractServerClient['getContractSyncStatus']
+      >;
+      finish: (response: PlainObject) => void;
+      madeFor: () => string[];
+    } => {
+      const resolvers: ((response: PlainObject) => void)[] = [];
+      const spy = createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockImplementation(
+        () =>
+          new Promise<PlainObject>((resolve) => {
+            resolvers.push(resolve);
+          }),
+      );
+      return {
+        spy,
+        finish: (response) => resolvers.shift()?.(response),
+        madeFor: () => spy.mock.calls.map(([id]) => id),
+      };
+    };
+
+    test('a requested id is fetched, and its access status and unsynced entities are kept', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const syncStatusSpy = createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockResolvedValue(NOT_SYNCED);
+
+      dashboardState.requestAccessStatus('c1', 'token-1');
+      await settle();
+
+      expect(syncStatusSpy).toHaveBeenCalledWith('c1', 'token-1');
+      expect(dashboardState.contractAccessStatuses.get('c1')?.status).toBe(
+        ContractAccessStatus.SETTING_UP,
+      );
+      expect(
+        await dashboardState.getContractSyncErrors('c1', 'token-1'),
+      ).toEqual(UNSYNCED_USERS_LAYER);
+      expect(syncStatusSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('no more than the limit are being made at once, whoever asks for them', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const { spy, finish, madeFor } = holdCalls(dashboardState);
+      const ids = Array.from(
+        { length: SYNC_STATUS_MAX_CONCURRENT_CALLS * 2 + 2 },
+        (_, i) => `c${i}`,
+      );
+
+      // each id is asked for separately, as the cells of the rows do
+      ids.forEach((id) => dashboardState.requestAccessStatus(id, 'token-2'));
+      await settle();
+      expect(spy).toHaveBeenCalledTimes(SYNC_STATUS_MAX_CONCURRENT_CALLS);
+
+      // one finishing lets the next one start, and the limit holds
+      finish(SYNCED);
+      await settle();
+      expect(spy).toHaveBeenCalledTimes(SYNC_STATUS_MAX_CONCURRENT_CALLS + 1);
+
+      ids.forEach(() => finish(SYNCED));
+      await settle();
+      ids.forEach(() => finish(SYNCED));
+      await settle();
+      expect(madeFor()).toEqual(ids);
+    });
+
+    test('a request that is cancelled before its call starts is never made', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const { finish, madeFor } = holdCalls(dashboardState);
+      const ids = Array.from(
+        { length: SYNC_STATUS_MAX_CONCURRENT_CALLS + 2 },
+        (_, i) => `c${i}`,
+      );
+      const cancels = ids.map((id) =>
+        dashboardState.requestAccessStatus(id, 'token-3'),
+      );
+      await settle();
+      expect(madeFor()).toEqual(ids.slice(0, SYNC_STATUS_MAX_CONCURRENT_CALLS));
+
+      // the first one waiting scrolled out of view
+      guaranteeNonNullable(cancels[SYNC_STATUS_MAX_CONCURRENT_CALLS])();
+      finish(SYNCED);
+      await settle();
+
+      expect(madeFor()).toEqual([
+        ...ids.slice(0, SYNC_STATUS_MAX_CONCURRENT_CALLS),
+        guaranteeNonNullable(ids[SYNC_STATUS_MAX_CONCURRENT_CALLS + 1]),
+      ]);
+    });
+
+    test('a request asked for by two rows is only dropped when both have cancelled', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const { finish, madeFor } = holdCalls(dashboardState);
+      Array.from({ length: SYNC_STATUS_MAX_CONCURRENT_CALLS }, (_, i) =>
+        dashboardState.requestAccessStatus(`busy${i}`, 'token-4'),
+      );
+      const cancelFirstOfKept = dashboardState.requestAccessStatus(
+        'kept',
+        'token-4',
+      );
+      dashboardState.requestAccessStatus('kept', 'token-4');
+      const cancelFirstOfDropped = dashboardState.requestAccessStatus(
+        'dropped',
+        'token-4',
+      );
+      const cancelSecondOfDropped = dashboardState.requestAccessStatus(
+        'dropped',
+        'token-4',
+      );
+
+      cancelFirstOfKept();
+      cancelFirstOfDropped();
+      cancelSecondOfDropped();
+      Array.from({ length: SYNC_STATUS_MAX_CONCURRENT_CALLS }, () =>
+        finish(SYNCED),
+      );
+      await settle();
+
+      expect(madeFor()).toContain('kept');
+      expect(madeFor()).not.toContain('dropped');
+    });
+
+    test('nothing is called again for an id that is being fetched or was fetched', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const { spy, finish } = holdCalls(dashboardState);
+
+      dashboardState.requestAccessStatus('c1', 'token-5');
+      dashboardState.requestAccessStatus('c1', 'token-5');
+      await settle();
+      expect(spy).toHaveBeenCalledTimes(1);
+
+      finish(SYNCED);
+      await settle();
+      dashboardState.requestAccessStatus('c1', 'token-5');
+      await settle();
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    test('a call that failed shows Not checked, and is made again by the next request', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const syncStatusSpy = createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      )
+        .mockRejectedValueOnce(new Error('503'))
+        .mockResolvedValue(NOT_SYNCED);
+
+      dashboardState.requestAccessStatus('c1', 'token-6');
+      await settle();
+      expect(dashboardState.contractAccessStatuses.get('c1')?.status).toBe(
+        ContractAccessStatus.NOT_CHECKED,
+      );
+
+      dashboardState.requestAccessStatus('c1', 'token-6');
+      await settle();
+      expect(dashboardState.contractAccessStatuses.get('c1')?.status).toBe(
+        ContractAccessStatus.SETTING_UP,
+      );
+      expect(syncStatusSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test('a response that cannot be used is Not checked and does not stop the other ids', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const alertSpy = createSpy(
+        dashboardState.lakehouseEntitlementsStore.applicationStore,
+        'alertUnhandledError',
+      );
+      createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockImplementation(async (id: string) => (id === 'bad' ? {} : SYNCED));
+
+      ['bad', 'good-1', 'good-2'].forEach((id) =>
+        dashboardState.requestAccessStatus(id, 'token-7'),
+      );
+      await settle();
+
+      expect(dashboardState.contractAccessStatuses.get('bad')?.status).toBe(
+        ContractAccessStatus.NOT_CHECKED,
+      );
+      expect(dashboardState.contractAccessStatuses.get('good-1')?.status).toBe(
+        ContractAccessStatus.ACTIVE,
+      );
+      expect(dashboardState.contractAccessStatuses.get('good-2')?.status).toBe(
+        ContractAccessStatus.ACTIVE,
+      );
+      expect(alertSpy).not.toHaveBeenCalled();
+    });
+
+    test('opening a contract whose chip says Setting up shows why, even when no unsynced entity is listed', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockResolvedValue({
+        status: 'NOT_FULLY_SYNCED',
+        subscriptions: [{ guid: 'sub-1' }],
+      });
+
+      dashboardState.requestAccessStatus('c1', 'token-13');
+      await settle();
+
+      expect(dashboardState.contractAccessStatuses.get('c1')?.status).toBe(
+        ContractAccessStatus.SETTING_UP,
+      );
+      expect(
+        await dashboardState.getContractSyncErrors('c1', 'token-13'),
+      ).toEqual({ title: 'Approved. Waiting for access to be granted.' });
+    });
+
+    test('opening a contract whose chip says Needs attention shows the sync failures', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockResolvedValue({
+        status: 'NOT_FULLY_SYNCED',
+        subscriptions: [{ guid: 'sub-1' }],
+        syncFailures: [{ sqlStatement: 'GRANT ...', exception: 'boom' }],
+      });
+
+      dashboardState.requestAccessStatus('c1', 'token-14');
+      await settle();
+
+      expect(
+        (await dashboardState.getContractSyncErrors('c1', 'token-14'))?.title,
+      ).toContain('1 sync failure');
+    });
+
+    test('unsynced entities are shown rather than the reason when there are some', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockResolvedValue(NOT_SYNCED);
+
+      dashboardState.requestAccessStatus('c1', 'token-15');
+      await settle();
+
+      expect(
+        await dashboardState.getContractSyncErrors('c1', 'token-15'),
+      ).toEqual(UNSYNCED_USERS_LAYER);
+    });
+
+    test('nothing is shown for a contract that is fully synced', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockResolvedValue(SYNCED);
+
+      dashboardState.requestAccessStatus('c1', 'token-16');
+      await settle();
+
+      expect(
+        await dashboardState.getContractSyncErrors('c1', 'token-16'),
+      ).toBeUndefined();
+    });
+
+    test('the errors are reported as they come in, the unsynced entities without waiting for the missing ingests', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockResolvedValue(NOT_SYNCED);
+      let finishIngests: (ingests: string[]) => void = () => undefined;
+      createSpy(
+        dashboardState,
+        'getUnverifiedIngestDefinitions',
+      ).mockReturnValue(
+        new Promise<string[]>((resolve) => {
+          finishIngests = resolve;
+        }),
+      );
+      const reported: (ContractErrorLayer | undefined)[] = [];
+
+      const errors = dashboardState.getContractErrors(
+        createMockLiteDataContract('c1', PROD_DEPLOYMENT_ID, 'dp-1'),
+        'token-17',
+        true,
+        (layer) => reported.push(layer),
+      );
+      await settle();
+
+      // the ingests are still being looked up, the unsynced entities are shown
+      expect(reported).toEqual([
+        { title: 'Contract Errors:', childLayers: [UNSYNCED_USERS_LAYER] },
+      ]);
+
+      finishIngests(['com.example::MissingIngest']);
+      const result = await errors;
+      expect(result?.childLayers).toEqual([
+        {
+          title: 'Ingest Not Found:',
+          errorItems: ['com.example::MissingIngest'],
+        },
+        UNSYNCED_USERS_LAYER,
+      ]);
+      expect(reported.at(-1)).toEqual(result);
+    });
+
+    test('opening a contract while its call is being made joins that call', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const { spy, finish } = holdCalls(dashboardState);
+
+      dashboardState.requestAccessStatus('c1', 'token-8');
+      await settle();
+      const opening = dashboardState.getContractSyncErrors('c1', 'token-8');
+      finish(NOT_SYNCED);
+
+      expect(await opening).toEqual(UNSYNCED_USERS_LAYER);
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    test('opening a contract that was never requested makes the call, ahead of the queue', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const { spy, finish, madeFor } = holdCalls(dashboardState);
+      Array.from({ length: SYNC_STATUS_MAX_CONCURRENT_CALLS + 1 }, (_, i) =>
+        dashboardState.requestAccessStatus(`c${i}`, 'token-9'),
+      );
+      await settle();
+      expect(spy).toHaveBeenCalledTimes(SYNC_STATUS_MAX_CONCURRENT_CALLS);
+
+      const opening = dashboardState.getContractSyncErrors('opened', 'token-9');
+      expect(madeFor()).toContain('opened');
+      Array.from({ length: SYNC_STATUS_MAX_CONCURRENT_CALLS }, () =>
+        finish(SYNCED),
+      );
+      finish(NOT_SYNCED);
+      expect(await opening).toEqual(UNSYNCED_USERS_LAYER);
+    });
+
+    test('opening a contract whose call failed tries again', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const syncStatusSpy = createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      )
+        .mockRejectedValueOnce(new Error('503'))
+        .mockResolvedValue(NOT_SYNCED);
+
+      dashboardState.requestAccessStatus('c1', 'token-10');
+      await settle();
+      const layer = await dashboardState.getContractSyncErrors(
+        'c1',
+        'token-10',
+      );
+
+      expect(layer).toEqual(UNSYNCED_USERS_LAYER);
+      expect(syncStatusSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test('refreshing fetches again, and replaces the access status and the unsynced entities', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const syncStatusSpy = createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockResolvedValue(NOT_SYNCED);
+      dashboardState.requestAccessStatus('c1', 'token-11');
+      await settle();
+      expect(dashboardState.contractAccessStatuses.get('c1')?.status).toBe(
+        ContractAccessStatus.SETTING_UP,
+      );
+
+      // the sync finished since
+      syncStatusSpy.mockResolvedValue(SYNCED);
+      await dashboardState.refreshAccessStatus('c1', 'token-11');
+
+      expect(syncStatusSpy).toHaveBeenCalledTimes(2);
+      expect(dashboardState.contractAccessStatuses.get('c1')?.status).toBe(
+        ContractAccessStatus.ACTIVE,
+      );
+      expect(
+        await dashboardState.getContractSyncErrors('c1', 'token-11'),
+      ).toBeUndefined();
+      expect(syncStatusSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test('the status shown stays while a refresh is running', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'getContractSyncStatus',
+      ).mockResolvedValueOnce(NOT_SYNCED);
+      dashboardState.requestAccessStatus('c1', 'token-12');
+      await settle();
+
+      const { finish } = holdCalls(dashboardState);
+      const refreshing = dashboardState.refreshAccessStatus('c1', 'token-12');
+      expect(dashboardState.contractAccessStatuses.get('c1')?.status).toBe(
+        ContractAccessStatus.SETTING_UP,
+      );
+
+      finish(SYNCED);
+      await refreshing;
+      expect(dashboardState.contractAccessStatuses.get('c1')?.status).toBe(
+        ContractAccessStatus.ACTIVE,
+      );
     });
   });
 

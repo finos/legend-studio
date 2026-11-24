@@ -19,6 +19,7 @@ import {
   type V1_LiteAccessRequest,
   V1_ApprovalType,
   V1_ResourceType,
+  V1_transformDataRequestWithWorkflowToLiteDataAccessRequest,
 } from '@finos/legend-graph';
 import {
   DataGrid,
@@ -368,12 +369,38 @@ export const EntitlementsPendingTasksDashboard = observer(
           dataRequestId !== undefined &&
           dashboardState.pendingDataRequestIds.has(dataRequestId);
 
+        // Looks up the errors of the selected request, ignoring the result if
+        // another row got selected in the meantime
+        const loadContractErrors = (lite: V1_LiteAccessRequest) => {
+          dashboardState
+            .getContractErrors(lite, tokenRef.current)
+            .then((result) => {
+              if (
+                contractErrorsRequestId === contractErrorsRequestIdRef.current
+              ) {
+                setContractErrors(result);
+              }
+            })
+            .catch(() => {
+              if (
+                contractErrorsRequestId === contractErrorsRequestIdRef.current
+              ) {
+                setContractErrors(undefined);
+              }
+            });
+        };
+
         if (isDataRequest && dataRequestId) {
           const detail =
             dashboardState.pendingDataRequestDetailsMap.get(dataRequestId);
           if (detail) {
             setContractErrors(undefined);
             setSelectedRow({ kind: ROW_KIND_REQUEST, data: detail });
+            loadContractErrors(
+              V1_transformDataRequestWithWorkflowToLiteDataAccessRequest(
+                detail,
+              ),
+            );
           }
         } else {
           const contract = pendingTaskContracts.find(
@@ -385,22 +412,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               kind: ROW_KIND_CONTRACT,
               data: new ContractCreatedByUserDetails(contract),
             });
-            dashboardState
-              .getContractErrors(contract, tokenRef.current)
-              .then((result) => {
-                if (
-                  contractErrorsRequestId === contractErrorsRequestIdRef.current
-                ) {
-                  setContractErrors(result);
-                }
-              })
-              .catch(() => {
-                if (
-                  contractErrorsRequestId === contractErrorsRequestIdRef.current
-                ) {
-                  setContractErrors(undefined);
-                }
-              });
+            loadContractErrors(contract);
           }
         }
       }
