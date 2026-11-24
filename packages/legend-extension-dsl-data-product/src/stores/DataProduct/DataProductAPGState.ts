@@ -159,7 +159,7 @@ export class DataProductAPGState {
     approvedUsers: V1_User[];
   }[] = [];
 
-  approvedWorkforceUsers: string[] = [];
+  approvedWorkforceUsers: V1_User[] = [];
   readonly fetchingApprovedWorkforceUsersState = ActionState.create();
 
   // Fallback: access derived from data requests when no contract exists
@@ -205,6 +205,7 @@ export class DataProductAPGState {
       fetchUserAccessStatus: flow,
       setUserAccessStatus: action,
       canCreateSubscription: computed,
+      allApprovedUsers: computed,
       consumerGrant: observable,
       consumerGrantNotFound: observable,
       setConsumerGrant: action,
@@ -386,7 +387,27 @@ export class DataProductAPGState {
     }
   }
 
-  setApprovedWorkforceUsers(users: string[]): void {
+  /**
+   * Every approved user of the access point group, each with its type: the
+   * users from the workforce users endpoint and completed data requests, plus
+   * the users approved through system account contracts. Deduplicated by name.
+   */
+  get allApprovedUsers(): V1_User[] {
+    const usersByName = new Map<string, V1_User>();
+    [
+      ...this.approvedWorkforceUsers,
+      ...this.associatedSystemAccountContractsAndApprovedUsers.flatMap(
+        (entry) => entry.approvedUsers,
+      ),
+    ].forEach((user) => {
+      if (!usersByName.has(user.name)) {
+        usersByName.set(user.name, user);
+      }
+    });
+    return Array.from(usersByName.values());
+  }
+
+  setApprovedWorkforceUsers(users: V1_User[]): void {
     this.approvedWorkforceUsers = users;
   }
 
@@ -410,7 +431,7 @@ export class DataProductAPGState {
       const users =
         deserialize(V1_DataContractApprovedUsersResponseModelSchema, raw)
           .approvedUsers ?? [];
-      const approvedUserNames = new Set(users.map((u) => u.name));
+      const approvedUsers = new Map(users.map((u) => [u.name, u]));
 
       // Also surface users whose access came from a completed data request
       // (rather than a data contract), via the completed-requests approved
@@ -439,12 +460,19 @@ export class DataProductAPGState {
             : lakehouseContractServerClient.getApprovedUsersForCompletedDataRequests(
                 completedRequestIds,
                 token,
-              )) as Record<string, { name: string }[]>;
+              )) as Record<string, PlainObject<V1_User>[]>;
           completedRequestIds
             .flatMap(
-              (requestId) => rawApprovedUsersByRequestId[requestId] ?? [],
+              (requestId) =>
+                deserialize(V1_DataContractApprovedUsersResponseModelSchema, {
+                  approvedUsers: rawApprovedUsersByRequestId[requestId] ?? [],
+                }).approvedUsers ?? [],
             )
-            .forEach((user) => approvedUserNames.add(user.name));
+            .forEach((user) => {
+              if (!approvedUsers.has(user.name)) {
+                approvedUsers.set(user.name, user);
+              }
+            });
         }
       } catch (error) {
         assertErrorThrown(error);
@@ -453,7 +481,7 @@ export class DataProductAPGState {
         );
       }
 
-      this.setApprovedWorkforceUsers(Array.from(approvedUserNames));
+      this.setApprovedWorkforceUsers(Array.from(approvedUsers.values()));
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(

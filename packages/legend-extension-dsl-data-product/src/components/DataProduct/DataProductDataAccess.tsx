@@ -2030,9 +2030,9 @@ export const DataProductAccessPointGroupViewer = observer(
               canViewApprovedUsers &&
               (apgState.fetchingApprovedWorkforceUsersState.isInInitialState ||
                 apgState.fetchingApprovedWorkforceUsersState.isInProgress ||
-                apgState.approvedWorkforceUsers.length > 0) && (
+                apgState.allApprovedUsers.length > 0) && (
                 <UserAvatarGroupWithPopover
-                  users={apgState.approvedWorkforceUsers}
+                  users={apgState.allApprovedUsers}
                   fetchingUsersState={
                     apgState.fetchingApprovedWorkforceUsersState
                   }

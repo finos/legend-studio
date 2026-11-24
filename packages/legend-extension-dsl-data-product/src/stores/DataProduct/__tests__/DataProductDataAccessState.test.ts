@@ -27,6 +27,7 @@ import {
   V1_User,
   V1_UserType,
 } from '@finos/legend-graph';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import {
   TEST__getDataProductDataAccessState,
   TEST__getDataProductViewerState,
@@ -161,8 +162,11 @@ describe('DataProductDataAccessState', () => {
       client,
       'getApprovedUsersForCompletedDataRequests',
     ).mockResolvedValue({
-      'request-a': [{ name: 'user-a' }],
-      'request-b': [{ name: 'user-b' }],
+      'request-a': [
+        { name: 'user-a', userType: 'WORKFORCE_USER' },
+        { name: 'system-account-a', userType: 'SYSTEM_ACCOUNT' },
+      ],
+      'request-b': [{ name: 'user-b', userType: 'WORKFORCE_USER' }],
     });
     const groupA = guaranteeNonNullable(
       viewerState.apgStates.find((state) => state.apg.id === 'MULTI_GROUP_A'),
@@ -180,7 +184,102 @@ describe('DataProductDataAccessState', () => {
     expect(getApprovedUsersForCompletedDataRequestsSpy).toHaveBeenCalledTimes(
       1,
     );
-    expect(groupA.approvedWorkforceUsers).toEqual(['user-a']);
-    expect(groupB.approvedWorkforceUsers).toEqual(['user-b']);
+    // the user type from the server is kept, so a system account approved
+    // through a completed data request is not shown as a human user
+    expect(
+      groupA.approvedWorkforceUsers.map((user) => [user.name, user.userType]),
+    ).toEqual([
+      ['user-a', V1_UserType.WORKFORCE_USER],
+      ['system-account-a', V1_UserType.SYSTEM_ACCOUNT],
+    ]);
+    expect(groupB.approvedWorkforceUsers.map((user) => user.name)).toEqual([
+      'user-b',
+    ]);
+  });
+
+  test('allApprovedUsers merges approved system accounts with workforce users and keeps each user type', async () => {
+    const viewerState =
+      await TEST__getDataProductViewerState(mockSDLCDataProduct);
+    runInAction(() => {
+      viewerState.entitlementsDataProductDetails =
+        mockEntitlementsSDLCDataProduct;
+    });
+    const apgState = guaranteeNonNullable(viewerState.apgStates[0]);
+    // no data access state is configured, so the system account approved users
+    // are fetched directly through the client
+    const client = {
+      getApprovedUsersForDataContracts: () => Promise.resolve({}),
+    } as unknown as LakehouseContractServerClient;
+    const buildUser = (name: string, userType: V1_UserType): V1_User =>
+      Object.assign(new V1_User(), { name, userType });
+    const workforceUser = (name: string) =>
+      buildUser(name, V1_UserType.WORKFORCE_USER);
+    const systemAccount = (name: string) =>
+      buildUser(name, V1_UserType.SYSTEM_ACCOUNT);
+    const typed = (users: V1_User[]) =>
+      users.map((user) => [user.name, user.userType]);
+    const buildContract = (guid: string): V1_LiteDataContract => {
+      const contract = new V1_LiteDataContract();
+      contract.guid = guid;
+      return contract;
+    };
+    const getApprovedUsersForDataContractsSpy = createSpy(
+      client,
+      'getApprovedUsersForDataContracts',
+    );
+
+    // nothing approved yet
+    expect(apgState.allApprovedUsers).toEqual([]);
+
+    // workforce users only, no system account contracts; a system account
+    // returned by the workforce endpoint is included, with its type
+    apgState.setApprovedWorkforceUsers([
+      systemAccount('system-account-w'),
+      workforceUser('user-a'),
+    ]);
+    await flowResult(
+      apgState.fetchAndSetAssociatedSystemAccountContracts([], client, 'token'),
+    );
+    expect(getApprovedUsersForDataContractsSpy).not.toHaveBeenCalled();
+    expect(typed(apgState.allApprovedUsers)).toEqual([
+      ['system-account-w', V1_UserType.SYSTEM_ACCOUNT],
+      ['user-a', V1_UserType.WORKFORCE_USER],
+    ]);
+
+    // system accounts are added, deduplicated across contracts and against
+    // workforce users, and contracts missing from the response are ignored
+    getApprovedUsersForDataContractsSpy.mockResolvedValue({
+      'contract-1': [{ name: 'system-account-a', userType: 'SYSTEM_ACCOUNT' }],
+      'contract-2': [{ name: 'system-account-a', userType: 'SYSTEM_ACCOUNT' }],
+      'contract-3': [{ name: 'system-account-w', userType: 'SYSTEM_ACCOUNT' }],
+    });
+    await flowResult(
+      apgState.fetchAndSetAssociatedSystemAccountContracts(
+        [
+          buildContract('contract-1'),
+          buildContract('contract-2'),
+          buildContract('contract-3'),
+          buildContract('contract-4'),
+        ],
+        client,
+        'token',
+      ),
+    );
+    expect(getApprovedUsersForDataContractsSpy).toHaveBeenCalledWith(
+      ['contract-1', 'contract-2', 'contract-3', 'contract-4'],
+      'token',
+    );
+    expect(typed(apgState.allApprovedUsers)).toEqual([
+      ['system-account-w', V1_UserType.SYSTEM_ACCOUNT],
+      ['user-a', V1_UserType.WORKFORCE_USER],
+      ['system-account-a', V1_UserType.SYSTEM_ACCOUNT],
+    ]);
+
+    // system accounts show even when there are no workforce users
+    apgState.setApprovedWorkforceUsers([]);
+    expect(typed(apgState.allApprovedUsers)).toEqual([
+      ['system-account-a', V1_UserType.SYSTEM_ACCOUNT],
+      ['system-account-w', V1_UserType.SYSTEM_ACCOUNT],
+    ]);
   });
 });
