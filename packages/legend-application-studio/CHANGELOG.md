@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.22.10
+
+### Patch Changes
+
+- [#5953](https://github.com/finos/legend-studio/pull/5953) [`4dea6dd`](https://github.com/finos/legend-studio/commit/4dea6dde0f87410082338bee31ae65e9d702cc81) ([@kelly-thai](https://github.com/kelly-thai)) - Fix showcase navigation URL encoding to handle special characters
+
 ## 28.22.9
 
 ### Patch Changes

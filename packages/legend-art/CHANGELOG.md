@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.178
+
+### Patch Changes
+
+- [#5956](https://github.com/finos/legend-studio/pull/5956) [`2db7d6d`](https://github.com/finos/legend-studio/commit/2db7d6d037db2907d2c41e1b86aa3115c84c2e7e) ([@TharunRajeev](https://github.com/TharunRajeev)) - Show the approved users of an access point group to everyone viewing the data product, include its approved system accounts in the list, and tell them apart from human users with a robot avatar and a System tag.
+
 ## 7.1.177
 
 ### Patch Changes
