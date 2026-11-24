@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { expect, test } from '@jest/globals';
+import { expect, jest, test } from '@jest/globals';
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import { ApplicationStore } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared/test';
@@ -47,6 +47,12 @@ class TEST__LocalEnginePlugin extends LegendStudioApplicationPlugin {
   }
 }
 
+let initializeSpy:
+  | jest.SpiedFunction<
+      EditorStore['graphManagerState']['graphManager']['initialize']
+    >
+  | undefined;
+
 const openDeveloperTools = async (
   backendOverrides: { enabled?: boolean } | undefined,
   localEngine?: { mode: string; routes: string[] } | undefined,
@@ -65,6 +71,10 @@ const openDeveloperTools = async (
       pluginManager,
     ),
   });
+  initializeSpy = jest.spyOn(
+    MOCK__editorStore.graphManagerState.graphManager,
+    'initialize',
+  );
   await TEST__setUpEditorWithDefaultSDLCData(MOCK__editorStore);
   act(() => {
     MOCK__editorStore.setActivePanelMode(PANEL_MODE.DEV_TOOL);
@@ -116,6 +126,15 @@ test(
       mode: 'on',
       routes: ['grammar/grammarToJson/model'],
     });
+    // the editor gives its engine client the router
+    expect(editorStore.localEngineRouter).toBeDefined();
+    expect(
+      initializeSpy?.mock.calls.some(
+        ([config]) =>
+          config.clientConfig.localEngineRouter ===
+          editorStore.localEngineRouter,
+      ),
+    ).toBe(true);
     const field = screen
       .getByText('Local engine: off for this browser')
       .closest('.panel__content__form__section');

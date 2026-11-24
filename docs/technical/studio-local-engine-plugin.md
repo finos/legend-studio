@@ -131,7 +131,7 @@ export class InBrowserEngine_LegendStudioApplicationPlugin extends LegendStudioA
 }
 ```
 
-A complete local engine built this way, which answers `pure/v1` routes with a WebAssembly build of a Legend compiler in a worker, is legend-lite's Studio plugin (see [the legend-lite repository](https://github.com/neema2/legend-lite)).
+[legend-lite](https://github.com/neema2/legend-lite) has a WebAssembly build of a Legend compiler that answers `pure/v1` routes, the kind of module such an engine wraps.
 
 ## Registering the plugin
 
