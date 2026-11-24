@@ -109,6 +109,10 @@ export const DevToolPanel = observer(() => {
       !engineConfig.useBase64ForAdhocConnectionDataUrls,
     );
 
+  // NOTE: shown only where the deployment turns local mode on: this switch
+  // can turn it off in this browser, never on
+  const localEngineRouter = editorStore.localEngineRouter;
+
   const toggleSetUseDevClientProtocol = (): void =>
     engineConfig.setUseDevClientProtocol(!engineConfig.useDevClientProtocol);
 
@@ -204,6 +208,25 @@ export const DevToolPanel = observer(() => {
             !isValidUrl(engineConfig.baseUrl ?? '') ? 'Invalid URL' : ''
           }
         />
+        {localEngineRouter && (
+          <PanelFormBooleanField
+            name="Local engine: off for this browser"
+            prompt={`${localEngineRouter.engine.label} answers ${Array.from(
+              localEngineRouter.routes,
+            ).join(', ')}${
+              localEngineRouter.hasLeftLocalMode
+                ? '; this session uses the engine server after it refused a call'
+                : ''
+            }. Turn it off to send these calls to the engine server in this browser`}
+            value={localEngineRouter.isTurnedOffInThisBrowser}
+            isReadOnly={false}
+            update={(): void =>
+              localEngineRouter.setTurnedOffInThisBrowser(
+                !localEngineRouter.isTurnedOffInThisBrowser,
+              )
+            }
+          />
+        )}
         <PanelFormBooleanField
           name="Use Dev client protocol version"
           prompt="Specifies if development client protocol (v_X_X_X) version should be used for execution"

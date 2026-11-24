@@ -439,6 +439,23 @@ Studio still funnels several categories of failure through generic buckets. When
 
 Change detection reports success timings for its internal phases (build hash indexes, compute changes, etc.). These are useful for perf regression tracking rather than product usage. See the `CHANGE_DETECTION_*` constants in [LegendStudioEvent.ts](packages/legend-application-studio/src/__lib__/LegendStudioEvent.ts).
 
+### Local engine
+
+Fired where the deployment turns local mode on (`engine.local` in `config.json`) and a plugin provides a local engine: engine calls answered in the browser instead of by the engine server. See [studio-local-engine-plugin.md](./studio-local-engine-plugin.md).
+
+| Event                             | Payload                                                                                                           |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `engine.local-engine.call`        | `sourceInfo?` · `route` · `engineKey` · `durationMs` · `outcome` (`succeeded` / `failed` / `refused`) · `status?` |
+| `engine.local-engine.unavailable` | `sourceInfo?` · `engineKey` · `reason` (`no-webassembly-gc` / `engine-unavailable`)                               |
+
+Design notes:
+
+- **One `call` event per local call.** `route` is the engine route below `pure/v1/`, e.g. `grammar/grammarToJson/model`. `durationMs` is the local engine's time alone. Calls that go to the engine server record nothing here.
+- **`failed` is an error answer, not a broken engine.** It is an error status, most often an error in the user's model, or a thrown error (`status` absent).
+- **`refused` means the call reran on the engine server,** and the session left local mode: no later `call` event comes from that session.
+- **`unavailable` fires at most once per session,** before its first local call: every call of that session then goes to the engine server.
+- **No content.** Neither event carries model text, JSON or element paths.
+
 ## Worked example: who uses text mode, and how do they leave it?
 
 > "How many workspace-edit sessions enter text mode over the last 30 days? Of those, how many left cleanly vs. discarded their changes?"

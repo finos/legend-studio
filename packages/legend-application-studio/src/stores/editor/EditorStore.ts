@@ -138,6 +138,7 @@ import {
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
 import { DevMetadataState } from './sidebar-state/dev-metadata/DevMetadataState.js';
+import { LegendStudioLocalEngineRouter } from '../local-engine/LegendStudioLocalEngineRouter.js';
 
 export abstract class EditorExtensionState {
   /**
@@ -187,6 +188,11 @@ export class EditorStore implements CommandRegistrar {
   graphState: EditorGraphState;
   graphManagerState: GraphManagerState;
   graphEditorMode: GraphEditorMode;
+  /**
+   * Routes this editor's engine calls to a local engine, where the
+   * configuration turns local mode on and a plugin provides the engine
+   */
+  localEngineRouter?: LegendStudioLocalEngineRouter | undefined;
 
   // sidebar and panel
   explorerTreeState: ExplorerTreeState;
@@ -908,6 +914,10 @@ export class EditorStore implements CommandRegistrar {
       );
     }
 
+    this.localEngineRouter = LegendStudioLocalEngineRouter.create(
+      this.applicationStore,
+      { getSourceInfo: () => this.editorMode.getSourceInfo() },
+    );
     yield Promise.all([
       this.sdlcState.fetchCurrentRevision(
         projectId,
@@ -929,6 +939,7 @@ export class EditorStore implements CommandRegistrar {
             payloadDebugger,
             useCookieAuthOnly:
               this.applicationStore.config.engineUseCookieAuthOnly,
+            localEngineRouter: this.localEngineRouter,
           },
         },
         {

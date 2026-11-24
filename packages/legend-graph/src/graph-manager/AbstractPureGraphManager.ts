@@ -150,6 +150,7 @@ import type {
 import type { IngestDefinition } from '../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import type { IngestDefinitionSpecification } from '../graph/metamodel/pure/packageableElements/ingest/IngestDefinitionSpecification.js';
 import type { IngestDatasetReference } from '../graph/helpers/IngestDefinitionHelper.js';
+import type { LocalEngineRouter } from './action/LocalEngine.js';
 
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
@@ -161,6 +162,11 @@ export interface TEMPORARY__EngineSetupConfig {
      * avoid this abstract layer depending on a V1 implementation detail.
      */
     useCookieAuthOnly?: boolean;
+    /**
+     * Decides which engine calls a local engine answers instead of the
+     * engine server. See `LocalEngineRouter`.
+     */
+    localEngineRouter?: LocalEngineRouter | undefined;
   };
   /**
    * Theses are workarounds we need to manually supply the configuration data

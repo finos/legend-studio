@@ -37,6 +37,11 @@ export { type LegendStudioApplicationStore } from './stores/LegendStudioBaseStor
 
 // stores
 export * from './stores/LegendStudioApplicationPlugin.js';
+export type { LegendStudioLocalEngine } from './stores/local-engine/LegendStudioLocalEngine.js';
+export {
+  LegendStudioLocalEngineRouter,
+  type LegendStudioLocalEngineRouterOptions,
+} from './stores/local-engine/LegendStudioLocalEngineRouter.js';
 export * from './stores/editor/EditorTabManagerState.js';
 export * from './stores/editor/EditorStore.js';
 export * from './stores/editor/EditorConfig.js';

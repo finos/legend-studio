@@ -26,10 +26,19 @@ import {
   type TraceData,
   type HttpMethod,
   HttpHeader,
+  HttpStatus,
   NetworkClient,
+  assertTrue,
+  createRequestHeaders,
+  isObject,
   isPlainObject,
   isString,
+  processResponse,
 } from '@finos/legend-shared';
+import type {
+  LocalEngineResponse,
+  LocalEngineRouter,
+} from '../../../../action/LocalEngine.js';
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type {
   V1_LambdaReturnTypeInput,
@@ -221,7 +230,68 @@ export interface V1_EngineServerClientConfig extends ServerClientConfig {
    * own details, and is omitted when not configured.
    */
   clientName?: string | undefined;
+  /**
+   * Decides which calls a local engine answers instead of the engine server.
+   * See `LocalEngineRouter`.
+   */
+  localEngineRouter?: LocalEngineRouter | undefined;
 }
+
+/**
+ * The query parameters as the engine server receives them: `undefined` values
+ * are dropped, as `makeUrl` does, and a list is joined with commas
+ */
+const toLocalEngineQuery = (
+  parameters: Parameters | undefined,
+): Record<string, string> => {
+  const query: Record<string, string> = {};
+  Object.entries(parameters ?? {}).forEach(([name, value]) => {
+    if (Array.isArray(value)) {
+      query[name] = value
+        .filter((subValue) => subValue !== undefined)
+        .map((subValue) => subValue.toString())
+        .join(',');
+    } else if (value !== undefined) {
+      query[name] = value.toString();
+    }
+  });
+  return query;
+};
+
+/**
+ * The body as `NetworkClient` sends it, before any compression
+ */
+const toLocalEngineBody = (data: unknown): string =>
+  isString(data) ? data : isObject(data) ? JSON.stringify(data) : '';
+
+/**
+ * Wraps a local engine's answer in a `Response`, so it goes through the same
+ * response handling as the engine server's
+ */
+const toResponse = (answer: LocalEngineResponse, url: string): Response => {
+  assertTrue(
+    Number.isInteger(answer.status) &&
+      answer.status >= HttpStatus.OK &&
+      answer.status <= 599,
+    `Local engine answered with an invalid HTTP status '${answer.status}'`,
+  );
+  const response = new Response(
+    // a response with one of these statuses can't have a body
+    (
+      [
+        HttpStatus.NO_CONTENT,
+        HttpStatus.RESET_CONTENT,
+        HttpStatus.NOT_MODIFIED,
+      ] as number[]
+    ).includes(answer.status)
+      ? null
+      : answer.body,
+    { status: answer.status },
+  );
+  // NOTE: a constructed response has no URL; the error message names it
+  Object.defineProperty(response, 'url', { value: url });
+  return response;
+};
 
 export class V1_EngineServerClient extends AbstractServerClient {
   currentUserId?: string | undefined;
@@ -239,6 +309,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   private queryBaseUrl?: string | undefined;
   private queryClientName?: string | undefined;
   private baseUrlForServiceRegistration?: string | undefined;
+  private readonly localEngineRouter?: LocalEngineRouter | undefined;
 
   constructor(config: V1_EngineServerClientConfig) {
     super(
@@ -249,6 +320,18 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.queryBaseUrl = config.queryBaseUrl;
     this.clientName = config.clientName;
     this.queryClientName = config.queryClientName;
+    this.localEngineRouter = config.localEngineRouter;
+  }
+
+  /**
+   * The route of an engine call below `pure/v1/`, e.g. `grammar/grammarToJson/model`,
+   * or `undefined` for a call outside it
+   */
+  private getLocalEngineRoute(url: string): string | undefined {
+    const prefix = `${this._pure()}/`;
+    return url.startsWith(prefix)
+      ? url.substring(prefix.length).split('?')[0]
+      : undefined;
   }
 
   override async request<T>(
@@ -268,6 +351,31 @@ export class V1_EngineServerClient extends AbstractServerClient {
       url.startsWith(this.queryBaseUrl)
         ? { ...parameters, client_name: this.queryClientName }
         : parameters;
+    // NOTE: a call in local mode is answered here, before the network client
+    // compresses its body. The answer goes through the same response handling
+    // as the engine server's, so a caller can't tell the two apart; a local
+    // call is not traced, as there is no network call to trace.
+    const route = this.localEngineRouter
+      ? this.getLocalEngineRoute(url)
+      : undefined;
+    if (route !== undefined && this.localEngineRouter?.isLocalRoute(route)) {
+      const answer = await this.localEngineRouter.answer(route, {
+        query: toLocalEngineQuery(params),
+        body: toLocalEngineBody(data),
+      });
+      if (answer) {
+        return processResponse<T>(
+          toResponse(answer, url),
+          {
+            headers: createRequestHeaders(method, {
+              ...(this.baseHeaders ?? {}),
+              ...headers,
+            }),
+          },
+          responseProcessConfig,
+        );
+      }
+    }
     return super.request(
       method,
       url,
