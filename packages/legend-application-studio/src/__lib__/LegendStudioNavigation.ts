@@ -355,7 +355,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl = (
 
 export const generateShowcasePath = (showcasePath: string): string =>
   generatePath(LEGEND_STUDIO_SDLC_BYPASSED_ROUTE_PATTERN.SHOWCASE, {
-    showcasePath: encodeURIComponent(showcasePath),
+    showcasePath,
   });
 
 export const EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig = (
