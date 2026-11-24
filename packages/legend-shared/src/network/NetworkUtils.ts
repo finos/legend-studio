@@ -265,7 +265,14 @@ export interface RequestProcessConfig {
   enableCompression?: boolean | undefined;
 }
 
-const processResponse = async <T>(
+/**
+ * Turns a response into the request's result, or into a `NetworkClientError`
+ * when its status is not 2xx, decoding the body by the request's `Accept`
+ * header. A client that answers a request without `fetch`, e.g. from a local
+ * engine, runs its answer through this so callers see the same results and
+ * errors either way.
+ */
+export const processResponse = async <T>(
   response: Response,
   init: RequestInit,
   responseProcessConfig?: ResponseProcessConfig,

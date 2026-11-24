@@ -780,6 +780,40 @@ export type LegendAISuggestPersistedData = LegendAISuggestIdentity & {
   supersededApplyCount: number;
 };
 
+export enum LOCAL_ENGINE_CALL_OUTCOME {
+  /** the local engine answered with a 2xx status */
+  SUCCEEDED = 'succeeded',
+  /** the local engine answered with an error status, or threw */
+  FAILED = 'failed',
+  /** the local engine refused the call; it reran on the engine server */
+  REFUSED = 'refused',
+}
+
+export enum LOCAL_ENGINE_UNAVAILABLE_REASON {
+  /** the browser can't run WebAssembly GC */
+  NO_WEBASSEMBLY_GC = 'no-webassembly-gc',
+  /** the local engine said it is not available, or its check failed */
+  ENGINE_UNAVAILABLE = 'engine-unavailable',
+}
+
+/**
+ * One call answered by a local engine. It never carries the call's content:
+ * no model text, JSON or element paths.
+ */
+type LocalEngineCall_TelemetryData = {
+  route: string;
+  engineKey: string;
+  durationMs: number;
+  outcome: LOCAL_ENGINE_CALL_OUTCOME;
+  /** the status the local engine answered with; absent when it threw */
+  status?: number | undefined;
+} & WithSourceInfo;
+
+type LocalEngineUnavailable_TelemetryData = {
+  engineKey: string;
+  reason: LOCAL_ENGINE_UNAVAILABLE_REASON;
+} & WithSourceInfo;
+
 export class LegendStudioTelemetryHelper {
   static logEvent_GraphCompilationLaunched(
     service: TelemetryService,
@@ -2252,6 +2286,31 @@ export class LegendStudioTelemetryHelper {
     service.logEvent(LEGEND_STUDIO_APP_EVENT.SDLC_WORKSPACE_CREATE__FAILURE, {
       sourceInfo: undefined,
       ...data,
+    });
+  }
+
+  static logEvent_LocalEngineCall(
+    service: TelemetryService,
+    data: LocalEngineCall_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LOCAL_ENGINE_CALL, {
+      sourceInfo: data.sourceInfo,
+      route: data.route,
+      engineKey: data.engineKey,
+      durationMs: data.durationMs,
+      outcome: data.outcome,
+      status: data.status,
+    });
+  }
+
+  static logEvent_LocalEngineUnavailable(
+    service: TelemetryService,
+    data: LocalEngineUnavailable_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LOCAL_ENGINE_UNAVAILABLE, {
+      sourceInfo: data.sourceInfo,
+      engineKey: data.engineKey,
+      reason: data.reason,
     });
   }
 }

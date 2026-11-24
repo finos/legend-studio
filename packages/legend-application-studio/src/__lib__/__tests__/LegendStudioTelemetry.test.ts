@@ -31,6 +31,8 @@ import {
   GLOBAL_TEST_RUN_SCOPE,
   GRAPH_EDITOR_MODE_LABEL,
   GRAPH_INITIALIZATION_ERROR_KIND,
+  LOCAL_ENGINE_CALL_OUTCOME,
+  LOCAL_ENGINE_UNAVAILABLE_REASON,
   LegendStudioTelemetryHelper,
   PROJECT_CONFIG_UPDATE_ACTION,
   PROJECT_OVERVIEW_ACTION,
@@ -2395,6 +2397,46 @@ describe('LegendStudioTelemetryHelper - dev metadata push', () => {
     expect(call.data).toEqual({
       sourceInfo: TEST_SOURCE_INFO,
       errorMessage: 'push boom',
+    });
+  });
+});
+
+describe('LegendStudioTelemetryHelper - local engine', () => {
+  test('logEvent_LocalEngineCall carries the route, engine, time and outcome', () => {
+    const { service, calls } = buildTelemetryStub();
+    LegendStudioTelemetryHelper.logEvent_LocalEngineCall(service, {
+      sourceInfo: TEST_SOURCE_INFO,
+      route: 'grammar/grammarToJson/model',
+      engineKey: 'legend-lite',
+      durationMs: 12,
+      outcome: LOCAL_ENGINE_CALL_OUTCOME.REFUSED,
+      status: 400,
+    });
+    const call = guaranteeNonNullable(calls[0]);
+    expect(call.event).toBe(LEGEND_STUDIO_APP_EVENT.LOCAL_ENGINE_CALL);
+    expect(call.data).toEqual({
+      sourceInfo: TEST_SOURCE_INFO,
+      route: 'grammar/grammarToJson/model',
+      engineKey: 'legend-lite',
+      durationMs: 12,
+      outcome: 'refused',
+      status: 400,
+    });
+  });
+
+  test('logEvent_LocalEngineUnavailable carries the engine and the reason', () => {
+    const { service, calls } = buildTelemetryStub();
+    LegendStudioTelemetryHelper.logEvent_LocalEngineUnavailable(service, {
+      sourceInfo: undefined,
+      engineKey: 'legend-lite',
+      reason: LOCAL_ENGINE_UNAVAILABLE_REASON.NO_WEBASSEMBLY_GC,
+    });
+    const call = guaranteeNonNullable(calls[0]);
+    expect(call.event).toBe(LEGEND_STUDIO_APP_EVENT.LOCAL_ENGINE_UNAVAILABLE);
+    expect(call.data).toEqual({
+      sourceInfo: undefined,
+      engineKey: 'legend-lite',
+      reason: 'no-webassembly-gc',
     });
   });
 });

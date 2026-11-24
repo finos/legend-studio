@@ -594,6 +594,7 @@ export * from './graph-manager/PureGraphManagerPlugin.js';
 export * from './graph-manager/action/query/Query.js';
 export * from './graph-manager/action/query/QuerySearchSpecification.js';
 export * from './graph-manager/action/EngineError.js';
+export * from './graph-manager/action/LocalEngine.js';
 export * from './graph-manager/action/compilation/CompilationWarning.js';
 export * from './graph-manager/action/compilation/CompilationResult.js';
 export {

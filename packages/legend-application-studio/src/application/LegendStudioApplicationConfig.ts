@@ -223,6 +223,29 @@ export interface LegendStudioApplicationConfigurationData
     queryUrl?: string;
     useCookieAuthOnly?: boolean;
     queryClientName?: string;
+    /**
+     * Local mode: engine calls answered by a local engine, which a plugin
+     * provides, instead of by the engine server.
+     *
+     * See `LegendStudioLocalEngine`.
+     */
+    local?: {
+      /**
+       * `off` (the default) or `on`. Any other value means `off`.
+       */
+      mode?: string;
+      /**
+       * The engine calls that go local, by route below `pure/v1/`,
+       * e.g. `grammar/grammarToJson/model`. A call goes local only if it is
+       * listed here and the local engine supports it.
+       */
+      routes?: string[];
+      /**
+       * The key of the local engine to use. Needed only when plugins
+       * provide more than one.
+       */
+      engine?: string;
+    };
   };
   query?: { url: string };
   marketplace?: { url: string };
@@ -237,6 +260,11 @@ export interface LegendStudioApplicationConfigurationData
   lakehouse?: { url: string };
 }
 
+export enum LOCAL_ENGINE_MODE {
+  OFF = 'off',
+  ON = 'on',
+}
+
 export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly options = new LegendStudioApplicationCoreOptions();
 
@@ -244,6 +272,9 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly engineQueryServerUrl?: string | undefined;
   readonly engineQueryClientName?: string | undefined;
   readonly engineUseCookieAuthOnly: boolean;
+  readonly localEngineMode: LOCAL_ENGINE_MODE;
+  readonly localEngineRoutes: string[];
+  readonly localEngineKey?: string | undefined;
   readonly depotServerUrl: string;
   readonly sdlcServerUrl: string;
   readonly sdlcServerBaseHeaders?: RequestHeaders | undefined;
@@ -282,6 +313,20 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
     this.engineUseCookieAuthOnly = Boolean(
       input.configData.engine.useCookieAuthOnly,
     );
+    const localEngine = input.configData.engine.local;
+    // NOTE: an unknown mode, e.g. one a later release adds, means off
+    this.localEngineMode =
+      localEngine?.mode === LOCAL_ENGINE_MODE.ON
+        ? LOCAL_ENGINE_MODE.ON
+        : LOCAL_ENGINE_MODE.OFF;
+    this.localEngineRoutes = Array.from(
+      new Set(
+        (Array.isArray(localEngine?.routes) ? localEngine.routes : []).filter(
+          (route): route is string => typeof route === 'string' && route !== '',
+        ),
+      ),
+    );
+    this.localEngineKey = localEngine?.engine;
 
     // depot
     assertNonNullable(

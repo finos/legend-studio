@@ -36,6 +36,7 @@ import type {
 } from './editor/editor-state/ModelImporterState.js';
 import type { PureGrammarTextSuggestion } from '@finos/legend-code-editor';
 import type { DocumentationEntry } from '@finos/legend-shared';
+import type { LegendStudioLocalEngine } from './local-engine/LegendStudioLocalEngine.js';
 
 export type ExplorerContextMenuItemRendererConfiguration = {
   key: string;
@@ -156,6 +157,13 @@ export abstract class LegendStudioApplicationPlugin extends LegendApplicationPlu
    * These add new activities to the activity bar with corresponding sidebar panels.
    */
   getExtraActivityBarItemConfigurations?(): ActivityBarItemConfiguration[];
+
+  /**
+   * Get the list of local engines: engines that answer some engine calls in
+   * the browser, instead of the engine server, where the configuration turns
+   * local mode on (`engine.local`).
+   */
+  getExtraLocalEngines?(): LegendStudioLocalEngine[];
 }
 
 export type PureGrammarElementLabeler = (

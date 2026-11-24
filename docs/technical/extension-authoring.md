@@ -30,3 +30,7 @@ yarn link <location_to_module>
 # e.g. yarn link ../../studio-core/packages/legend-application-studio
 # This will add a `resolution` block to your `package.json`
 ```
+
+## Guides for specific extension points
+
+- [Adding a local engine to Legend Studio](./studio-local-engine-plugin.md): a plugin that answers some engine calls in the browser, instead of the engine server.

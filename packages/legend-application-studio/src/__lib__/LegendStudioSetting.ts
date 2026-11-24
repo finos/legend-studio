@@ -19,6 +19,10 @@ import type { SettingConfigurationData } from '@finos/legend-application';
 export enum LEGEND_STUDIO_SETTING_KEY {
   EDITOR_STRICT_MODE = 'editor.strictMode',
   EDITOR_WRAP_TEXT = 'editor.wrapText',
+  /**
+   * Turns local mode off in this browser, where the deployment has it on
+   */
+  ENGINE_LOCAL_ENGINE_OFF = 'engine.localEngineOff',
 }
 
 export const LEGEND_STUDIO_SETTING_CONFIG: SettingConfigurationData = {
@@ -26,6 +30,9 @@ export const LEGEND_STUDIO_SETTING_CONFIG: SettingConfigurationData = {
     defaultValue: false,
   },
   [LEGEND_STUDIO_SETTING_KEY.EDITOR_WRAP_TEXT]: {
+    defaultValue: false,
+  },
+  [LEGEND_STUDIO_SETTING_KEY.ENGINE_LOCAL_ENGINE_OFF]: {
     defaultValue: false,
   },
 };
