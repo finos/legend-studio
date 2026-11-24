@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.10.4
+
+### Patch Changes
+
+- [#5962](https://github.com/finos/legend-studio/pull/5962) [`e61c509`](https://github.com/finos/legend-studio/commit/e61c5091eceeec64c8d0b52e642744605a0e4fc9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add local mode: a plugin can provide a local engine (`LegendStudioApplicationPlugin.getExtraLocalEngines`) that answers some engine calls in the browser instead of the engine server, and `engine.local` in Studio's `config.json` turns it on for the listed routes (`mode: on`, `routes`). The engine client (`V1_EngineServerClient`) sends those calls to a `LocalEngineRouter` before compression and reads the local answer with the same response handling as the server's (`processResponse`, now exported from `@finos/legend-shared`). A refusal reruns the call on the engine server and ends local mode for the session; the Dev Tool panel can turn local mode off for a browser. Each local call records `engine.local-engine.call` telemetry: route, engine key, duration and outcome, never content.
+
 ## 32.10.3
 
 ### Patch Changes

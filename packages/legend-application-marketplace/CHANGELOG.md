@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.5.22
+
+### Patch Changes
+
+- [#5965](https://github.com/finos/legend-studio/pull/5965) [`32b38b7`](https://github.com/finos/legend-studio/commit/32b38b76aa477487f4b723cde27a55b2c4c5f6ec) ([@TharunRajeev](https://github.com/TharunRajeev)) - Support Sync status on Marketplace Dark mode.
+
 ## 0.5.21
 
 ### Patch Changes

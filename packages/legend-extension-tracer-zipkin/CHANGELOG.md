@@ -1,5 +1,7 @@
 # @finos/legend-extension-tracer-zipkin
 
+## 3.0.154
+
 ## 3.0.153
 
 ### Patch Changes
