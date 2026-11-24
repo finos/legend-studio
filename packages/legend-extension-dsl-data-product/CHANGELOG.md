@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.14
+
+### Patch Changes
+
+- [#5956](https://github.com/finos/legend-studio/pull/5956) [`2db7d6d`](https://github.com/finos/legend-studio/commit/2db7d6d037db2907d2c41e1b86aa3115c84c2e7e) ([@TharunRajeev](https://github.com/TharunRajeev)) - Show the approved users of an access point group to everyone viewing the data product, include its approved system accounts in the list, and tell them apart from human users with a robot avatar and a System tag.
+
+- [#5955](https://github.com/finos/legend-studio/pull/5955) [`c16a0cd`](https://github.com/finos/legend-studio/commit/c16a0cd192e7b1e198a547deffb231460a1ada26) ([@TharunRajeev](https://github.com/TharunRajeev)) - Show whether approved access has actually been applied on the My Closed Requests tab. Each approved contract or completed data request now shows an access status next to its state: `Active` when the sync status is fully synced, `Setting up` while the approved access is still being applied, `Needs attention` when there is no subscription or syncing reported failures, and `Not checked` when the sync status is not available. The sync status is only fetched for approved contracts and completed data requests that are on screen, at most 5 at a time so the contract server is not overloaded, and a request that has not started is dropped when its row scrolls away or the page is left. Opening a contract or data request reuses the sync status that was fetched for its row, and refreshing it in the viewer fetches it again. The State column also uses the readable state labels instead of raw state names, and sorts and filters on the state alone.
+
+  Show the contract errors (missing ingests and unsynced entities) for RMS data requests as well as contracts, on the My Pending Requests, My Closed Requests and My Approvals tabs. A long list of items in the contract errors, such as the unsynced users of a large RMS org node, scrolls within its area instead of stretching it.
+
 ## 0.2.13
 
 ## 0.2.12

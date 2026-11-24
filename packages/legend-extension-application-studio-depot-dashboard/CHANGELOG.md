@@ -1,5 +1,7 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.124
+
 ## 0.1.123
 
 ### Patch Changes
