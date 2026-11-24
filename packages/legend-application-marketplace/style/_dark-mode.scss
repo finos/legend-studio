@@ -4468,6 +4468,30 @@
       color: var(--color-dark-theme-text-primary);
     }
 
+    // The global dark theme chip rule above repaints every chip neutral, which
+    // hides the color of the access status. Restate it per status, through the
+    // theme root so it wins over that rule. The background follows the color.
+    &__access-status__chip.MuiChip-root {
+      background: color-mix(in srgb, currentcolor 15%, transparent);
+      border-color: currentcolor;
+
+      &.MuiChip-colorSuccess {
+        color: #81c784;
+      }
+
+      &.MuiChip-colorInfo {
+        color: #64b5f6;
+      }
+
+      &.MuiChip-colorError {
+        color: #e57373;
+      }
+
+      &.MuiChip-colorDefault {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
     &__grid {
       &__taskid-cell {
         color: var(--color-dark-theme-blue-primary);
