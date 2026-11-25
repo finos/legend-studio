@@ -49,7 +49,6 @@ import {
   getCommonEntitlementsColDefs,
   type EntitlementsRow,
   getContractData,
-  getLiteAccessRequest,
   getSelectedRowId,
   getSelectedContractGuid,
   getOpenTaskAssignees,
@@ -163,12 +162,10 @@ export const EntitlementsPendingContractsDashboard = observer(
     useEffect(() => {
       let isCurrentSelection = true;
       setContractErrors(undefined);
-      if (selectedRow) {
+      if (selectedRow?.kind === ROW_KIND_CONTRACT) {
+        const contract = selectedRow.data.contractResultLite;
         dashboardState
-          .getContractErrors(
-            getLiteAccessRequest(selectedRow),
-            tokenRef.current,
-          )
+          .getContractErrors(contract, tokenRef.current)
           .then((result) => {
             if (isCurrentSelection) {
               setContractErrors(result);

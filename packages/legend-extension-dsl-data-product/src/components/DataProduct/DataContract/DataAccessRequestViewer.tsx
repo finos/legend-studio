@@ -559,16 +559,7 @@ const ErrorLayerCard = (props: {
           </Box>
         </Box>
       </AccordionSummary>
-      <AccordionDetails
-        className={clsx(
-          'marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__details',
-          {
-            // a long list of items scrolls within the area instead of stretching it
-            'marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__details--items':
-              errorItems.length > 0,
-          },
-        )}
-      >
+      <AccordionDetails className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__details">
         {errorItems.map((item) => (
           <Box
             key={item}

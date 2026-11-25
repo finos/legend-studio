@@ -115,37 +115,6 @@
     }
   }
 
-  // The state of a row followed by its access status chip, as text only. The chip
-  // gets its color (text and border) from the MUI palette, through its color
-  // prop, and its background follows that color. Neither is ever cut off: they sit
-  // side by side, and when the cell is too narrow for both the chip wraps under
-  // the state.
-  &__access-status {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.2rem 1.6rem;
-    max-width: 100%;
-
-    &__state {
-      flex-shrink: 0;
-      white-space: nowrap;
-    }
-
-    &__chip.MuiChip-root {
-      flex-shrink: 0;
-      height: 2rem;
-      border-radius: 1rem;
-      background: color-mix(in srgb, currentcolor 10%, transparent);
-      font-size: 1rem;
-      font-weight: 600;
-
-      .MuiChip-label {
-        padding: 0 0.6rem;
-      }
-    }
-  }
-
   &__grid {
     height: 100%;
 
@@ -308,14 +277,9 @@
     }
   }
 
-  // The contract errors above the content of the viewer. The content is a flex
-  // column of a bounded height, and this has overflow set, so it could be shrunk
-  // down to nothing when the content below grew (for example once the tasks of the
-  // contract were loaded). It keeps its height, and the content scrolls instead.
   &__missing-ingests-wrapper {
     display: flex;
     flex-direction: column;
-    flex-shrink: 0;
     gap: 1rem;
     margin-bottom: 2rem;
     max-height: 40rem;
@@ -438,14 +402,6 @@
 
     &--inset &__summary {
       padding-left: 4rem;
-    }
-
-    // A layer that lists items scrolls within a bounded height, so a long list fits
-    // the area instead of stretching it.
-    &__details--items,
-    &--child &__details--items {
-      max-height: 24rem;
-      overflow-y: auto;
     }
 
     &--inset &__item {

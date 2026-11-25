@@ -60,61 +60,6 @@ export const createMockRawContractForUserResponse = (
   user: 'test-consumer-user-id',
 });
 
-export const createMockRawDataRequestWithWorkflow = (
-  guid: string,
-  description: string,
-  state: string,
-  deploymentId: number,
-) => ({
-  dataRequest: {
-    _type: 'DataRequest',
-    businessJustification: description,
-    guid,
-    version: 1,
-    state,
-    resource: {
-      _type: 'AccessPointGroupReference',
-      dataProduct: {
-        name: 'TestDataProduct',
-        owner: { appDirId: deploymentId },
-      },
-      accessPointGroup: 'TestAPG',
-    },
-    resourceEnvType: 'PRODUCTION',
-    members: [],
-    consumer: { _type: 'AdHocTeam', users: [] },
-    createdBy: 'test-consumer-user-id',
-    userDigest: 'digest',
-  },
-  workflows: [],
-});
-
-export const createMockRawPendingDataRequestTasksResponse = (
-  dataRequestId: string,
-  deploymentId: number,
-) => ({
-  dataOwner: [
-    {
-      workflowId: `workflow-${dataRequestId}`,
-      dataRequestId,
-      workflowUrl: 'https://workflow.test/workflow',
-      task: {
-        _type: 'DataOwnerApprovalTask',
-        taskId: `task-${dataRequestId}`,
-        status: 'OPEN',
-        createdOn: 1700000000000,
-        assignees: ['test-consumer-user-id'],
-        url: 'https://workflow.test/task',
-        consumer: { _type: 'AdHocTeam', users: [] },
-        resourceId: 'TestDataProduct',
-        deploymentId,
-        accessPointGroup: 'TestAPG',
-      },
-    },
-  ],
-  privilegeManager: [],
-});
-
 export const createMockDataProductDetailsResponse = (deploymentId: number) => ({
   dataProducts: [
     {
