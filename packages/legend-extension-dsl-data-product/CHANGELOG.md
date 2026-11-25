@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.16
+
+### Patch Changes
+
+- [#5968](https://github.com/finos/legend-studio/pull/5968) [`26d3a33`](https://github.com/finos/legend-studio/commit/26d3a33688b3a8a24eb6868398ef3f922515f39e) ([@TharunRajeev](https://github.com/TharunRajeev)) - Reverting Sync status usage on entitlements closed dashboard to display sync chips on state column.
+
 ## 0.2.15
 
 ## 0.2.14
