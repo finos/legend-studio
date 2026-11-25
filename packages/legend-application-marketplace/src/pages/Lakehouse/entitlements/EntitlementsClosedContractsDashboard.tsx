@@ -16,12 +16,12 @@
 
 import {
   V1_AdhocTeam,
+  V1_ContractState,
   V1_LiteDataContract,
   V1_LiteDataContractWithUserStatus,
 } from '@finos/legend-graph';
 import {
   DataGrid,
-  type DataGridCellRendererParams,
   type DataGridColumnDefinition,
 } from '@finos/legend-lego/data-grid';
 import {
@@ -31,7 +31,7 @@ import {
   FormGroup,
   Switch,
 } from '@mui/material';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { startCase } from '@finos/legend-shared';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
@@ -53,30 +53,12 @@ import {
   ENTITLEMENTS_DEFAULT_COL_DEF,
   ROW_KIND_CONTRACT,
   ROW_KIND_REQUEST,
-  CONTRACT_STATE_DISPLAY_LABELS,
-  getLiteAccessRequest,
-  getSyncCheckId,
-  isApprovedRow,
   TERMINAL_DATA_REQUEST_STATES,
   UNKNOWN,
   useSelectedViewerState,
   useGetDataProductUrl,
 } from '../../../utils/EntitlementsUtils.js';
 import { LegendMarketplaceTelemetryHelper } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
-import { ContractAccessStatusCell } from './ContractAccessStatusCell.js';
-
-const getClosedStateLabel = (row: EntitlementsRow): string => {
-  if (row.kind === ROW_KIND_CONTRACT) {
-    if (row.data instanceof V1_LiteDataContractWithUserStatus) {
-      return startCase(row.data.status);
-    }
-    const lite = row.data.contractResultLite;
-    return lite instanceof V1_LiteDataContract
-      ? (CONTRACT_STATE_DISPLAY_LABELS[lite.state] ?? startCase(lite.state))
-      : UNKNOWN;
-  }
-  return startCase(row.data.dataRequest.state);
-};
 
 export const EntitlementsClosedContractsDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
@@ -132,30 +114,17 @@ export const EntitlementsClosedContractsDashboard = observer(
       myClosedContracts.length === 0 && closedContractsForOthers.length > 0,
     );
 
-    const loadContractErrors = useCallback(
-      async (
-        row: EntitlementsRow,
-        onProgress?: (errors: ContractErrorLayer | undefined) => void,
-      ): Promise<ContractErrorLayer | undefined> =>
-        dashboardState.getContractErrors(
-          getLiteAccessRequest(row),
-          tokenRef.current,
-          isApprovedRow(row),
-          onProgress,
-        ),
-      [dashboardState],
-    );
-
     useEffect(() => {
       let isCurrentSelection = true;
       setContractErrors(undefined);
-      if (selectedRow) {
-        // the errors are shown as each part comes in
-        loadContractErrors(selectedRow, (errors) => {
-          if (isCurrentSelection) {
-            setContractErrors(errors);
-          }
-        })
+      if (
+        selectedRow?.kind === ROW_KIND_CONTRACT &&
+        selectedRow.data.contractResultLite instanceof V1_LiteDataContract
+      ) {
+        const contract = selectedRow.data.contractResultLite;
+        const isCompleted = contract.state === V1_ContractState.COMPLETED;
+        dashboardState
+          .getContractErrors(contract, tokenRef.current, isCompleted)
           .then((result) => {
             if (isCurrentSelection) {
               setContractErrors(result);
@@ -170,7 +139,7 @@ export const EntitlementsClosedContractsDashboard = observer(
       return () => {
         isCurrentSelection = false;
       };
-    }, [selectedRow, loadContractErrors]);
+    }, [selectedRow, dashboardState]);
 
     const selectedRowId = getSelectedRowId(selectedRow);
 
@@ -205,20 +174,21 @@ export const EntitlementsClosedContractsDashboard = observer(
         ...getCommonEntitlementsColDefs(dashboardState),
         {
           headerName: EntitlementsColumnHeader.STATE,
-          // Sorting, filtering and copying use the state alone: the access status
-          // arrives later, and is only shown by the cell
-          valueGetter: (params) =>
-            params.data ? getClosedStateLabel(params.data) : UNKNOWN,
-          cellRenderer: (
-            params: DataGridCellRendererParams<EntitlementsRow>,
-          ) =>
-            params.data ? (
-              <ContractAccessStatusCell
-                stateLabel={getClosedStateLabel(params.data)}
-                syncCheckId={getSyncCheckId(params.data)}
-                dashboardState={dashboardState}
-              />
-            ) : null,
+          valueGetter: (params) => {
+            if (!params.data) {
+              return UNKNOWN;
+            }
+            if (params.data.kind === ROW_KIND_CONTRACT) {
+              if (
+                params.data.data instanceof V1_LiteDataContractWithUserStatus
+              ) {
+                return params.data.data.status;
+              }
+              const lite = params.data.data.contractResultLite;
+              return lite instanceof V1_LiteDataContract ? lite.state : UNKNOWN;
+            }
+            return startCase(params.data.data.dataRequest.state);
+          },
         },
       ],
       [dashboardState],
@@ -306,28 +276,18 @@ export const EntitlementsClosedContractsDashboard = observer(
             contractErrors={contractErrors}
             viewerState={selectedViewerState}
             initialSelectedUser={getInitialUserForViewer()}
-            onRefresh={async () => {
-              if (selectedContractGuid) {
-                await flowResult(
-                  dashboardState.updateContract(
-                    selectedContractGuid,
-                    tokenRef.current,
-                  ),
-                );
-              }
-              // the sync may have finished since the row was opened, so its status
-              // and its unsynced entities are fetched again
-              const syncCheckId = getSyncCheckId(selectedRow);
-              if (syncCheckId !== undefined) {
-                await dashboardState.refreshAccessStatus(
-                  syncCheckId,
-                  tokenRef.current,
-                );
-              }
-              setContractErrors(
-                await loadContractErrors(selectedRow, setContractErrors),
-              );
-            }}
+            {...(selectedContractGuid
+              ? {
+                  onRefresh: async () => {
+                    await flowResult(
+                      dashboardState.updateContract(
+                        selectedContractGuid,
+                        tokenRef.current,
+                      ),
+                    );
+                  },
+                }
+              : {})}
             getDataProductUrl={getDataProductUrl}
             dataProductEnvironment={
               marketplaceBaseStore.envState.lakehouseEnvironment
