@@ -16,6 +16,7 @@
 
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import { resolve, dirname } from 'path';
+import { existsSync } from 'fs';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import micromatch from 'micromatch';
@@ -104,3 +105,37 @@ export const generateVersionBumpChangeset = (packagesToBump, bumpType) => {
     ].join('\n'),
   };
 };
+
+// ---------------------------------- Patch releases ----------------------------------
+// See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#patch-releases
+
+export const DEFAULT_BRANCH_NAME = 'master';
+
+/**
+ * Patch releases are published as prereleases, e.g. `13.281.1-patch.0`, so that
+ * the libraries they carry never collide with versions the default branch
+ * has already published, and so they are published under this NPM dist-tag
+ * instead of `latest`.
+ */
+export const PATCH_RELEASE_PRE_TAG = 'patch';
+
+export const getReleaseBranchName = (releaseVersion) =>
+  `release/${releaseVersion}`;
+
+/**
+ * Returns changesets' prerelease state (`.changeset/pre.json`), or `undefined`
+ * when not in prerelease mode.
+ */
+export const getPreReleaseState = (cwd = ROOT_DIR) => {
+  const preStatePath = resolve(cwd, '.changeset/pre.json');
+  return existsSync(preStatePath) ? loadJSON(preStatePath) : undefined;
+};
+
+/**
+ * Returns the releases in the plan whose changesets ask for more than a `patch` bump.
+ * Packages bumped only because a dependency was bumped are not counted.
+ */
+export const getNonPatchReleases = (releases) =>
+  releases.filter(
+    (release) => release.changesets.length && release.type !== 'patch',
+  );

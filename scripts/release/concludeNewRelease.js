@@ -18,6 +18,7 @@ import * as github from '@actions/github';
 import * as githubActionCore from '@actions/core';
 import chalk from 'chalk';
 import semver from 'semver';
+import { getReleaseBranchName } from './releaseVersionUtils.js';
 
 /**
  * Following is the list of expected environment variables:
@@ -27,10 +28,13 @@ import semver from 'semver';
  * MAIN_PACKAGE - the name of the package within the list of published packages. If this is available,
  *                a new version tag and its release will be published to Github.
  *
+ * GITHUB_SHA - the commit the release was published from, which every release tag points at
+ *
  * This also includes a few other extra steps we do to conclude a release:
- * 1. Create a tag for the release and publish a Github release for that tag
- * 2. Create the release branch for the latest release tag
- * 3. Create a new release milestone and move over open issues in the current milestone and close the current milestone.
+ * 1. Create a tag for every release (e.g. `v13.281.0`, `v13.281.1-patch.0`) at the commit it was published from
+ * 2. For a standard release (major) and a patch release, publish a Github release for that tag
+ * 3. For a standard release, create the release branch from the release tag
+ * 4. For a standard release, create a new release milestone and move over open issues in the current milestone and close the current milestone.
  * See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md
  */
 const concludeNewRelease = async () => {
@@ -90,24 +94,66 @@ const concludeNewRelease = async () => {
     );
   }
 
+  if (!currentReleaseVersion) {
+    return;
+  }
+
+  // --------------------------- Tag the release ---------------------------
+  // NOTE: the tag must point at the exact commit the release was published from: on a release branch,
+  // a tag created by Github without a commit would point at the default branch instead.
+  const releaseTag = `v${currentReleaseVersion}`;
+  console.log(`Creating release tag ${releaseTag}...`);
+  try {
+    await octokit.rest.git.createRef({
+      ref: `refs/tags/${releaseTag}`,
+      sha: process.env.GITHUB_SHA,
+      ...github.context.repo,
+    });
+    console.log(chalk.green(`\u2713 Created release tag ${releaseTag}`));
+  } catch (error) {
+    githubActionCore.error(
+      `Failed to create release tag ${releaseTag} at ${process.env.GITHUB_SHA}. Error:\n${error.message}\nPlease manually create this tag on Github.`,
+    );
+  }
+
+  // --------------------------- Patch release: publish a Github release ---------------------------
+  // See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#patch-releases
+  if (semver.prerelease(currentReleaseVersion)) {
+    try {
+      await octokit.rest.repos.createRelease({
+        tag_name: releaseTag,
+        name: `Version ${currentReleaseVersion}`,
+        body: `Patch release of v${semver.major(currentReleaseVersion)}.${semver.minor(currentReleaseVersion)}.0. Please refer to the release pull request for a summary of code changes.`,
+        prerelease: true,
+        make_latest: 'false',
+        ...github.context.repo,
+      });
+      console.log(
+        chalk.green(`\u2713 Created Github release for tag ${releaseTag}`),
+      );
+    } catch (error) {
+      githubActionCore.error(
+        `Failed to create Github release for tag ${releaseTag}. Error:\n${error.message}`,
+      );
+    }
+    return;
+  }
+
   /**
    * NOTE: only run this if the release version is a major bump, i.e. a standard release
    * This kicks off a sequence of post-release operations:
-   * - Create a tag for the release and a Github release for that tag
+   * - Create a Github release for the release tag
    * - Create the release branch for the latest release tag
    * - Create a new release milestone and move over open issues in the current milestone and close the current milestone.
    */
   if (
-    currentReleaseVersion &&
     semver.minor(currentReleaseVersion) === 0 &&
     semver.patch(currentReleaseVersion) === 0
   ) {
     const nextReleaseVersion = semver.inc(currentReleaseVersion, 'major');
 
-    // --------------------------- 1. Create Github release and tag for the release ---------------------------
-    console.log(
-      `Creating release tag v${currentReleaseVersion} and Github release...`,
-    );
+    // --------------------------- 1. Create Github release for the release tag ---------------------------
+    console.log(`Creating Github release for tag ${releaseTag}...`);
     try {
       await octokit.rest.repos.createRelease({
         tag_name: `v${currentReleaseVersion}`,
@@ -137,7 +183,7 @@ const concludeNewRelease = async () => {
       });
       try {
         await octokit.rest.git.createRef({
-          ref: `refs/heads/release/${currentReleaseVersion}`,
+          ref: `refs/heads/${getReleaseBranchName(currentReleaseVersion)}`,
           sha: latestVersionTag.data.object.sha,
           ...github.context.repo,
         });
