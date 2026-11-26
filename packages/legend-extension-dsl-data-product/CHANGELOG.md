@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.2.17
+
+### Patch Changes
+
+- [#5974](https://github.com/finos/legend-studio/pull/5974) [`6f733d6`](https://github.com/finos/legend-studio/commit/6f733d66014305f42078260c7aede87d94324f13) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Speed up the `DataProductViewer` tests by resolving only inline styles in `getComputedStyle`.
+
+- [#5974](https://github.com/finos/legend-studio/pull/5974) [`6f733d6`](https://github.com/finos/legend-studio/commit/6f733d66014305f42078260c7aede87d94324f13) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Split the `DataProductViewer` tests into four files, so Jest runs them in parallel and each starts on a fresh page.
+
 ## 0.2.16
 
 ### Patch Changes

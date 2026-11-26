@@ -1,5 +1,7 @@
 # @finos/legend-application-analytics-deployment
 
+## 13.287.1
+
 ## 13.287.0
 
 ## 13.286.0
