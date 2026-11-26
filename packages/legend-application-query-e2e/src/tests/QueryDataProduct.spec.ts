@@ -40,7 +40,9 @@ import {
 import {
   ALL_CASES,
   expectColumnValues,
+  getAboutDialogField,
   getExplorer,
+  getHelpMenuItem,
   getQueryTitle,
   project,
   runQuery,
@@ -310,6 +312,30 @@ test.describe('with a Lakehouse environment', () => {
         at(getChainedFunction(executeInput.function, 1).parameters, 1),
       ),
     ).toBe(COVID_DATA_PRODUCT_PATH);
+  });
+
+  test("About Data Product shows the data product's access point group and the user's Lakehouse environment", async ({
+    page,
+  }) => {
+    await page.goto(MODEL_ACCESS_URL);
+    await waitForModel(page);
+
+    await (await getHelpMenuItem(page, 'About Data Product')).click();
+    const dialog = page
+      .getByRole('dialog')
+      .filter({ hasText: 'About Data Product' });
+    await expect(getAboutDialogField(dialog, 'Project')).toHaveText(
+      TEST_PROJECT_GAV,
+    );
+    await expect(getAboutDialogField(dialog, 'Name')).toHaveText(
+      COVID_DATA_PRODUCT_TITLE,
+    );
+    await expect(getAboutDialogField(dialog, 'Access Point Group')).toHaveText(
+      COVID_ACCESS_POINT_GROUP_ID,
+    );
+    await expect(getAboutDialogField(dialog, 'Environment')).toHaveText(
+      TEST_LAKEHOUSE_ENVIRONMENT,
+    );
   });
 
   test('a model access query can switch to another model access point group, and is saved on it', async ({

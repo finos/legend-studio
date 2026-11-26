@@ -31,9 +31,11 @@ import {
 import {
   ALL_CASES,
   expectColumnValues,
+  getAboutDialogField,
   getExplorer,
-  getQueryTitle,
+  getHelpMenuItem,
   getProjectionColumns,
+  getQueryTitle,
   runQuery,
   saveNewQuery,
   TEST_PROJECT_GAV,
@@ -135,6 +137,26 @@ test("the ingest route opens on the data set, and queries it on a Lakehouse runt
   expect(getLakehouseRuntime(executeInput)).toContain(
     `"environment":"${TEST_LAKEHOUSE_ENVIRONMENT}"`,
   );
+});
+
+test("About Ingestion Data Set shows the ingest definition, the data set and the user's Lakehouse environment", async ({
+  page,
+}) => {
+  await page.goto(COVID_CASES_URL);
+  await waitForColumns(page, ['Fips', 'Date', 'Case Type', 'Cases']);
+
+  await (await getHelpMenuItem(page, 'About Ingestion Data Set')).click();
+  const dialog = page.getByRole('dialog').filter({ hasText: 'About Ingest' });
+  await expect(getAboutDialogField(dialog, 'Project')).toHaveText(
+    TEST_PROJECT_GAV,
+  );
+  await expect(getAboutDialogField(dialog, 'Data Set')).toHaveText(
+    'CovidCases',
+  );
+  await expect(getAboutDialogField(dialog, 'Environment')).toHaveText(
+    TEST_LAKEHOUSE_ENVIRONMENT,
+  );
+  await expect(dialog).toContainText(COVID_INGEST_PATH);
 });
 
 test('another data set of the ingest definition can be queried', async ({
