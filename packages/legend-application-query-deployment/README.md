@@ -11,7 +11,7 @@ This is the `Legend Query` web application deployment. This is used for developm
 
 ## Getting started
 
-To quickly setup the backend, use our development [Docker compose](./fixtures/legend-docker-setup/studio-dev-setup/README.md). If you need to debug and develop the backend, [setup with Maven](https://legend.finos.org/docs/getting-started/installation-guide#maven-install) instead.
+To quickly setup the backend, use our development [Docker compose](./fixtures/legend-docker-setup/studio-dev-setup/README.md). If you need to debug and develop the backend, [setup with Maven](https://legend.finos.org/docs/getting-started/installation-guide#setup-maven) instead.
 
 Last but not least, make sure you have `Yarn` installed. Run the following commands in order.
 
