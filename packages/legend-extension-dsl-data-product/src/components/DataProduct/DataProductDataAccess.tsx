@@ -93,7 +93,6 @@ import {
   Tabs,
   TextField,
 } from '@mui/material';
-import { useAuth } from 'react-oidc-context';
 import {
   assertErrorThrown,
   assertNonNullable,
@@ -115,6 +114,7 @@ import {
   DATA_PRODUCT_VIEWER_SECTION,
 } from '../../stores/ProductViewerNavigation.js';
 import { DataProductAPGAccessRequestControl } from './DataProductAPGAccessRequestControl.js';
+import { useOptionalAuth } from '../useOptionalAuth.js';
 import {
   type DataProductAPGState,
   AccessPointGroupAccess,
@@ -1934,9 +1934,9 @@ export const DataProductAccessPointGroupViewer = observer(
     const accessPointStates = apgState.accessPointStates;
     const displayedTitle = apgState.apg.title ?? apgState.apg.id;
 
-    const auth = useAuth();
-    const tokenRef = useRef(auth.user?.access_token);
-    tokenRef.current = auth.user?.access_token;
+    const auth = useOptionalAuth();
+    const tokenRef = useRef(auth?.user?.access_token);
+    tokenRef.current = auth?.user?.access_token;
     const [isMissingIngestsCollapsed, setIsMissingIngestsCollapsed] =
       useState(false);
     const sectionRef = useRef<HTMLDivElement>(null);
