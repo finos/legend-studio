@@ -331,6 +331,8 @@ export const TEST_DATA__DataProductArtifactContainingModelAPGAndNativeModelAcces
  *   - 'ap-without-relation' has a `lambdaGenericType` that is a plain
  *     packageable type (no relation type). `__internal__RelationType` should
  *     remain undefined.
+ *   - 'ap-with-unknown-column-type' has a relation type with a column of type
+ *     `test::Color`, which isn't in the graph. It must not fail the analysis.
  */
 export const TEST_DATA__DataProductArtifactWithLakehouseAccessPoints = {
   dataProduct: {
@@ -403,6 +405,51 @@ export const TEST_DATA__DataProductArtifactWithLakehouseAccessPoints = {
               _type: 'packageableType',
               fullPath: 'String',
             },
+          },
+        },
+        {
+          id: 'ap-with-unknown-column-type',
+          description: 'AP with a column whose type is not in the graph',
+          resourceBuilder: [
+            {
+              _type: 'functionAccessPoint',
+              functionGrammar: '|1',
+            },
+          ],
+          lambdaGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'meta::pure::metamodel::relation::Relation',
+            },
+            typeArguments: [
+              {
+                rawType: {
+                  _type: 'relationType',
+                  columns: [
+                    {
+                      name: 'id',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'Integer',
+                        },
+                      },
+                      multiplicity: { lowerBound: 1, upperBound: 1 },
+                    },
+                    {
+                      name: 'color',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'test::Color',
+                        },
+                      },
+                      multiplicity: { lowerBound: 0, upperBound: 1 },
+                    },
+                  ],
+                },
+              },
+            ],
           },
         },
       ],

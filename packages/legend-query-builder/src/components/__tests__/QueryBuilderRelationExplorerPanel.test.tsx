@@ -25,6 +25,7 @@ import {
 } from '@testing-library/react';
 import {
   stub_RawLambda,
+  CORE_PURE_PATH,
   DataProduct,
   DataProductAccessor,
   GenericType,
@@ -499,6 +500,87 @@ describe(
       // Verify both columns are in used IDs
       expect(tdsState.usedExplorerTreePropertyNodeIDs).toContain('col1');
       expect(tdsState.usedExplorerTreePropertyNodeIDs).toContain('col2');
+    });
+  },
+);
+
+describe(
+  integrationTest(
+    'QueryBuilder relation column whose type is not in the graph',
+  ),
+  () => {
+    test('a column typed Any renders and can be added to the fetch structure, but not to a post-filter', async () => {
+      const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+        TEST_DATA__ChangeDetectionModel as Entity[],
+        stub_RawLambda(),
+        'my::map',
+        'my::runtime',
+        TEST_DATA__ModelCoverageAnalysisResult_ChangeDetection,
+      );
+
+      const accessor = createTestAccessor([
+        { name: 'firstName', type: PrimitiveType.STRING },
+      ]);
+      // legend-graph types a column whose type isn't in the graph (for
+      // example an enum that isn't loaded) as `Any`
+      accessor.relationType.columns.push(
+        new RelationColumn(
+          'status',
+          GenericTypeExplicitReference.create(
+            new GenericType(
+              queryBuilderState.graphManagerState.graph.getType(
+                CORE_PURE_PATH.ANY,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await act(async () => {
+        queryBuilderState.changeSourceElement(accessor);
+      });
+
+      const explorerPanel = await waitFor(() =>
+        renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_EXPLORER),
+      );
+      await waitFor(() => getByText(explorerPanel, prettyCONSTName('status')));
+
+      fireEvent.contextMenu(getByText(explorerPanel, 'TestAccessPoint'));
+      await waitFor(() =>
+        renderResult.getByText('Add Columns to Fetch Structure'),
+      );
+      fireEvent.click(renderResult.getByText('Add Columns to Fetch Structure'));
+
+      const tdsState = guaranteeType(
+        queryBuilderState.fetchStructureState.implementation,
+        QueryBuilderTDSState,
+      );
+      expect(
+        tdsState.projectionColumns.map((column) => column.columnName),
+      ).toEqual([prettyCONSTName('firstName'), prettyCONSTName('status')]);
+
+      // the query still builds and serializes with the `Any` column projected
+      const serializedQuery = JSON.stringify(
+        queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+          queryBuilderState.buildQuery(),
+        ),
+      );
+      expect(serializedQuery).toContain('status');
+
+      // no operator applies to `Any`, so a post-filter on it is refused (the
+      // post-filter panel shows this message instead of adding the condition)
+      const statusColumn = guaranteeType(
+        tdsState.projectionColumns[1],
+        QueryBuilderRelationColumnProjectionColumnState,
+      );
+      expect(
+        () =>
+          new PostFilterConditionState(
+            tdsState.postFilterState,
+            statusColumn,
+            undefined,
+          ),
+      ).toThrow(`Can't find an operator for column 'Status`);
     });
   },
 );

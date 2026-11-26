@@ -16,6 +16,8 @@
 
 import { test, expect, describe } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { CORE_PURE_PATH } from '../../graph/MetaModelConst.js';
 import { TEST__getTestGraphManagerState } from '../__test-utils__/GraphManagerTestUtils.js';
 import {
   TEST_DATA__DataProductArtifact,
@@ -351,6 +353,44 @@ describe('analyzeDataProductAndBuildMinimalGraph', () => {
       const lakehouseAP = result.targetExecState as LakehouseAccessPoint;
       expect(lakehouseAP.id).toBe('legacy-ap');
       expect(lakehouseAP.__internal__RelationType?.columns.length).toBe(1);
+    },
+  );
+
+  test(
+    unitTest(
+      'types a relation column whose type is not in the graph as Any instead of failing the analysis',
+    ),
+    async () => {
+      const graphManagerState = await setupGraphManagerState();
+      const result =
+        await graphManagerState.graphManager.analyzeDataProductAndBuildMinimalGraph(
+          'test::LakehouseDataProduct',
+          () =>
+            Promise.resolve(
+              TEST_DATA__DataProductArtifactWithLakehouseAccessPoints,
+            ),
+          graphManagerState.graph,
+          'ap-with-unknown-column-type',
+          DataProductAccessType.LAKEHOUSE,
+          {
+            groupId: 'org.finos.test',
+            artifactId: 'test-lakehouse-data-product',
+            versionId: '1.0.0',
+          },
+        );
+
+      const lakehouseAP = guaranteeType(
+        result.targetExecState,
+        LakehouseAccessPoint,
+      );
+      const columns = guaranteeNonNullable(
+        lakehouseAP.__internal__RelationType,
+      ).columns;
+      expect(columns.map((column) => column.name)).toEqual(['id', 'color']);
+      const color = guaranteeNonNullable(columns[1]);
+      expect(color.genericType.value.rawType.path).toBe(CORE_PURE_PATH.ANY);
+      expect(color.multiplicity.lowerBound).toBe(0);
+      expect(color.multiplicity.upperBound).toBe(1);
     },
   );
 

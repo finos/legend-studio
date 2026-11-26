@@ -987,6 +987,7 @@ export {
   V1_qualifyIngestAccessor,
   V1_buildRelationElementsDataFromAccessors,
   V1_buildRelationTypeFromAccessPointImplementation,
+  V1_buildResolvedRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
   V1_buildResolvedRelationTypeFromV1RelationType,
   V1_getMilestoningColumnsForWriteMode,
