@@ -1,0 +1,4 @@
+function test::currencyCodeOf(code: Varchar(10)[1], amount: Numeric(10,2)[0..1]): Varchar(3)[1]
+{
+  'USD'->cast(@Varchar(3))
+}
