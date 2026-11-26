@@ -2657,6 +2657,17 @@
         color: var(--color-dark-theme-text-muted);
       }
     }
+
+    // The tabs' intro notes (TimedInfoBanner) are MUI info Alerts: use the dark
+    // theme's info colours instead of MUI's light-blue ones.
+    &__intro-banner {
+      background: var(--marketplace-info-bg);
+      color: var(--marketplace-info-text);
+
+      .MuiAlert-icon {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
   }
 
   .marketplace-lakehouse-field-search-results {
