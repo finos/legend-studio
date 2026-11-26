@@ -294,7 +294,7 @@ export const SnowflakeAppFunctionActivatorEditor = observer(() => {
             <PanelFormTextField
               value={activator.applicationName}
               isReadOnly={isReadOnly}
-              name="Activator Identifer"
+              name="Activator Identifier"
               placeholder="Specify the name of the UDTF for this activator..."
               update={(value: string | undefined): void =>
                 editorState.updateApplicationName(value ?? '')
