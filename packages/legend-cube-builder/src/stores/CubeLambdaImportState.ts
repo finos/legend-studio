@@ -105,6 +105,8 @@ export const CUBE_LAMBDA_IMPORT_MESSAGE = {
   /** The dialog's text checked as it is typed, once Cube can read it and the engine types it */
   READABLE: (steps: number): string =>
     `Cube reads it as ${steps} ${steps === 1 ? 'step' : 'steps'}, which the engine compiles: Import puts them in place of this cube`,
+  CODE_READS_DIFFERENTLY:
+    "An expression's code, as the engine writes it, reads otherwise than the expression in a place: the engine's text writer drops parentheses Pure needs, as in (a + 1) == 3. Check its comparisons before you edit it.",
 };
 
 /** The source id the engine's grammar gives what Import Pure parses, so its errors name it */
@@ -142,41 +144,60 @@ export interface CubeLambdaReading {
   readonly notes: readonly string[];
 }
 
-/** The engine's grammar of an expression's lambda, as the editor shows it */
+/**
+ * The engine's grammar of an expression's lambda, as the editor shows it,
+ * checked by parsing it back: the parentheses the engine's text drops put
+ * back (EXPRESSION-EDITOR.md, §2.4), or the text flagged where they can't be
+ */
 const codeOf = async (
   editorState: CubeEditorState,
   expression: JsonObject,
-): Promise<string> =>
-  (
-    await editorState.host.engine.renderPure(
-      CUBE_EXPRESSION_CODEC.read(expression),
-    )
-  ).trim();
+): Promise<{ code: string; readsDifferently: boolean }> => {
+  const { engine } = editorState.host;
+  const read = CUBE_EXPRESSION_CODEC.read(expression);
+  const checked = await engine.checkPure(read, await engine.renderPure(read));
+  return {
+    code: checked.text.trim(),
+    readsDifferently: checked.readsAsLambda === false,
+  };
+};
 
-/** Each Filter by Expression's and Extend column's code, the engine's grammar of its lambda */
+/**
+ * Each Filter by Expression's and Extend column's code, the engine's grammar
+ * of its lambda; and whether one's reads otherwise than its lambda
+ */
 const withExpressionCode = async (
   editorState: CubeEditorState,
   query: Query,
-): Promise<Query> => {
+): Promise<{ query: Query; readsDifferently: boolean }> => {
   let next = query;
+  let readsDifferently = false;
+  const coded = async (expression: JsonObject): Promise<string> => {
+    const { code, readsDifferently: differs } = await codeOf(
+      editorState,
+      expression,
+    );
+    readsDifferently ||= differs;
+    return code;
+  };
   for (const node of query.nodes) {
     if (node instanceof ExpressionFilter && node.lambda && !node.code) {
       next = next.replace(
-        node.withCondition(await codeOf(editorState, node.lambda), node.lambda),
+        node.withCondition(await coded(node.lambda), node.lambda),
       );
     } else if (node instanceof Extend) {
       const columns = [];
       for (const column of node.columns) {
         columns.push(
           column.lambda && !column.code
-            ? { ...column, code: await codeOf(editorState, column.lambda) }
+            ? { ...column, code: await coded(column.lambda) }
             : column,
         );
       }
       next = next.replace(node.withColumns(columns));
     }
   }
-  return next;
+  return { query: next, readsDifferently };
 };
 
 /**
@@ -241,18 +262,24 @@ export const readCubeLambdaDocument = async (
     ),
     registry: editorState.registry,
   });
+  const coded = await withExpressionCode(editorState, query);
   return {
     document: new CubeDocument({
       context: {
         ...binding.context,
         ...(parts.runtime !== undefined ? { runtime: parts.runtime } : {}),
       },
-      query: await withExpressionCode(editorState, query),
+      query: coded.query,
     }),
     lambda: read,
     isRun: parts.runtime !== undefined,
     unchecked,
-    notes: parts.limitBesideFrom ? [CUBE_LAMBDA_IMPORT_MESSAGE.GRID_LIMIT] : [],
+    notes: [
+      ...(parts.limitBesideFrom ? [CUBE_LAMBDA_IMPORT_MESSAGE.GRID_LIMIT] : []),
+      ...(coded.readsDifferently
+        ? [CUBE_LAMBDA_IMPORT_MESSAGE.CODE_READS_DIFFERENTLY]
+        : []),
+    ],
   };
 };
 

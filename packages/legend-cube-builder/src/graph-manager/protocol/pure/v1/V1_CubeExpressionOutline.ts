@@ -238,14 +238,37 @@ class V1_CubeExpressionOutlineReader {
           [],
           { extent: range },
         );
-      default:
+      default: {
+        // e.g. a column's specification, `~NAME:x|…`: the expressions in it
+        const parts = this.readNested(json);
+        const known = [range, ...parts.map((part) => part.extent)].filter(
+          (each): each is CubeCodeRange => each !== undefined,
+        );
         return new CubeOutlinePart(
           CubeOutlinePartKind.OTHER,
           this.textOf(range) ?? type,
-          [],
-          { extent: range },
+          parts,
+          { extent: known.length ? unionOf(known) : undefined },
         );
+      }
     }
+  }
+
+  /** The expressions held anywhere in a node the outline doesn't know, as a column's specification holds its lambda */
+  private readNested(json: JsonObject): CubeOutlinePart[] {
+    return Object.entries(json).flatMap(([key, value]): CubeOutlinePart[] => {
+      if (key === 'sourceInformation' || key === '_type') {
+        return [];
+      }
+      const values: unknown[] = Array.isArray(value) ? value : [value];
+      return values.flatMap((each): CubeOutlinePart[] =>
+        isJsonObject(each as JsonValue)
+          ? typeof (each as JsonObject)._type === 'string'
+            ? [this.read(each as JsonObject)]
+            : this.readNested(each as JsonObject)
+          : [],
+      );
+    });
   }
 
   private readFunction(
@@ -330,10 +353,10 @@ class V1_CubeExpressionOutlineReader {
 }
 
 /**
- * The outline of an expression of one row, `x | …`, from the engine's JSON
- * of its code: placed in the code when the JSON has its source
- * information; none for anything but a lambda of one parameter and one
- * expression
+ * The outline of an expression of one row, `x | …`, or of a query, `|…`,
+ * from the engine's JSON of its code: placed in the code when the JSON has
+ * its source information; none for anything but a lambda of one expression
+ * and at most one parameter
  */
 export const V1_buildCubeExpressionOutline = (
   json: JsonObject,
@@ -342,17 +365,19 @@ export const V1_buildCubeExpressionOutline = (
   const [parameter] = objectsOf(json, 'parameters');
   const body = objectsOf(json, 'body');
   const [expression] = body;
+  // a query's lambda has none: its columns are read in the lambdas inside it
+  const name = typeof parameter?.name === 'string' ? parameter.name : undefined;
   if (
     json._type !== 'lambda' ||
     body.length !== 1 ||
     !expression ||
-    typeof parameter?.name !== 'string'
+    (parameter !== undefined && name === undefined)
   ) {
     return undefined;
   }
   return new CubeExpressionOutline(
-    parameter.name,
-    new V1_CubeExpressionOutlineReader(code, parameter.name).read(expression),
+    name ?? '',
+    new V1_CubeExpressionOutlineReader(code, name ?? '').read(expression),
     code,
   );
 };
