@@ -46,4 +46,9 @@ export interface TypeTreeNodeData extends TreeNodeData {
   property?: AbstractProperty | undefined;
   dndType: CORE_DND_TYPE;
   parent: Type;
+  /**
+   * The tree node this node is nested under, used to rebuild the full property path
+   * (e.g. to fill in arguments for derived properties along the path)
+   */
+  parentNode?: TypeTreeNodeData | undefined;
 }

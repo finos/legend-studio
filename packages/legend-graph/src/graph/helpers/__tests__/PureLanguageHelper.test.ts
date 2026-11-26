@@ -18,10 +18,13 @@ import { jest, test, expect, afterEach } from '@jest/globals';
 import TEST_DATA__simpleGraphEntities from './TEST_DATA__FunctionSignatureGeneration.json' with { type: 'json' };
 import { unitTest } from '@finos/legend-shared/test';
 import type { Entity } from '@finos/legend-storage';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
+  generateDerivedPropertyCallString,
   generateFunctionCallString,
   generateFunctionPrettyName,
 } from '../PureLanguageHelper.js';
+import { PRIMITIVE_TYPE } from '../../MetaModelConst.js';
 import { TEST__getTestGraph } from '../../__test-utils__/GraphTestUtils.js';
 import { getFunctionSignature } from '../DomainHelper.js';
 
@@ -415,3 +418,66 @@ test(
     ).toBe('my::firmFunction(): Relation<RelationType>[1]');
   },
 );
+
+const DERIVED_PROPERTY_ENTITIES: Entity[] = [
+  {
+    path: 'test::Status',
+    classifierPath: 'meta::pure::metamodel::type::Enumeration',
+    content: {
+      _type: 'Enumeration',
+      name: 'Status',
+      package: 'test',
+      values: [{ value: 'ACTIVE' }, { value: 'INACTIVE' }],
+    },
+  },
+  {
+    path: 'test::Firm',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Firm',
+      package: 'test',
+      properties: [
+        {
+          name: 'name',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'String' },
+          },
+        },
+      ],
+      qualifiedProperties: [
+        {
+          name: 'employeeCount',
+          parameters: [],
+          body: [{ _type: 'integer', value: 0 }],
+          returnMultiplicity: { lowerBound: 1, upperBound: 1 },
+          returnGenericType: {
+            rawType: { _type: 'packageableType', fullPath: 'Integer' },
+          },
+        },
+      ],
+    },
+  },
+];
+
+test(unitTest('Generate call string for derived property'), async () => {
+  const graph = await TEST__getTestGraph(DERIVED_PROPERTY_ENTITIES);
+  const derivedProperty = guaranteeNonNullable(
+    graph.getClass('test::Firm').derivedProperties[0],
+  );
+  expect(generateDerivedPropertyCallString(derivedProperty, [])).toBe(
+    'employeeCount()',
+  );
+  expect(
+    generateDerivedPropertyCallString(derivedProperty, [
+      graph.getPrimitiveType(PRIMITIVE_TYPE.STRING),
+      graph.getPrimitiveType(PRIMITIVE_TYPE.INTEGER),
+      graph.getPrimitiveType(PRIMITIVE_TYPE.BOOLEAN),
+      graph.getType('test::Status'),
+      // class type and unresolved type both use a placeholder value
+      graph.getType('test::Firm'),
+      undefined,
+    ]),
+  ).toBe("employeeCount('', 0, true, test::Status.ACTIVE, param4, param5)");
+});
