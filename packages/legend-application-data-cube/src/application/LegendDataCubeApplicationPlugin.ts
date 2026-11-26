@@ -17,6 +17,7 @@
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import { type LegendDataCubePluginManager } from './LegendDataCubePluginManager.js';
 import type { LegendDataCubeBuilderState } from '../stores/builder/LegendDataCubeBuilderStore.js';
+import type { LegendDataCubeDuckDBQueryPlanner } from '../stores/planner/LegendDataCubeQueryPlanner.js';
 
 export class LegendDataCubeApplicationPlugin extends LegendApplicationPlugin {
   /**
@@ -42,4 +43,13 @@ export class LegendDataCubeApplicationPlugin extends LegendApplicationPlugin {
   getSourceViewerHeight?(
     builder: LegendDataCubeBuilderState | undefined,
   ): number | undefined;
+
+  /**
+   * Get the list of planners, other than the engine server, which can generate the execution plans of
+   * queries on DuckDB-backed sources (i.e. cached sources, local files and cached Iceberg tables).
+   *
+   * Each planner adds one setting, off by default, to use it instead of the engine server. With no
+   * planner contributed, nothing changes. See `LegendDataCubeDuckDBQueryPlanner`.
+   */
+  getExtraDuckDBQueryPlanners?(): LegendDataCubeDuckDBQueryPlanner[];
 }

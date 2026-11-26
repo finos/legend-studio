@@ -17,3 +17,8 @@
 export * from './application/LegendDataCube.js';
 export * from './application/LegendDataCubeApplicationConfig.js';
 export * from './application/LegendDataCubePluginManager.js';
+export { LegendDataCubeApplicationPlugin } from './application/LegendDataCubeApplicationPlugin.js';
+export type {
+  LegendDataCubeDuckDBQueryPlanner,
+  LegendDataCubeQueryPlannerClient,
+} from './stores/planner/LegendDataCubeQueryPlanner.js';

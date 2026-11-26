@@ -8,6 +8,10 @@ DSL is a very common use case where we have extension on, as each DSL are meant 
 
 > Studio extension is at code level, not runtime level like other IDEs' plugins: it means that the extension code is compiled together with Studio core when building the app. This is a big downside as it requires authors to update their extensions more frequently as new version of Studio core comes out. Hopefully, we can figure a better strategy to decouple the core and the extensions in the near future.
 
+## Legend DataCube Plugins
+
+Legend DataCube is extended the same way, through `LegendDataCubeApplicationPlugin`. One of its extension points lets a plugin contribute a query planner for DataCube's cached sources, local files and cached Iceberg tables: see [Adding a query planner to Legend DataCube](./datacube-query-planner-plugin.md).
+
 ## Working with Extensions
 
 When working on extensions, your setup is most likely going be something like this:
